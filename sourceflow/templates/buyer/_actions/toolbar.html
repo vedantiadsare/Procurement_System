@@ -1,0 +1,63 @@
+<div data-action-toolbar style="display:contents;">
+    {% if case.status == "SUBMITTED" %}
+    <button type="button" class="sf-hero-btn sf-hero-btn--outline" data-action-trigger="check">Check</button>
+    <div class="sf-action-panel" data-action-panel="check">
+        {% if suggested_tat %}
+        <p class="sf-caption">Suggested TAT for a topic of this value: <strong>{{ suggested_tat }} working days</strong>. Adjust if this case needs something different.</p>
+        {% else %}
+        <p class="sf-caption">This topic is above ₹40,00,000 (out of scope) — no suggested TAT. Set the working days GP is committing to for this case.</p>
+        {% endif %}
+        <form method="post" action="/queue/{{ case.id }}/check">
+            <div class="sf-field">
+                <label for="tat_days">TAT (working days)</label>
+                <input type="number" id="tat_days" name="tat_days" min="1" step="1" value="{{ suggested_tat or 30 }}" required>
+            </div>
+            <button type="submit" class="sf-btn sf-btn--primary">Confirm &amp; start clock</button>
+        </form>
+    </div>
+    {% elif case.final_corrected_docs_date %}
+    <span class="sf-hero-meta" style="align-self:center;">Checked: {{ case.final_corrected_docs_date | date }}</span>
+    {% endif %}
+
+    {% if case.status in ("SUBMITTED", "IN_PROGRESS") %}
+    <button type="button" class="sf-hero-btn sf-hero-btn--outline" data-action-trigger="enquire">Enquire</button>
+    <div class="sf-action-panel" data-action-panel="enquire">
+        <p class="sf-caption">Tell the requester what's missing or needs correction. They'll be able to edit and resubmit their case.</p>
+        <form method="post" action="/queue/{{ case.id }}/enquire">
+            <div class="sf-field">
+                <label for="enquire_comment">Comment <span class="sf-required">*</span></label>
+                <textarea id="enquire_comment" name="comment" required></textarea>
+            </div>
+            <button type="submit" class="sf-btn sf-btn--primary">Send enquiry</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if case.status == "IN_PROGRESS" %}
+    <button type="button" class="sf-hero-btn sf-hero-btn--solid" data-action-trigger="approve">Approve</button>
+    <div class="sf-action-panel" data-action-panel="approve">
+        <p class="sf-caption">Confirm approval and record the PO number.</p>
+        <form method="post" action="/queue/{{ case.id }}/approve">
+            <div class="sf-field">
+                <label for="po_number">PO number <span class="sf-required">*</span></label>
+                <input type="text" id="po_number" name="po_number" required>
+            </div>
+            <button type="submit" class="sf-btn sf-btn--primary">Confirm approval</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if case.status in ("SUBMITTED", "IN_PROGRESS", "ENQUIRED") %}
+    <button type="button" class="sf-hero-btn sf-hero-btn--text" data-action-trigger="reject">Reject</button>
+    <div class="sf-action-panel" data-action-panel="reject">
+        <p class="sf-caption">This is terminal — the requester will need to submit a new case.</p>
+        <form method="post" action="/queue/{{ case.id }}/reject">
+            <div class="sf-field">
+                <label for="reject_reason">Reason <span class="sf-required">*</span></label>
+                <textarea id="reject_reason" name="reason" required></textarea>
+            </div>
+            <button type="submit" class="sf-btn sf-btn--danger">Confirm rejection</button>
+        </form>
+    </div>
+    {% endif %}
+</div>

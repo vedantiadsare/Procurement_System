@@ -1,0 +1,24 @@
+{% import "_macros/icons.html" as ic %}
+{% macro render(notifications) %}
+<div class="sf-notif" data-notif>
+    <button type="button" class="sf-shell-icon-btn" data-notif-trigger aria-label="Notifications">
+        {{ ic.icon("bell", 18) }}
+        {% if notifications %}<span class="sf-notif__dot"></span>{% endif %}
+    </button>
+    <div class="sf-notif__panel" data-notif-panel>
+        <div class="sf-notif__header">Notifications</div>
+        {% if not notifications %}
+        <div class="sf-notif__empty">You're all caught up.</div>
+        {% else %}
+        <div class="sf-notif__list">
+            {% for n in notifications %}
+            <a class="sf-notif__item" href="{{ n.url }}">
+                <span class="sf-notif__text">{{ n.text }}</span>
+                <span class="sf-notif__time">{{ n.created_at | timestamp }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}

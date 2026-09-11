@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Requester Home · Samagra (preview)</title>
+<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/header.css">
+<link rel="stylesheet" href="/static/css/forms.css">
+<link rel="stylesheet" href="/static/css/detail-hero.css">
+<link rel="stylesheet" href="/static/css/requester-home.css">
+<style>
+.sf-preview-banner{background:#1f2937;color:#fff;font-size:12px;text-align:center;padding:6px;}
+</style>
+</head>
+<body>
+<div class="sf-preview-banner">PREVIEW — not a live route, for review only</div>
+
+<!-- ============ STATE 1: requester with open items ============ -->
+<div class="sf-shell-header">
+    <div class="sf-shell-header__row">
+        <div class="sf-shell-brand">
+            <svg class="sf-shell-brand__mark" width="22" height="22" viewBox="0 0 50 50" fill="none">
+                <rect x="4" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".38"/>
+                <rect x="28" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="4" y="28" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="28" y="28" width="18" height="18" rx="4" fill="#fff"/>
+            </svg>
+            <span class="sf-shell-brand__name">Samagra</span>
+            <span class="sf-shell-brand__dept">General Procurement</span>
+        </div>
+        <form class="sf-shell-search" method="get" action="/requests">
+            <svg class="sf-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" name="q" placeholder="Search requests, tickets, suppliers...">
+        </form>
+        <div class="sf-shell-actions">
+            <button type="button" class="sf-shell-icon-btn" title="Notifications">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <span class="sf-notif__dot"></span>
+            </button>
+            <a class="sf-shell-icon-btn" href="mailto:procurement.intake.demo@outlook.com" title="Help &amp; support">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.7"></path><line x1="12" y1="17.5" x2="12" y2="17.6"></line></svg>
+            </a>
+            <div class="sf-shell-user">
+                <span class="sf-avatar">AK</span>
+                <div class="sf-shell-user__meta">
+                    <span class="sf-shell-user__name">Ananya Kulkarni</span>
+                    <span class="sf-shell-user__role">Requester</span>
+                </div>
+            </div>
+            <button type="button" class="sf-shell-icon-btn" title="Log out">
+                <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+        </div>
+    </div>
+</div>
+<div class="sf-shell-subnav">
+    <div class="sf-shell-subnav__row">
+        <a class="sf-shell-subnav__link active" href="#">Home</a>
+        <a class="sf-shell-subnav__link" href="/requests/new">New Sourcing Request</a>
+        <a class="sf-shell-subnav__link" href="/requests">My Requests</a>
+    </div>
+</div>
+
+<div class="sf-hero-band sf-home-hero">
+    <div class="sf-hero-inner">
+        <h1 class="sf-home-greeting">Good afternoon, Ananya</h1>
+        <p class="sf-home-subtitle">2 requests are waiting on you. 4 are with procurement.</p>
+
+        <div class="sf-home-cols">
+            <div>
+                <div class="sf-home-eyebrow">Quick actions</div>
+                <div class="sf-home-quick">
+                    <a href="#">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M6 3h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="13" y2="17"></line></svg>
+                        What documents do I need?
+                    </a>
+                    <a href="#">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a9 9 0 1 1-4.6-7.9"></path><polyline points="22 4 12 14.5 9 11.5"></polyline></svg>
+                        Resume my last draft
+                        <span class="sf-home-quick__tag">1</span>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <div class="sf-home-eyebrow">Apps</div>
+                <div class="sf-home-tiles">
+                    <div class="sf-home-tilecol">
+                        <a class="sf-home-tile sf-home-tile--primary" href="/requests/new">
+                            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v4h4"></path><path d="M12 11v6M9 14h6"></path></svg>
+                            <span class="sf-home-tile__title">New sourcing request</span>
+                            <span class="sf-home-tile__sub">Start a new topic</span>
+                        </a>
+                        <div class="sf-home-tilehint"><b>You'll need:</b> approved shopping cart, signed SFO, RFQ, and one offer per bidder.</div>
+                    </div>
+                    <div class="sf-home-tilecol">
+                        <a class="sf-home-tile" href="/requests">
+                            <span class="sf-home-tile__pin">2</span>
+                            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="9" y1="10" x2="9" y2="20"></line></svg>
+                            <span class="sf-home-tile__title">My requests</span>
+                            <span class="sf-home-tile__sub">7 open</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="sf-content sf-home-attn">
+    <h2 class="sf-section-header" style="margin-top:0;">Things to Finish</h2>
+    <p class="sf-caption" style="margin:-6px 0 16px;">Anything here is holding up your request.</p>
+
+    <div class="sf-home-attn__row">
+        <div class="sf-card sf-home-attn-card">
+            <div class="sf-home-attn-card__when">Enquired 6 working days ago</div>
+            <span style="display:inline-flex;align-items:center;background:#FCF5D8;color:#8A6D0B;border:1px solid #EEDD9F;padding:2px 9px;border-radius:4px;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.02em;margin-bottom:10px;width:fit-content;">Awaiting Documents</span>
+            <h3>SF-2026-00011 — Plant simulation training</h3>
+            <p>Procurement needs a corrected quantity on line 2, and the signed SFO.</p>
+            <div class="sf-home-attn-card__caution">3 working days remaining before the PO deadline.</div>
+            <div class="sf-home-attn-card__actions"><a href="#" class="sf-btn sf-btn--primary">Open and reply</a></div>
+        </div>
+
+        <div class="sf-card sf-home-attn-card">
+            <div class="sf-home-attn-card__when">Enquired 2 working days ago</div>
+            <span style="display:inline-flex;align-items:center;background:#FCF5D8;color:#8A6D0B;border:1px solid #EEDD9F;padding:2px 9px;border-radius:4px;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.02em;margin-bottom:10px;width:fit-content;">Awaiting Documents</span>
+            <h3>SF-2026-00014 — Server AMC renewal</h3>
+            <p>One bidder's offer is missing, so the offers can't be compared.</p>
+            <div class="sf-home-attn-card__caution">8 working days remaining before the PO deadline.</div>
+            <div class="sf-home-attn-card__actions"><a href="#" class="sf-btn sf-btn--primary">Open and reply</a></div>
+        </div>
+
+        <div class="sf-card sf-home-attn-card">
+            <div class="sf-home-attn-card__when">Started earlier today</div>
+            <span class="sf-home-chip--draft" style="width:fit-content;">Draft</span>
+            <h3>Ergonomic chairs, Pune office</h3>
+            <p>Header details are filled in. The approved shopping cart is still missing.</p>
+            <div class="sf-home-attn-card__caution">Not submitted — nothing is saved until you attach documents and submit.</div>
+            <div class="sf-home-attn-card__actions"><a href="/requests/new" class="sf-btn sf-btn--secondary">Continue</a></div>
+        </div>
+    </div>
+
+    <a href="/requests" class="sf-caption" style="display:inline-block;margin-top:20px;">Show all my requests</a>
+</section>
+
+<div class="sf-demo-divider">↓ SAME PAGE FOR A FIRST-TIME USER WITH NO REQUESTS ↓</div>
+
+<!-- ============ STATE 2: first-time user, zero requests ============ -->
+<div class="sf-shell-header">
+    <div class="sf-shell-header__row">
+        <div class="sf-shell-brand">
+            <svg class="sf-shell-brand__mark" width="22" height="22" viewBox="0 0 50 50" fill="none">
+                <rect x="4" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".38"/>
+                <rect x="28" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="4" y="28" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="28" y="28" width="18" height="18" rx="4" fill="#fff"/>
+            </svg>
+            <span class="sf-shell-brand__name">Samagra</span>
+            <span class="sf-shell-brand__dept">General Procurement</span>
+        </div>
+        <form class="sf-shell-search" method="get" action="/requests">
+            <svg class="sf-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" name="q" placeholder="Search requests, tickets, suppliers...">
+        </form>
+        <div class="sf-shell-actions">
+            <button type="button" class="sf-shell-icon-btn" title="Notifications">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </button>
+            <a class="sf-shell-icon-btn" href="mailto:procurement.intake.demo@outlook.com" title="Help &amp; support">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.7"></path><line x1="12" y1="17.5" x2="12" y2="17.6"></line></svg>
+            </a>
+            <div class="sf-shell-user">
+                <span class="sf-avatar">RS</span>
+                <div class="sf-shell-user__meta">
+                    <span class="sf-shell-user__name">Rohit Shinde</span>
+                    <span class="sf-shell-user__role">Requester</span>
+                </div>
+            </div>
+            <button type="button" class="sf-shell-icon-btn" title="Log out">
+                <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+        </div>
+    </div>
+</div>
+<div class="sf-shell-subnav">
+    <div class="sf-shell-subnav__row">
+        <a class="sf-shell-subnav__link active" href="#">Home</a>
+        <a class="sf-shell-subnav__link" href="/requests/new">New Sourcing Request</a>
+        <a class="sf-shell-subnav__link" href="/requests">My Requests</a>
+    </div>
+</div>
+
+<div class="sf-hero-band sf-home-hero">
+    <div class="sf-hero-inner">
+        <h1 class="sf-home-greeting">Good afternoon, Rohit</h1>
+        <p class="sf-home-subtitle">Nothing needs your attention right now.</p>
+
+        <div class="sf-home-cols">
+            <div>
+                <div class="sf-home-eyebrow">Quick actions</div>
+                <div class="sf-home-quick">
+                    <a href="#">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M6 3h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="13" y2="17"></line></svg>
+                        What documents do I need?
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <div class="sf-home-eyebrow">Apps</div>
+                <div class="sf-home-tiles">
+                    <div class="sf-home-tilecol">
+                        <a class="sf-home-tile sf-home-tile--primary" href="/requests/new">
+                            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v4h4"></path><path d="M12 11v6M9 14h6"></path></svg>
+                            <span class="sf-home-tile__title">New sourcing request</span>
+                            <span class="sf-home-tile__sub">Start a new topic</span>
+                        </a>
+                        <div class="sf-home-tilehint"><b>You'll need:</b> approved shopping cart, signed SFO, RFQ, and one offer per bidder.</div>
+                    </div>
+                    <div class="sf-home-tilecol">
+                        <a class="sf-home-tile" href="/requests">
+                            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="9" y1="10" x2="9" y2="20"></line></svg>
+                            <span class="sf-home-tile__title">My requests</span>
+                            <span class="sf-home-tile__sub">None yet</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="sf-home-empty">
+    <div class="sf-content sf-home-empty__box">
+        <h2>You haven't raised a request yet</h2>
+        <p>Samagra is where you hand a sourcing topic to General Procurement. Instead of mailing documents around, you submit once and watch it move.</p>
+        <ul class="sf-home-steps">
+            <li><i>1</i><span>Attach your approved shopping cart, the signed SFO, the RFQ, and each bidder's offer.</span></li>
+            <li><i>2</i><span>Line items are read from your cart — you never type them.</span></li>
+            <li><i>3</i><span>A buyer picks it up, and the turnaround clock starts once every document is in.</span></li>
+        </ul>
+        <a href="/requests/new" class="sf-btn sf-btn--primary">Start a sourcing request</a>
+    </div>
+</section>
+
+</body>
+</html>

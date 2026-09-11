@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>New Sourcing Request · Samagra</title>
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/header.css">
+    <link rel="stylesheet" href="/static/css/forms.css">
+    <link rel="stylesheet" href="/static/css/queue.css">
+    <link rel="stylesheet" href="/static/css/login.css">
+    <link rel="stylesheet" href="/static/css/detail-hero.css">
+    <link rel="stylesheet" href="/static/css/new-request-form.css">
+    <link rel="stylesheet" href="/static/css/requester-home.css">
+    <link rel="stylesheet" href="/static/css/login-split.css">
+    <link rel="stylesheet" href="/static/css/confirm-success.css">
+    <link rel="stylesheet" href="/static/css/my-requests.css">
+    <link rel="stylesheet" href="/static/css/buyer-queue-list.css">
+    <link rel="stylesheet" href="/static/css/case-status.css">
+    
+</head>
+<body class="">
+
+
+
+<div class="sf-shell-header">
+    <div class="sf-shell-header__row">
+        <div class="sf-shell-brand">
+            <svg class="sf-shell-brand__mark" width="22" height="22" viewBox="0 0 50 50" fill="none">
+                <rect x="4" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".38"/>
+                <rect x="28" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="4" y="28" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="28" y="28" width="18" height="18" rx="4" fill="#fff"/>
+            </svg>
+            <span class="sf-shell-brand__name">Samagra</span>
+            <span class="sf-shell-brand__dept">General Procurement</span>
+        </div>
+        <form class="sf-shell-search" method="get" action="/requests">
+            <svg class="sf-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+
+            <input type="text" name="q" placeholder="Search requests, tickets, suppliers..." value="">
+        </form>
+        <div class="sf-shell-actions">
+            
+<div class="sf-notif" data-notif>
+    <button type="button" class="sf-shell-icon-btn" data-notif-trigger aria-label="Notifications">
+        <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+
+        <span class="sf-notif__dot"></span>
+    </button>
+    <div class="sf-notif__panel" data-notif-panel>
+        <div class="sf-notif__header">Notifications</div>
+        
+        <div class="sf-notif__list">
+            
+            <a class="sf-notif__item" href="/requests/9">
+                <span class="sf-notif__text">Your request SF-2026-00009 has moved to In Review.</span>
+                <span class="sf-notif__time">21.08.2026 07:53</span>
+            </a>
+            
+            <a class="sf-notif__item" href="/requests/9">
+                <span class="sf-notif__text">Your sourcing request SF-2026-00009 has been submitted.</span>
+                <span class="sf-notif__time">21.08.2026 07:40</span>
+            </a>
+            
+            <a class="sf-notif__item" href="/requests/8">
+                <span class="sf-notif__text">Your request SF-2026-00008 has moved to In Review.</span>
+                <span class="sf-notif__time">14.08.2026 17:29</span>
+            </a>
+            
+            <a class="sf-notif__item" href="/requests/8">
+                <span class="sf-notif__text">Your sourcing request SF-2026-00008 has been submitted.</span>
+                <span class="sf-notif__time">14.08.2026 17:28</span>
+            </a>
+            
+            <a class="sf-notif__item" href="/requests/5">
+                <span class="sf-notif__text">Your request SF-2026-00005 has been rejected.</span>
+                <span class="sf-notif__time">13.08.2026 23:30</span>
+            </a>
+            
+            <a class="sf-notif__item" href="/requests/5">
+                <span class="sf-notif__text">Your request SF-2026-00005 has moved to In Review.</span>
+                <span class="sf-notif__time">13.08.2026 23:26</span>
+            </a>
+            
+            <a class="sf-notif__item" href="/requests/5">
+                <span class="sf-notif__text">Procurement has requested additional documents for SF-2026-00005.</span>
+                <span class="sf-notif__time">13.08.2026 23:26</span>
+            </a>
+            
+            <a class="sf-notif__item" href="/requests/5">
+                <span class="sf-notif__text">Your request SF-2026-00005 has moved to In Review.</span>
+                <span class="sf-notif__time">12.08.2026 20:47</span>
+            </a>
+            
+        </div>
+        
+    </div>
+</div>
+
+            <a class="sf-shell-icon-btn" href="mailto:procurement.intake.demo@outlook.com" title="Help &amp; support"><svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.7"></path><line x1="12" y1="17.5" x2="12" y2="17.6"></line></svg>
+</a>
+            <div class="sf-shell-user">
+                <span class="sf-avatar">VA</span>
+                <div class="sf-shell-user__meta">
+                    <span class="sf-shell-user__name">Vedanti Adsare</span>
+                    <span class="sf-shell-user__role">Requester</span>
+                </div>
+            </div>
+            <form class="sf-logout-form" method="post" action="/logout">
+                <button type="submit" class="sf-shell-icon-btn" title="Log out"><svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="sf-shell-subnav">
+    <div class="sf-shell-subnav__row">
+        
+        <a class="sf-shell-subnav__link " href="/requests">Home</a>
+        <a class="sf-shell-subnav__link active" href="/requests/new">New Sourcing Request</a>
+        
+    </div>
+</div>
+
+
+
+<div class="sf-hero-band sf-nr-hero">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb"><a href="/requests">My Requests</a> / New Sourcing Request</div>
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">New Sourcing Request</h1>
+            </div>
+        </div>
+        <div class="sf-hero-meta">Send an approved Shopping Cart to Procurement for sourcing. Step 1 of 2 — you'll review parsed line items before this is submitted.</div>
+        
+<div class="sf-confirm-steps">
+    <b class="is-current"><span class="sf-confirm-steps__n">1</span> Details &amp; Documents</b>
+    <span class="sf-confirm-steps__sep"></span>
+    <b class=""><span class="sf-confirm-steps__n">2</span> Review &amp; Submit</b>
+    <span class="sf-confirm-steps__sep"></span>
+    <b class=""><span class="sf-confirm-steps__n">3</span> Submitted</b>
+</div>
+
+    </div>
+</div>
+
+<main class="sf-content ">
+    
+    
+    
+    
+
+
+
+<form method="post" action="/requests/new" enctype="multipart/form-data" data-conditional-form novalidate>
+    
+
+
+
+<div class="sf-card sf-nr-card">
+    <div class="sf-nr-card__head">
+        <span class="sf-nr-card__icon"><svg class="sf-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+</span>
+        <div>
+            <div class="sf-nr-card__title">A. Your details</div>
+            <div class="sf-nr-card__subtitle">Name and email are taken from your sign-in; fill in the rest.</div>
+        </div>
+    </div>
+
+    
+<div class="sf-field">
+    <label>Are you submitting this on your own behalf?</label>
+    <div class="sf-radio-group" >
+        
+        <label>
+            <input type="radio" name="on_own_behalf" value="Yes" checked >
+            Yes
+        </label>
+        
+        <label>
+            <input type="radio" name="on_own_behalf" value="No"  >
+            No
+        </label>
+        
+    </div>
+</div>
+
+
+    <div data-show-if="on_own_behalf=Yes">
+        <div class="sf-grid sf-grid--2 sf-locked-field">
+            <div class="sf-field">
+                <label>Requestor name</label>
+                <input type="text" value="Vedanti Adsare" disabled>
+            </div>
+            <div class="sf-field">
+                <label>Email</label>
+                <input type="text" value="vedanti.adsare@vwgds.in" disabled>
+            </div>
+        </div>
+    </div>
+    <div data-show-if="on_own_behalf=No">
+        <p class="sf-caption">Filing on their behalf as <strong>Vedanti Adsare</strong> (vedanti.adsare@vwgds.in).</p>
+        <div class="sf-grid sf-grid--2">
+            
+<div class="sf-field">
+    <label for="f_requestor_name">Requestor name (who this is for)<span class="sf-required">*</span></label>
+    <input type="text" id="f_requestor_name" name="requestor_name" value="" required >
+    
+</div>
+
+            
+<div class="sf-field">
+    <label for="f_requestor_email">Requestor email (who this is for)<span class="sf-required">*</span></label>
+    <input type="email" id="f_requestor_email" name="requestor_email" value="" required >
+    
+</div>
+
+        </div>
+    </div>
+
+    <div class="sf-grid sf-grid--2">
+        
+<div class="sf-field">
+    <label for="f_requesting_dept">Requesting department<span class="sf-required">*</span></label>
+    <select id="f_requesting_dept" name="requesting_dept" required>
+        
+        <option value="HR" >HR</option>
+        
+        <option value="WFI" >WFI</option>
+        
+        <option value="L&amp;D" >L&amp;D</option>
+        
+        <option value="OD" >OD</option>
+        
+        <option value="IT Infrastructure (DWS)" >IT Infrastructure (DWS)</option>
+        
+        <option value="IT Applications" >IT Applications</option>
+        
+        <option value="Finance &amp; Controlling" >Finance &amp; Controlling</option>
+        
+        <option value="Procurement" >Procurement</option>
+        
+        <option value="Quality" >Quality</option>
+        
+        <option value="Logistics" >Logistics</option>
+        
+        <option value="Manufacturing Engineering" >Manufacturing Engineering</option>
+        
+        <option value="Sales &amp; Marketing" >Sales &amp; Marketing</option>
+        
+        <option value="Legal &amp; Compliance" >Legal &amp; Compliance</option>
+        
+        <option value="Other" >Other</option>
+        
+    </select>
+    
+</div>
+
+        
+<div class="sf-field">
+    <label for="f_requisitioning_bu">Requesting BU</label>
+    <select id="f_requisitioning_bu" name="requisitioning_bu" >
+        
+        <option value="VW GDS India" >VW GDS India</option>
+        
+        <option value="Škoda DS" >Škoda DS</option>
+        
+        <option value="VWITS" >VWITS</option>
+        
+        <option value="Other" >Other</option>
+        
+    </select>
+    
+</div>
+
+    </div>
+    <div class="sf-grid sf-grid--2">
+        
+<div class="sf-field">
+    <label for="f_requestor_contact">Contact number</label>
+    <input type="text" id="f_requestor_contact" name="requestor_contact" value=""  >
+    
+</div>
+
+        
+<div class="sf-field">
+    <label for="f_cost_center">Cost center<span class="sf-required">*</span></label>
+    <input type="text" id="f_cost_center" name="cost_center" value="" required >
+    <div class="sf-hint">3-4 digit cost center code.</div>
+</div>
+
+    </div>
+    <div class="sf-grid sf-grid--2">
+        
+<div class="sf-field">
+    <label for="f_employee_code">Employee code<span class="sf-required">*</span></label>
+    <input type="text" id="f_employee_code" name="employee_code" value="" required >
+    
+</div>
+
+        
+<div class="sf-field">
+    <label for="f_user_id">User ID<span class="sf-required">*</span></label>
+    <input type="text" id="f_user_id" name="user_id" value="" required >
+    <div class="sf-hint">Your VW network/AD user ID.</div>
+</div>
+
+    </div>
+</div>
+
+<div class="sf-card sf-nr-card">
+    <div class="sf-nr-card__head">
+        <span class="sf-nr-card__icon"><svg class="sf-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M6 3h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="13" y2="17"></line></svg>
+</span>
+        <div>
+            <div class="sf-nr-card__title">B. About this topic</div>
+            <div class="sf-nr-card__subtitle">What's being sourced, its value, and the dates that drive TAT</div>
+        </div>
+    </div>
+
+    <div class="sf-grid sf-grid--2">
+        
+<div class="sf-field">
+    <label for="f_sc_number">Shopping Cart (SC) number<span class="sf-required">*</span></label>
+    <input type="text" id="f_sc_number" name="sc_number" value="" required >
+    <div class="sf-hint">Your approved Shopping Cart number from SAP (10 digits).</div>
+</div>
+
+        
+<div class="sf-field">
+    <label>Sourcing type<span class="sf-required">*</span></label>
+    <div class="sf-radio-group" >
+        
+        <label>
+            <input type="radio" name="sourcing_type" value="Service"  required>
+            Service
+        </label>
+        
+        <label>
+            <input type="radio" name="sourcing_type" value="Product" checked required>
+            Product
+        </label>
+        
+    </div>
+</div>
+
+    </div>
+    
+<div class="sf-field">
+    <label for="f_topic_title">Topic title<span class="sf-required">*</span></label>
+    <input type="text" id="f_topic_title" name="topic_title" value="" required >
+    <div class="sf-hint">One line a buyer can recognise the topic by. This becomes the case name.</div>
+</div>
+
+    
+<div class="sf-field">
+    <label for="f_description">Description<span class="sf-required">*</span></label>
+    <textarea id="f_description" name="description" required></textarea>
+    
+</div>
+
+
+    <div data-show-if="sourcing_type=Service">
+        <div class="sf-grid sf-grid--2">
+            
+<div class="sf-field">
+    <label for="f_delivery_from_date">Service delivery from<span class="sf-required">*</span></label>
+    <input type="date" id="f_delivery_from_date" name="delivery_from_date" value="" required >
+    
+</div>
+
+            
+<div class="sf-field">
+    <label for="f_delivery_to_date">Service delivery to<span class="sf-required">*</span></label>
+    <input type="date" id="f_delivery_to_date" name="delivery_to_date" value="" required >
+    
+</div>
+
+        </div>
+    </div>
+
+    <div class="sf-grid sf-grid--2">
+        
+<div class="sf-field">
+    <label for="f_expense_commodity">Expense commodity</label>
+    <select id="f_expense_commodity" name="expense_commodity" >
+        
+        <option value="IT Hardware" >IT Hardware</option>
+        
+        <option value="IT Software &amp; Licences" >IT Software &amp; Licences</option>
+        
+        <option value="Consulting" >Consulting</option>
+        
+        <option value="Training" >Training</option>
+        
+        <option value="Facility Services" >Facility Services</option>
+        
+        <option value="Marketing" >Marketing</option>
+        
+        <option value="Logistics" >Logistics</option>
+        
+        <option value="Other" >Other</option>
+        
+    </select>
+    
+</div>
+
+        
+<div class="sf-field">
+    <label for="f_delivery_location">Delivery location</label>
+    <select id="f_delivery_location" name="delivery_location" >
+        
+        <option value="Pune" >Pune</option>
+        
+        <option value="Mumbai" >Mumbai</option>
+        
+        <option value="Chakan" >Chakan</option>
+        
+        <option value="Aurangabad" >Aurangabad</option>
+        
+        <option value="Wolfsburg" >Wolfsburg</option>
+        
+        <option value="Other" >Other</option>
+        
+    </select>
+    
+</div>
+
+    </div>
+
+    <div class="sf-grid sf-grid--2">
+        <div class="sf-field">
+            <label for="f_topic_value">Topic value (incl. taxes)<span class="sf-required">*</span></label>
+            <div class="sf-inr-input">
+                <span class="sf-inr-input__prefix">₹</span>
+                <input type="text" class="sf-inr-input__display" inputmode="numeric" placeholder="0" data-inr-display value="">
+            </div>
+            <input type="hidden" id="f_topic_value" name="topic_value" value="" data-fx-value required>
+            <p class="sf-field-warning" data-topic-value-warning hidden>Exceeds the ₹40,00,000 self-service limit — this case will be flagged out of scope for manual handling.</p>
+        </div>
+        
+<div class="sf-field">
+    <label for="f_currency">Currency of offers</label>
+    <select id="f_currency" name="currency" >
+        
+        <option value="INR" selected>INR</option>
+        
+        <option value="EUR" >EUR</option>
+        
+        <option value="USD" >USD</option>
+        
+    </select>
+    
+</div>
+
+    </div>
+    <div data-show-if="currency=EUR,USD">
+        
+<div class="sf-field">
+    <label for="f_fx_rate">Conversion rate: 1 unit = ? INR<span class="sf-required">*</span></label>
+    <input type="number" id="f_fx_rate" name="fx_rate" value="1.0" required step="0.0001" min="0.0001" data-fx-rate>
+    
+</div>
+
+        <p class="sf-caption" data-fx-output></p>
+    </div>
+
+    <div class="sf-grid sf-grid--2">
+        
+<div class="sf-field">
+    <label>Tax basis</label>
+    <div class="sf-radio-group" >
+        
+        <label>
+            <input type="radio" name="tax_basis" value="Inclusive of GST" checked >
+            Inclusive of GST
+        </label>
+        
+        <label>
+            <input type="radio" name="tax_basis" value="Exclusive of GST"  >
+            Exclusive of GST
+        </label>
+        
+        <label>
+            <input type="radio" name="tax_basis" value="Not stated"  >
+            Not stated
+        </label>
+        
+    </div>
+</div>
+
+        
+<div class="sf-field">
+    <label for="f_date_required_by">Date required by<span class="sf-required">*</span></label>
+    <input type="date" id="f_date_required_by" name="date_required_by" value="" required >
+    
+</div>
+
+    </div>
+    <div class="sf-grid sf-grid--2">
+        
+<div class="sf-field">
+    <label for="f_fc_valid_till">FC valid till</label>
+    <input type="date" id="f_fc_valid_till" name="fc_valid_till" value=""  >
+    
+</div>
+
+        
+<div class="sf-field">
+    <label>MRM conducted?</label>
+    <div class="sf-radio-group" >
+        
+        <label>
+            <input type="radio" name="mrm_conducted" value="Yes"  >
+            Yes
+        </label>
+        
+        <label>
+            <input type="radio" name="mrm_conducted" value="No" checked >
+            No
+        </label>
+        
+    </div>
+</div>
+
+    </div>
+    <div data-show-if="mrm_conducted=Yes">
+        
+<div class="sf-field">
+    <label for="f_mrm_file">MRM approval document<span class="sf-required">*</span></label>
+    <div class="sf-file-picker" style="max-width:none;">
+        <input type="file" id="f_mrm_file" name="mrm_file" class="sf-file-picker__input"  >
+        <label for="f_mrm_file" class="sf-file-picker__btn sf-btn sf-btn--secondary sf-btn--sm">Choose file</label>
+        <span class="sf-file-picker__name" data-file-name>No file chosen</span>
+    </div>
+</div>
+
+    </div>
+    <div data-show-if="mrm_conducted=No">
+        
+<div class="sf-field">
+    <label for="f_mrm_reason">Reason MRM was not conducted<span class="sf-required">*</span></label>
+    <textarea id="f_mrm_reason" name="mrm_reason" required></textarea>
+    
+</div>
+
+    </div>
+</div>
+
+<div class="sf-card sf-nr-card">
+    <div class="sf-nr-card__head">
+        <span class="sf-nr-card__icon"><svg class="sf-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12.5l-8.5 8.5a4.5 4.5 0 0 1-6.4-6.4l9-9a3 3 0 0 1 4.2 4.2l-8.9 8.9a1.5 1.5 0 0 1-2.1-2.1l8-8"></path></svg>
+</span>
+        <div>
+            <div class="sf-nr-card__title">C. Documents</div>
+            <div class="sf-nr-card__subtitle">Accepted: pdf, docx, doc, xlsx, xls, xlsm, csv, eml, msg, pptx, txt, png, jpg, jpeg, zip. Max 25 MB per file.</div>
+        </div>
+    </div>
+    
+    <div class="sf-grid sf-grid--2">
+        
+<div class="sf-field">
+    <label for="f_sc_file">1. Approved Shopping Cart<span class="sf-required">*</span></label>
+    <div class="sf-file-picker" style="max-width:none;">
+        <input type="file" id="f_sc_file" name="sc_file" class="sf-file-picker__input"  >
+        <label for="f_sc_file" class="sf-file-picker__btn sf-btn sf-btn--secondary sf-btn--sm">Choose file</label>
+        <span class="sf-file-picker__name" data-file-name>No file chosen</span>
+    </div>
+</div>
+
+        
+<div class="sf-field">
+    <label for="f_sfo_file">2. Signed SFO (Selection of Final Offer)<span class="sf-required">*</span></label>
+    <div class="sf-file-picker" style="max-width:none;">
+        <input type="file" id="f_sfo_file" name="sfo_file" class="sf-file-picker__input"  >
+        <label for="f_sfo_file" class="sf-file-picker__btn sf-btn sf-btn--secondary sf-btn--sm">Choose file</label>
+        <span class="sf-file-picker__name" data-file-name>No file chosen</span>
+    </div>
+</div>
+
+        
+<div class="sf-field">
+    <label for="f_rfq_file">3. Request for Quotation (RFQ)<span class="sf-required">*</span></label>
+    <div class="sf-file-picker" style="max-width:none;">
+        <input type="file" id="f_rfq_file" name="rfq_file" class="sf-file-picker__input"  >
+        <label for="f_rfq_file" class="sf-file-picker__btn sf-btn sf-btn--secondary sf-btn--sm">Choose file</label>
+        <span class="sf-file-picker__name" data-file-name>No file chosen</span>
+    </div>
+</div>
+
+        
+<div class="sf-field">
+    <label for="f_offer_files">4. Supplier offers (at least one)</label>
+    <div class="sf-file-picker" style="max-width:none;">
+        <input type="file" id="f_offer_files" name="offer_files" class="sf-file-picker__input" multiple >
+        <label for="f_offer_files" class="sf-file-picker__btn sf-btn sf-btn--secondary sf-btn--sm">Choose files</label>
+        <span class="sf-file-picker__name" data-file-name>No file chosen</span>
+    </div>
+</div>
+
+        
+<div class="sf-field">
+    <label for="f_regret_files">5. Regret letters / benchmarking / other</label>
+    <div class="sf-file-picker" style="max-width:none;">
+        <input type="file" id="f_regret_files" name="regret_files" class="sf-file-picker__input" multiple >
+        <label for="f_regret_files" class="sf-file-picker__btn sf-btn sf-btn--secondary sf-btn--sm">Choose files</label>
+        <span class="sf-file-picker__name" data-file-name>No file chosen</span>
+    </div>
+</div>
+
+        
+<div class="sf-field">
+    <label for="f_other_files">Additional supporting documents</label>
+    <div class="sf-file-picker" style="max-width:none;">
+        <input type="file" id="f_other_files" name="other_files" class="sf-file-picker__input" multiple >
+        <label for="f_other_files" class="sf-file-picker__btn sf-btn sf-btn--secondary sf-btn--sm">Choose files</label>
+        <span class="sf-file-picker__name" data-file-name>No file chosen</span>
+    </div>
+</div>
+
+    </div>
+</div>
+    <div class="sf-form-actions">
+        <a href="/requests" class="sf-btn sf-btn--secondary">Cancel</a>
+        <button type="submit" class="sf-btn sf-btn--primary">Review submission</button>
+    </div>
+</form>
+
+
+</main>
+<script src="/static/js/notif-panel.js"></script>
+
+<script src="/static/js/conditional-fields.js"></script>
+<script src="/static/js/fx-convert.js"></script>
+<script src="/static/js/file-upload.js"></script>
+<script src="/static/js/inr-input.js"></script>
+
+</body>
+</html>

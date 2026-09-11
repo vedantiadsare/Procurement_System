@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Samagra{% endblock %}</title>
+    <link rel="stylesheet" href="{{ asset_url('/static/css/base.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/header.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/forms.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/queue.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/login.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/detail-hero.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/new-request-form.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/requester-home.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/login-split.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/confirm-success.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/my-requests.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/buyer-queue-list.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('/static/css/case-status.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{% import "_macros/icons.html" as ic %}
+{% import "_macros/notification_panel.html" as np %}
+{% if user %}
+<div class="sf-shell-header">
+    <div class="sf-shell-header__row">
+        <div class="sf-shell-brand">
+            <svg class="sf-shell-brand__mark" width="22" height="22" viewBox="0 0 50 50" fill="none">
+                <rect x="4" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".38"/>
+                <rect x="28" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="4" y="28" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="28" y="28" width="18" height="18" rx="4" fill="#fff"/>
+            </svg>
+            <span class="sf-shell-brand__name">Samagra</span>
+            <span class="sf-shell-brand__dept">General Procurement</span>
+        </div>
+        <form class="sf-shell-search" method="get" action="{{ '/queue' if user.role == 'buyer' else '/requests' }}">
+            {{ ic.icon("search", 15) }}
+            <input type="text" name="q" placeholder="Search requests, tickets, suppliers..." value="{{ request.query_params.get('q', '') }}">
+        </form>
+        <div class="sf-shell-actions">
+            {{ np.render(notifications) }}
+            <a class="sf-shell-icon-btn" href="mailto:procurement.intake.demo@outlook.com" title="Help &amp; support">{{ ic.icon("help-circle", 18) }}</a>
+            <div class="sf-shell-user">
+                <span class="sf-avatar">{{ user.name | initials }}</span>
+                <div class="sf-shell-user__meta">
+                    <span class="sf-shell-user__name">{{ user.name }}</span>
+                    <span class="sf-shell-user__role">{{ "Buyer (GP)" if user.role == "buyer" else "Requester" }}</span>
+                </div>
+            </div>
+            <form class="sf-logout-form" method="post" action="/logout">
+                <button type="submit" class="sf-shell-icon-btn" title="Log out">{{ ic.icon("log-out", 17) }}</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% if not hide_nav_tabs %}
+<div class="sf-shell-subnav">
+    <div class="sf-shell-subnav__row">
+        {% if user.role == "requester" %}
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'home' else '' }}" href="/home">Home</a>
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'new_request' else '' }}" href="/requests/new">New Sourcing Request</a>
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'my_requests' else '' }}" href="/requests">My Requests</a>
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'dashboard' else '' }}" href="/dashboard">Dashboard</a>
+        {% else %}
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'home' else '' }}" href="/home">Home</a>
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'queue' else '' }}" href="/queue">Queue</a>
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'my_cases' else '' }}" href="/queue/mine">My Cases</a>
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'dashboard' else '' }}" href="/dashboard">Dashboard</a>
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'mailbox' else '' }}" href="/mailbox">Mailbox</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endif %}
+{% block hero %}{% endblock %}
+<main class="sf-content {% block content_width %}{% endblock %}">
+    {% block breadcrumb_wrap %}
+    {% if breadcrumb_items %}
+    <div class="sf-breadcrumb">
+        {% for item in breadcrumb_items %}
+        {% if not loop.last %}<a href="{{ item.url }}">{{ item.label }}</a><span class="sf-breadcrumb__sep">{{ ic.icon("chevron-right", 12) }}</span>
+        {% else %}<span class="sf-breadcrumb__current">{{ item.label }}</span>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endblock %}
+    {% block content %}{% endblock %}
+</main>
+<script src="{{ asset_url('/static/js/notif-panel.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

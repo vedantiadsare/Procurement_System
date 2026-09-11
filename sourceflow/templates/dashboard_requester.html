@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Samagra{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ asset_url('/static/css/dashboard.css') }}">
+{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-dash-top sf-dash-top--onband">
+            <div>
+                <h1 class="sf-dash-greet" id="greet"></h1>
+                <div class="sf-dash-datebar" id="dateBar"></div>
+            </div>
+            <div class="sf-dash-acts">
+                <a href="/requests/new" class="sf-dash-btn-onband">+ New sourcing request</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div id="noData" class="sf-card" hidden>
+    <h3 class="sf-section-header" style="margin-top:0;">Nothing here yet</h3>
+    <p class="sf-caption" style="margin:0;">
+        You haven't raised any sourcing requests yet.
+        <a href="/requests/new">Raise your first one</a> and it'll show up here.
+    </p>
+</div>
+
+<div id="dashBody">
+
+    <div class="sf-rq-kpis" id="kpis"></div>
+
+    <div class="sf-dash-panels">
+        <div class="sf-dash-card">
+            <h3>My requests by status</h3>
+            <div class="sf-dash-cs">Click a slice or a label to filter the list below</div>
+            <div class="sf-dash-ch" style="height:230px"><canvas id="cStatus"></canvas></div>
+            <div class="sf-rq-legend" id="statusLegend"></div>
+        </div>
+        <div class="sf-dash-card">
+            <h3>Needs your action</h3>
+            <div class="sf-dash-cs">Procurement is waiting on you — the TAT clock is paused until you respond</div>
+            <div id="actionList"></div>
+        </div>
+    </div>
+
+    <div class="sf-dash-card sf-rq-listcard">
+        <h3>Every request you have raised <span id="totalCount"></span></h3>
+        <div class="sf-rq-controls">
+            <input type="search" id="q" class="sf-rq-search" placeholder="Search request or ID…" autocomplete="off">
+            <select id="fStatus" class="sf-rq-select"></select>
+            <select id="fSort" class="sf-rq-select">
+                <option value="new">Newest first</option>
+                <option value="old">Oldest first</option>
+                <option value="value">Highest value</option>
+                <option value="due">PO expected soonest</option>
+            </select>
+            <span class="sf-rq-shown" id="shownCount"></span>
+        </div>
+        <div class="sf-dash-scroll" style="max-height:420px">
+            <table class="sf-dash-tbl" id="rqTable"></table>
+        </div>
+        <div class="sf-rq-pager" id="pager"></div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script id="dashData" type="application/json">{{ data.cases | tojson }}</script>
+<script>
+  window.SAMAGRA_RQ = {
+      today: {{ data.today | tojson }},
+      userName: {{ user.name | tojson }},
+      dept: {{ (user.department or "") | tojson }},
+      caseUrlBase: "/requests/"
+  };
+</script>
+<script src="/static/js/vendor/chart.umd.min.js"></script>
+<script src="{{ asset_url('/static/js/dashboard-requester.js') }}"></script>
+{% endblock %}

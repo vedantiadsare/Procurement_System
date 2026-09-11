@@ -1,0 +1,56 @@
+{# Minimal monochrome line-icon set (stroke=currentColor), used in place of
+   emoji throughout the app. #}
+{% macro icon(name, size=16) %}
+{%- set s = size -%}
+<svg class="sf-icon" width="{{ s }}" height="{{ s }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+{%- if name == "plus" -%}
+<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+{%- elif name == "search" -%}
+<circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+{%- elif name == "bell" -%}
+<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+{%- elif name == "help-circle" -%}
+<circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.7"></path><line x1="12" y1="17.5" x2="12" y2="17.6"></line>
+{%- elif name == "user" -%}
+<circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path>
+{%- elif name == "chevron-down" -%}
+<polyline points="6 9 12 15 18 9"></polyline>
+{%- elif name == "chevron-right" -%}
+<polyline points="9 6 15 12 9 18"></polyline>
+{%- elif name == "log-out" -%}
+<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
+{%- elif name == "file-text" -%}
+<path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M6 3h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="13" y2="17"></line>
+{%- elif name == "clock" -%}
+<circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 16 14"></polyline>
+{%- elif name == "check-circle" -%}
+<path d="M21 11.5a9 9 0 1 1-4.6-7.9"></path><polyline points="22 4 12 14.5 9 11.5"></polyline>
+{%- elif name == "alert-circle" -%}
+<circle cx="12" cy="12" r="9"></circle><line x1="12" y1="7.5" x2="12" y2="13"></line><line x1="12" y1="16.5" x2="12" y2="16.6"></line>
+{%- elif name == "download" -%}
+<path d="M12 3v12"></path><polyline points="7 10 12 15 17 10"></polyline><path d="M4 19h16"></path>
+{%- elif name == "arrow-left" -%}
+<line x1="19" y1="12" x2="5" y2="12"></line><polyline points="11 6 5 12 11 18"></polyline>
+{%- elif name == "filter" -%}
+<polygon points="4 4 20 4 14 12.5 14 19 10 21 10 12.5 4 4"></polygon>
+{%- elif name == "x" -%}
+<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+{%- elif name == "paperclip" -%}
+<path d="M20 12.5l-8.5 8.5a4.5 4.5 0 0 1-6.4-6.4l9-9a3 3 0 0 1 4.2 4.2l-8.9 8.9a1.5 1.5 0 0 1-2.1-2.1l8-8"></path>
+{%- elif name == "briefcase" -%}
+<rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="3" y1="12.5" x2="21" y2="12.5"></line>
+{%- elif name == "layout" -%}
+<rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="9" y1="10" x2="9" y2="20"></line>
+{%- elif name == "inbox" -%}
+<polyline points="4 12 8 12 10 15 14 15 16 12 20 12"></polyline><path d="M5.5 5h13l2.5 7v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7z"></path>
+{%- elif name == "circle" -%}
+<circle cx="12" cy="12" r="3"></circle>
+{%- elif name == "edit" -%}
+<path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path>
+{%- elif name == "message-square" -%}
+<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+{%- else -%}
+<circle cx="12" cy="12" r="9"></circle>
+{%- endif -%}
+</svg>
+{% endmacro %}

@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+itsdangerous
+numpy
+pdfplumber
+openpyxl
+python-docx
+msal
+httpx

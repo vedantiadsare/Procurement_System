@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% import "_macros/step_indicator.html" as steps %}
+{% import "_macros/icons.html" as ic %}
+{% block title %}Confirm submission · Samagra{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band sf-nr-hero">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb"><a href="/requests">My Requests</a> / <a href="/requests/new">New Sourcing Request</a> / Review</div>
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">Check what we read from your cart</h1>
+            </div>
+        </div>
+        {{ steps.render(2) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+{% set has_sc = files | selectattr("doc_type", "equalto", "SC") | list | length > 0 %}
+{% set has_sfo = files | selectattr("doc_type", "equalto", "SFO") | list | length > 0 %}
+{% set has_rfq = files | selectattr("doc_type", "equalto", "RFQ") | list | length > 0 %}
+{% set offer_count = files | selectattr("doc_type", "equalto", "OFFER") | list | length %}
+
+{% set warnings = [] %}
+{% if value_warning %}
+    {% set _ = warnings.append(value_warning) %}
+{% endif %}
+{% if not draft.in_scope %}
+    {% set _ = warnings.append("The topic value exceeds ₹40,00,000, above the limit for standard TAT bands on this route.") %}
+{% endif %}
+{% if draft.parse_status != "OK" %}
+    {% set _ = warnings.append("We couldn't automatically read line items from your Shopping Cart document.") %}
+{% endif %}
+
+{% if warnings %}
+<div class="sf-confirm-warn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8791A" stroke-width="1.8"><path d="M12 3 2 20h20L12 3z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></svg>
+    <div>
+        <b>{{ warnings | length }} thing{{ "s" if warnings | length != 1 }} to look at before you submit</b>
+        <ul>{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+    </div>
+</div>
+{% endif %}
+
+<div class="sf-nr-layout">
+<div>
+
+    <div class="sf-card sf-nr-card">
+        <div class="sf-confirm-section-title">Header details</div>
+        <div class="sf-confirm-section-sub">
+            {% if v.is_on_behalf %}Filing for <strong>{{ v.requestor_name }}</strong> ({{ v.email }}) on behalf, as {{ v.submitted_by_name }}.{% else %}Filing as <strong>{{ v.requestor_name }}</strong> ({{ v.email }}).{% endif %}
+        </div>
+        <div class="sf-grid sf-grid--3">
+            <div class="sf-field-block"><div class="sf-field-block__label">Department</div><div class="sf-field-block__value">{{ v.requesting_dept or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Cost center</div><div class="sf-field-block__value">{{ v.cost_center or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Employee code</div><div class="sf-field-block__value">{{ v.employee_code or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Shopping cart</div><div class="sf-field-block__value">{{ v.sc_number or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Topic</div><div class="sf-field-block__value">{{ v.topic_title or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Sourcing type</div><div class="sf-field-block__value">{{ v.sourcing_type or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Commodity</div><div class="sf-field-block__value">{{ v.expense_commodity or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Delivery location</div><div class="sf-field-block__value">{{ v.delivery_location or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Currency</div><div class="sf-field-block__value">{{ v.currency or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Topic value is</div><div class="sf-field-block__value">{{ v.tax_basis or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">MRM</div><div class="sf-field-block__value">{% if v.mrm_relevant == "No" %}Not relevant{% else %}{{ v.mrm_conducted or "-" }}{{ " — " ~ v.mrm_reason if v.mrm_conducted == "No" and v.mrm_reason }}{% endif %}</div></div>
+        </div>
+    </div>
+
+    <div class="sf-card sf-nr-card">
+        <div class="sf-confirm-section-title">Documents attached</div>
+        {% for f in files %}
+        <div class="sf-confirm-file">
+            {{ ic.icon("file-text", 16) }}
+            {{ f.filename }} ({{ (f.size_bytes / 1024) | round }} KB)
+            <span class="sf-confirm-file__tag">{{ f.doc_type }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <form method="post" action="/requests/new/confirm/{{ token }}" class="sf-confirm-actions">
+        <button type="submit" name="action" value="discard" class="sf-btn sf-btn--secondary">Discard and start over</button>
+        <button type="submit" name="action" value="confirm" class="sf-btn sf-btn--primary">Confirm &amp; submit</button>
+    </form>
+
+</div>
+
+<div class="sf-nr-rail">
+    <div class="sf-card sf-nr-card">
+        <div class="sf-nr-card__title" style="margin-bottom:12px;">Document set</div>
+        <div class="sf-checklist">
+            <div class="sf-checklist__item {{ 'is-done' if has_sc }}"><span class="sf-checklist__dot">{% if has_sc %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>{% endif %}</span><div><div class="sf-checklist__label">Approved shopping cart</div></div></div>
+            <div class="sf-checklist__item {{ 'is-done' if has_sfo }}"><span class="sf-checklist__dot">{% if has_sfo %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>{% endif %}</span><div><div class="sf-checklist__label">Deviation Note/SFO</div></div></div>
+            <div class="sf-checklist__item {{ 'is-done' if has_rfq }}"><span class="sf-checklist__dot">{% if has_rfq %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>{% endif %}</span><div><div class="sf-checklist__label">RFQ</div></div></div>
+            <div class="sf-checklist__item {{ 'is-done' if offer_count > 0 }}"><span class="sf-checklist__dot">{% if offer_count > 0 %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>{% endif %}</span><div><div class="sf-checklist__label">Offer from each bidder</div><div class="sf-checklist__sub">{{ offer_count }} offer{{ "s" if offer_count != 1 }}</div></div></div>
+        </div>
+        <div class="sf-alert sf-alert--warning" style="margin:14px 0 0;">Your document set {{ "looks complete" if (has_sc and has_sfo and offer_count > 0) else "is missing something" }}. The turnaround clock starts once your buyer confirms it — not at submission.</div>
+    </div>
+
+    {% if not draft.in_scope %}
+    <div class="sf-card sf-nr-card">
+        <div class="sf-nr-card__title" style="margin-bottom:8px;">Above the limit</div>
+        <p class="sf-caption" style="margin:0;">The topic value is <strong>{{ draft.topic_value_inr | inr }}</strong>, over the ₹40,00,000 ceiling for standard TAT bands. You can still submit — your buyer will handle timelines manually instead.</p>
+    </div>
+    {% endif %}
+</div>
+</div>
+
+{% endblock %}

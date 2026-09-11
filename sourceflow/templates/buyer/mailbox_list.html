@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% import "_macros/icons.html" as ic %}
+{% block title %}Mailbox · Samagra{% endblock %}
+
+{% block content %}
+
+<div class="sf-page-header">
+    <div>
+        <h1 class="sf-page-header__title">Mailbox</h1>
+        <p class="sf-page-header__subtitle">Emails with attachments received at the intake mailbox, waiting to be filed into a case</p>
+    </div>
+    <div class="sf-page-header__actions">
+        <form method="post" action="/mailbox/check">
+            <button type="submit" class="sf-btn sf-btn--primary">{{ ic.icon("inbox", 15) }} Check mailbox now</button>
+        </form>
+    </div>
+</div>
+
+{% if flash %}
+    {% if flash.error %}
+    <div class="sf-alert sf-alert--warning">Couldn't check the mailbox: {{ flash.error }}</div>
+    {% else %}
+    <div class="sf-alert sf-alert--success">
+        Checked the mailbox — {{ flash.fetched }} new email{{ "s" if flash.fetched != 1 }} fetched
+        {% if flash.skipped_existing %}({{ flash.skipped_existing }} already seen before){% endif %}.
+    </div>
+    {% endif %}
+{% endif %}
+
+<div class="sf-tabs">
+    <a href="/mailbox?status=UNREVIEWED" class="sf-tab {{ 'active' if status_filter == 'UNREVIEWED' }}">Unreviewed ({{ unreviewed_count }})</a>
+    <a href="/mailbox?status=FILED" class="sf-tab {{ 'active' if status_filter == 'FILED' }}">Filed</a>
+    <a href="/mailbox?status=IGNORED" class="sf-tab {{ 'active' if status_filter == 'IGNORED' }}">Ignored</a>
+</div>
+
+{% if not items %}
+<div class="sf-card">
+    <p class="sf-muted" style="margin:0;">No emails here yet. Click "Check mailbox now" to fetch anything new.</p>
+</div>
+{% else %}
+<div class="sf-card" style="padding:0;overflow-x:auto;">
+<table class="sf-table">
+    <thead>
+    <tr><th>Subject</th><th>From</th><th>Received</th><th>Attachments</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+    <tr class="sf-row-link" onclick="window.location='/mailbox/{{ item.id }}'">
+        <td class="sf-row-link-cell"><a class="sf-row-link-cover" href="/mailbox/{{ item.id }}"></a>{{ item.subject or "(no subject)" }}</td>
+        <td>{{ item.from_name or item.from_email }}</td>
+        <td>{{ item.received_at | timestamp }}</td>
+        <td>{{ item.attachment_count }}</td>
+        <td style="text-align:right;">Review</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endif %}
+
+{% endblock %}

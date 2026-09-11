@@ -1,0 +1,136 @@
+/* Buyer Queue + My Cases list pages: same hero/tabs/table family as
+   my-requests.css, with a controls row (sort + search) above the tabs and
+   a couple of buyer-specific cell types (came-from, document status,
+   assigned buyer, clock). */
+
+.sf-list-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--sf-surface);
+    border: 1px solid var(--sf-border);
+    border-bottom: none;
+    border-radius: var(--sf-radius-lg) var(--sf-radius-lg) 0 0;
+}
+.sf-list-controls__title {
+    font-size: 0.94rem;
+    font-weight: 700;
+    color: var(--sf-text);
+}
+.sf-list-controls__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.sf-list-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--sf-surface-alt);
+    border: 1px solid var(--sf-border-strong);
+    border-radius: var(--sf-radius);
+    padding: 6px 11px;
+    font-size: 0.78rem;
+    color: var(--sf-text-muted);
+}
+.sf-list-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--sf-surface);
+    border: 1px solid var(--sf-border-strong);
+    border-radius: var(--sf-radius);
+    padding: 6px 11px;
+    min-width: 220px;
+}
+.sf-list-search svg { color: var(--sf-text-faint); flex-shrink: 0; }
+.sf-list-search input {
+    border: none;
+    outline: none;
+    font-size: 0.78rem;
+    font-family: inherit;
+    color: var(--sf-text);
+    width: 100%;
+}
+
+/* tab strip sits directly under the controls row here, no gap */
+.sf-list-controls + .sf-list-tabs {
+    border-top: none;
+    padding: 0 4px;
+    background: var(--sf-surface);
+    border-left: 1px solid var(--sf-border);
+    border-right: 1px solid var(--sf-border);
+}
+
+.sf-list-badge-new {
+    display: inline-flex;
+    align-items: center;
+    background: var(--sf-primary);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.sf-list-came {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--sf-text);
+}
+.sf-list-came svg { flex-shrink: 0; color: var(--sf-text-faint); }
+.sf-list-came__date {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--sf-text-faint);
+    margin-left: 20px;
+}
+
+.sf-list-req {
+    font-size: 0.84rem;
+    color: var(--sf-text);
+}
+.sf-list-req__sub {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--sf-text-faint);
+}
+
+.sf-list-buyer {
+    font-size: 0.82rem;
+    color: var(--sf-text);
+}
+.sf-list-buyer--unclaimed {
+    font-style: italic;
+    color: var(--sf-text-faint);
+}
+
+.sf-list-clock__main {
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+.sf-list-clock__main--danger { color: var(--sf-danger); }
+.sf-list-clock__main--ok { color: var(--sf-success); }
+.sf-list-clock__main--muted { color: var(--sf-text-muted); font-weight: 500; }
+.sf-list-clock__sub {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--sf-text-faint);
+}
+
+.sf-list-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 14px 2px 0;
+    font-size: 0.78rem;
+    color: var(--sf-text-muted);
+}

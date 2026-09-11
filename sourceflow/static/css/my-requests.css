@@ -1,0 +1,98 @@
+/* My Requests: compact hero (title + New Sourcing Request button, reusing
+   .sf-hero-band) + status-grouped tab strip + a single dense table instead
+   of the KPI-row/two-table layout. Own classes; reuses .sf-table from
+   base.css for the row markup. */
+
+.sf-list-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--sf-border);
+    margin-bottom: 0;
+}
+.sf-list-tabs__item {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 12px 14px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--sf-text-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+.sf-list-tabs__item:hover {
+    color: var(--sf-text);
+    text-decoration: none;
+}
+.sf-list-tabs__item.active {
+    color: var(--sf-hero-teal-deep);
+    border-bottom-color: var(--sf-hero-teal);
+}
+.sf-list-tabs__count {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--sf-text-faint);
+}
+.sf-list-tabs__item.active .sf-list-tabs__count {
+    color: var(--sf-hero-teal-deep);
+}
+
+.sf-list-table-wrap {
+    background: var(--sf-surface);
+    border: 1px solid var(--sf-border);
+    border-top: none;
+    border-radius: 0 0 var(--sf-radius-lg) var(--sf-radius-lg);
+    box-shadow: var(--sf-card-shadow);
+    overflow-x: auto;
+}
+.sf-list-table-wrap table.sf-table th:first-child,
+.sf-list-table-wrap table.sf-table td:first-child {
+    padding-left: 18px;
+}
+.sf-list-table-wrap table.sf-table th:last-child,
+.sf-list-table-wrap table.sf-table td:last-child {
+    padding-right: 18px;
+    text-align: right;
+}
+
+.sf-list-topic {
+    font-weight: 600;
+    color: var(--sf-text);
+}
+.sf-list-topic__sub {
+    font-size: 0.74rem;
+    color: var(--sf-text-faint);
+    font-weight: 400;
+    margin-top: 1px;
+}
+
+.sf-list-next {
+    color: var(--sf-text-muted);
+}
+.sf-list-next--urgent {
+    color: var(--sf-danger);
+    font-weight: 600;
+}
+
+.sf-list-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+.sf-list-chip--draft {
+    background: var(--sf-surface-alt);
+    color: var(--sf-text-muted);
+    border: 1px solid var(--sf-border-strong);
+}
+
+.sf-list-summary {
+    font-size: 0.78rem;
+    color: var(--sf-text-muted);
+    margin: 14px 2px 0;
+}

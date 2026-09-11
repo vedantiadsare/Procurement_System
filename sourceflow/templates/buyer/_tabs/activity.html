@@ -1,0 +1,34 @@
+<div class="sf-grid sf-grid--2">
+    <div>
+        <details>
+            <summary style="cursor:pointer;font-weight:600;">Additional comments (visible to requester)</summary>
+            <form method="post" action="/queue/{{ case.id }}/comment" style="margin-top:0.75rem;">
+                <div class="sf-field">
+                    <label for="addl_comment">Comment</label>
+                    <textarea id="addl_comment" name="comment"></textarea>
+                </div>
+                <button type="submit" class="sf-btn sf-btn--secondary">Post comment</button>
+            </form>
+        </details>
+    </div>
+    <div>
+        <details>
+            <summary style="cursor:pointer;font-weight:600;">Work notes (internal only)</summary>
+            <form method="post" action="/queue/{{ case.id }}/work-note" style="margin-top:0.75rem;">
+                <div class="sf-field">
+                    <label for="work_note">Work note</label>
+                    <textarea id="work_note" name="note"></textarea>
+                </div>
+                <button type="submit" class="sf-btn sf-btn--secondary">Post work note</button>
+            </form>
+        </details>
+    </div>
+</div>
+
+<h3 class="sf-section-header">Activity</h3>
+{% if not activity %}
+<p class="sf-caption">No activity yet.</p>
+{% else %}
+{% import "_macros/timeline.html" as tl %}
+{{ tl.render(activity) }}
+{% endif %}

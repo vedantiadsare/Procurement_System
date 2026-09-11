@@ -1,0 +1,229 @@
+/* Requester's own case-detail page ("Status" tab): hero with a single
+   contextual action, a 4-stage progress stepper, a threaded conversation
+   built from real audit_trail entries, a reply box, and a per-document
+   checklist. Reuses .sf-hero-band/.sf-card/.sf-field from elsewhere. */
+
+.sf-cs-tabs {
+    display: flex;
+    gap: 22px;
+    border-bottom: 1px solid var(--sf-border);
+    margin-bottom: 20px;
+}
+.sf-cs-tabs a {
+    padding: 11px 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--sf-text-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+.sf-cs-tabs a:hover { color: var(--sf-text); text-decoration: none; }
+.sf-cs-tabs a.active {
+    color: var(--sf-hero-teal-deep);
+    border-bottom-color: var(--sf-hero-teal);
+}
+
+.sf-cs-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 22px;
+    align-items: start;
+}
+@media (max-width: 900px) { .sf-cs-layout { grid-template-columns: 1fr; } }
+
+.sf-cs-banner {
+    display: flex;
+    gap: 11px;
+    background: var(--sf-warning-bg);
+    border: 1px solid #F6DBA8;
+    border-radius: var(--sf-radius);
+    padding: 13px 15px;
+    font-size: 0.82rem;
+    color: #7A4F0D;
+    line-height: 1.55;
+    margin-bottom: 18px;
+}
+.sf-cs-banner svg { flex-shrink: 0; margin-top: 1px; }
+.sf-cs-banner b { display: block; color: #7A4F0D; margin-bottom: 2px; }
+
+.sf-cs-card__title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--sf-text);
+    margin-bottom: 14px;
+}
+.sf-cs-card__meta {
+    float: right;
+    font-size: 0.72rem;
+    color: var(--sf-text-faint);
+    font-weight: 400;
+}
+
+/* stepper */
+.sf-cs-stepper {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.sf-cs-step {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--sf-border);
+}
+.sf-cs-step.is-done { background: var(--sf-hero-teal); }
+.sf-cs-step.is-current { background: #C97B1E; }
+.sf-cs-stepper-labels {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+.sf-cs-stepper-labels span {
+    flex: 1;
+    font-size: 0.7rem;
+    color: var(--sf-text-faint);
+    text-align: left;
+}
+.sf-cs-stepper-labels span.is-current {
+    color: var(--sf-text);
+    font-weight: 600;
+}
+.sf-cs-stepper-note {
+    font-size: 0.78rem;
+    color: var(--sf-text-muted);
+    margin-top: 12px;
+    line-height: 1.5;
+}
+
+/* conversation thread */
+.sf-cs-msg {
+    display: flex;
+    gap: 10px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--sf-border);
+}
+.sf-cs-msg:last-child { border-bottom: none; }
+.sf-cs-msg__avatar {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--sf-hero-teal);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+.sf-cs-msg__body { flex: 1; min-width: 0; }
+.sf-cs-msg__head {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    margin-bottom: 3px;
+}
+.sf-cs-msg__name { font-size: 0.82rem; font-weight: 700; color: var(--sf-text); }
+.sf-cs-msg__role {
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sf-text-faint);
+}
+.sf-cs-msg__time { margin-left: auto; font-size: 0.72rem; color: var(--sf-text-faint); }
+.sf-cs-msg__text { font-size: 0.84rem; color: var(--sf-text); line-height: 1.55; }
+.sf-cs-msg__text ul { margin: 4px 0 0; padding-left: 18px; }
+.sf-cs-msg__attachments {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: var(--sf-accent);
+}
+
+.sf-cs-reply { margin-top: 4px; }
+.sf-cs-reply label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--sf-text-muted);
+    margin-bottom: 6px;
+}
+.sf-cs-reply textarea {
+    width: 100%;
+    min-height: 4.2rem;
+    border: 1px solid var(--sf-border-strong);
+    border-radius: 4px;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.86rem;
+    font-family: inherit;
+    resize: vertical;
+}
+.sf-cs-reply__hint {
+    font-size: 0.74rem;
+    color: var(--sf-text-faint);
+    margin: 8px 0 10px;
+    line-height: 1.5;
+}
+.sf-cs-reply__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.sf-cs-reply__actions { display: flex; gap: 8px; margin-left: auto; }
+.sf-cs-locked {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--sf-surface-alt);
+    border: 1px solid var(--sf-border);
+    border-radius: var(--sf-radius);
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    color: var(--sf-text-muted);
+}
+.sf-cs-locked svg { flex-shrink: 0; color: var(--sf-text-faint); }
+
+/* document checklist */
+.sf-cs-doc {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--sf-border);
+}
+.sf-cs-doc:last-child { border-bottom: none; }
+.sf-cs-doc__icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+}
+.sf-cs-doc__icon--ok { background: var(--sf-success-bg); color: var(--sf-success); }
+.sf-cs-doc__icon--bad { background: var(--sf-danger-bg); color: var(--sf-danger); }
+.sf-cs-doc__body { flex: 1; min-width: 0; }
+.sf-cs-doc__name { font-size: 0.84rem; font-weight: 600; color: var(--sf-text); }
+.sf-cs-doc__detail { font-size: 0.76rem; color: var(--sf-text-muted); margin-top: 1px; }
+
+/* right rail */
+.sf-cs-kv {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--sf-border);
+    font-size: 0.82rem;
+}
+.sf-cs-kv:last-child { border-bottom: none; }
+.sf-cs-kv dt { color: var(--sf-text-muted); margin: 0; }
+.sf-cs-kv dd { color: var(--sf-text); font-weight: 600; margin: 0; text-align: right; }

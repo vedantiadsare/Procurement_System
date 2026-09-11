@@ -1,0 +1,111 @@
+body.sf-auth-page {
+    background: radial-gradient(1200px 700px at 50% -10%, #16294A 0%, var(--sf-primary) 45%, #060D1C 100%);
+    min-height: 100vh;
+}
+body.sf-auth-page .sf-content {
+    padding-top: 0;
+}
+
+.sf-auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+.sf-auth-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--sf-surface);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--sf-radius-lg);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    padding: 28px 28px 22px;
+}
+
+.sf-auth-card__header {
+    margin-bottom: 20px;
+}
+
+.sf-auth-card__logo {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--sf-text);
+    letter-spacing: -0.01em;
+}
+
+.sf-auth-card__dept {
+    font-size: 0.76rem;
+    color: var(--sf-text-muted);
+    margin-top: 1px;
+}
+
+.sf-auth-card__subtitle {
+    font-size: 0.8rem;
+    color: var(--sf-text-muted);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--sf-border);
+}
+
+.sf-auth-tabs {
+    display: flex;
+    border: 1px solid var(--sf-border-strong);
+    border-radius: var(--sf-radius);
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+.sf-auth-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--sf-surface-alt);
+    border-right: 1px solid var(--sf-border-strong);
+    color: var(--sf-text-muted);
+}
+.sf-auth-tab:last-child {
+    border-right: none;
+}
+.sf-auth-tab input[type="radio"] {
+    display: none;
+}
+.sf-auth-tab:has(input:checked) {
+    background: var(--sf-primary);
+    color: #fff;
+}
+
+.sf-auth-links {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    margin-top: 12px;
+}
+
+.sf-auth-card .sf-btn--primary {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 1rem;
+}
+
+details.sf-email-preview {
+    margin-top: 10px;
+    font-size: 0.78rem;
+    border: 1px solid var(--sf-border);
+    border-radius: var(--sf-radius);
+    padding: 8px 10px;
+}
+details.sf-email-preview pre {
+    white-space: pre-wrap;
+    font-family: inherit;
+    background: var(--sf-surface-alt);
+    padding: 8px;
+    border-radius: var(--sf-radius);
+}

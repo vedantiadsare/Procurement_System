@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Reset password · Samagra{% endblock %}
+{% block content_width %}sf-content--narrow{% endblock %}
+{% block body_class %}sf-auth-page{% endblock %}
+{% block content %}
+<div class="sf-auth-wrap">
+    <div class="sf-auth-card">
+        <div class="sf-auth-card__header">
+            <div class="sf-auth-card__logo">Samagra</div>
+            <div class="sf-auth-card__subtitle">Reset your password</div>
+        </div>
+
+        {% if errors %}
+        <div class="sf-errors"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+        {% endif %}
+
+        {% if result %}
+        <div class="sf-alert {{ 'sf-alert--success' if result.sent else ('sf-alert--warning' if result.get('error') else 'sf-alert--info') }}">
+            {% if result.sent %}
+                Reset email sent to {{ email }}. It links back to this app on this machine, so you can also just use the button below directly.
+            {% elif result.get('error') %}
+                Reset link generated, but the email failed to send: {{ result.error }}
+            {% else %}
+                Reset link generated. SMTP isn't configured, so use the link below directly instead of checking your inbox.
+            {% endif %}
+        </div>
+        <details class="sf-email-preview" {{ "open" if not result.sent }}>
+            <summary>Email content</summary>
+            <p><strong>To:</strong> {{ result.to }}</p>
+            <p><strong>Subject:</strong> {{ result.subject }}</p>
+            <pre>{{ result.body }}</pre>
+        </details>
+        <a class="sf-btn sf-btn--primary" style="width:100%;justify-content:center;background:var(--sf-primary);color:#fff;margin-top:0.75rem;" href="{{ reset_url }}">Open reset link</a>
+        {% else %}
+        <p class="sf-caption">Enter your work email. No mail server is configured in this environment yet, so the reset link is shown right here instead of being emailed.</p>
+        <form method="post" action="/forgot-password">
+            <div class="sf-field">
+                <label for="f_email">Work email</label>
+                <input type="email" id="f_email" name="email" required>
+            </div>
+            <button type="submit" class="sf-btn sf-btn--primary">Send reset link</button>
+        </form>
+        {% endif %}
+
+        <div class="sf-auth-links">
+            <a href="/login">← Back to sign in</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

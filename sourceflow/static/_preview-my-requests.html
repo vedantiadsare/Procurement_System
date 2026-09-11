@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Requests · Samagra (preview)</title>
+<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/header.css">
+<link rel="stylesheet" href="/static/css/forms.css">
+<link rel="stylesheet" href="/static/css/detail-hero.css">
+<link rel="stylesheet" href="/static/css/my-requests.css">
+<style>
+.sf-preview-banner{background:#1f2937;color:#fff;font-size:12px;text-align:center;padding:6px;}
+</style>
+</head>
+<body>
+<div class="sf-preview-banner">PREVIEW — not a live route, for review only</div>
+
+<div class="sf-shell-header">
+    <div class="sf-shell-header__row">
+        <div class="sf-shell-brand">
+            <svg class="sf-shell-brand__mark" width="22" height="22" viewBox="0 0 50 50" fill="none">
+                <rect x="4" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".38"/>
+                <rect x="28" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="4" y="28" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="28" y="28" width="18" height="18" rx="4" fill="#fff"/>
+            </svg>
+            <span class="sf-shell-brand__name">Samagra</span>
+            <span class="sf-shell-brand__dept">General Procurement</span>
+        </div>
+        <form class="sf-shell-search" method="get" action="/requests">
+            <svg class="sf-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" name="q" placeholder="Search requests, tickets, suppliers...">
+        </form>
+        <div class="sf-shell-actions">
+            <button type="button" class="sf-shell-icon-btn" title="Notifications">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </button>
+            <a class="sf-shell-icon-btn" href="mailto:procurement.intake.demo@outlook.com" title="Help &amp; support">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.7"></path><line x1="12" y1="17.5" x2="12" y2="17.6"></line></svg>
+            </a>
+            <div class="sf-shell-user">
+                <span class="sf-avatar">VA</span>
+                <div class="sf-shell-user__meta">
+                    <span class="sf-shell-user__name">Vedanti Adsare</span>
+                    <span class="sf-shell-user__role">Requester</span>
+                </div>
+            </div>
+            <button type="button" class="sf-shell-icon-btn" title="Log out">
+                <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+        </div>
+    </div>
+</div>
+<div class="sf-shell-subnav">
+    <div class="sf-shell-subnav__row">
+        <a class="sf-shell-subnav__link" href="#">Home</a>
+        <a class="sf-shell-subnav__link" href="/requests/new">New Sourcing Request</a>
+        <a class="sf-shell-subnav__link active" href="#">My Requests</a>
+    </div>
+</div>
+
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb">Home / My Requests</div>
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">My Requests</h1>
+            </div>
+            <div class="sf-hero-actions">
+                <a href="/requests/new" class="sf-hero-btn sf-hero-btn--solid">New Sourcing Request</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<main class="sf-content">
+
+    <div class="sf-list-tabs" data-list-tabs>
+        <a href="#" class="sf-list-tabs__item active" data-tab-filter="all">All <span class="sf-list-tabs__count">10</span></a>
+        <a href="#" class="sf-list-tabs__item" data-tab-filter="needs-input">Needs my input <span class="sf-list-tabs__count">2</span></a>
+        <a href="#" class="sf-list-tabs__item" data-tab-filter="drafts">Drafts <span class="sf-list-tabs__count">1</span></a>
+        <a href="#" class="sf-list-tabs__item" data-tab-filter="with-procurement">With procurement <span class="sf-list-tabs__count">4</span></a>
+        <a href="#" class="sf-list-tabs__item" data-tab-filter="completed">Completed <span class="sf-list-tabs__count">3</span></a>
+    </div>
+
+    <div class="sf-list-table-wrap">
+    <table class="sf-table">
+        <thead>
+            <tr><th>Topic</th><th>Value</th><th>Status</th><th>Next step</th><th>Updated</th><th></th></tr>
+        </thead>
+        <tbody>
+            <tr data-category="needs-input">
+                <td><div class="sf-list-topic">Plant simulation training</div><div class="sf-list-topic__sub">SF-2026-00003 · SC 1013301912</div></td>
+                <td>₹34,51,500</td>
+                <td><span class="sf-list-chip" style="background:#FCF5D8;color:#8A6D0B;border:1px solid #EEDD9F;">Awaiting Documents</span></td>
+                <td class="sf-list-next sf-list-next--urgent">Send corrected quantity + signed SFO</td>
+                <td>Yesterday</td>
+                <td><a href="/requests/3" class="sf-btn sf-btn--primary sf-btn--sm">Reply</a></td>
+            </tr>
+            <tr data-category="needs-input">
+                <td><div class="sf-list-topic">Server AMC renewal</div><div class="sf-list-topic__sub">SF-2026-00002 · SC 1013277410</div></td>
+                <td>₹9,60,000</td>
+                <td><span class="sf-list-chip" style="background:#FCF5D8;color:#8A6D0B;border:1px solid #EEDD9F;">Awaiting Documents</span></td>
+                <td class="sf-list-next sf-list-next--urgent">Offer missing from one bidder</td>
+                <td>2 days ago</td>
+                <td><a href="/requests/2" class="sf-btn sf-btn--primary sf-btn--sm">Reply</a></td>
+            </tr>
+            <tr data-category="drafts">
+                <td><div class="sf-list-topic">Ergonomic chairs, Pune office</div><div class="sf-list-topic__sub">Not submitted</div></td>
+                <td>₹3,15,000</td>
+                <td><span class="sf-list-chip sf-list-chip--draft">Draft</span></td>
+                <td class="sf-list-next">Shopping cart PDF not uploaded</td>
+                <td>3 days ago</td>
+                <td><a href="/requests/new" class="sf-btn sf-btn--secondary sf-btn--sm">Resume</a></td>
+            </tr>
+            <tr data-category="with-procurement">
+                <td><div class="sf-list-topic">IT products for HR</div><div class="sf-list-topic__sub">SF-2026-00008 · SC 9970656893</div></td>
+                <td>₹17,00,000</td>
+                <td><span class="sf-list-chip" style="background:#FEF2E1;color:#B45309;border:1px solid #F6DBA8;">In Review</span></td>
+                <td class="sf-list-next">Nothing needed · PO due 30.09.2026</td>
+                <td>14.08.2026</td>
+                <td><a href="/requests/8" class="sf-btn sf-btn--secondary sf-btn--sm">View</a></td>
+            </tr>
+            <tr data-category="with-procurement">
+                <td><div class="sf-list-topic">Elastic Logstash and Kibana training</div><div class="sf-list-topic__sub">SF-2026-00005 · SC 1013489228</div></td>
+                <td>₹8,90,000</td>
+                <td><span class="sf-list-chip" style="background:#FEF2E1;color:#B45309;border:1px solid #F6DBA8;">In Review</span></td>
+                <td class="sf-list-next">Nothing needed · PO due 19.08.2026</td>
+                <td>11.08.2026</td>
+                <td><a href="/requests/5" class="sf-btn sf-btn--secondary sf-btn--sm">View</a></td>
+            </tr>
+            <tr data-category="with-procurement">
+                <td><div class="sf-list-topic">Advance ANSA META training</div><div class="sf-list-topic__sub">SF-2026-00004 · SC 1013456392</div></td>
+                <td>₹6,20,000</td>
+                <td><span class="sf-list-chip" style="background:#FEF2E1;color:#B45309;border:1px solid #F6DBA8;">In Review</span></td>
+                <td class="sf-list-next">Nothing needed · PO due 25.08.2026</td>
+                <td>09.08.2026</td>
+                <td><a href="/requests/4" class="sf-btn sf-btn--secondary sf-btn--sm">View</a></td>
+            </tr>
+            <tr data-category="with-procurement">
+                <td><div class="sf-list-topic">Design software licences</div><div class="sf-list-topic__sub">SF-2026-00011 · SC 1013628844</div></td>
+                <td>₹12,75,000</td>
+                <td><span class="sf-list-chip" style="background:#E8F0FE;color:#1D4ED8;border:1px solid #BFD7FB;">Submitted</span></td>
+                <td class="sf-list-next">Waiting for a buyer to pick it up</td>
+                <td>15.08.2026</td>
+                <td><a href="/requests/11" class="sf-btn sf-btn--secondary sf-btn--sm">View</a></td>
+            </tr>
+            <tr data-category="completed">
+                <td><div class="sf-list-topic">Relationship Equation workshop</div><div class="sf-list-topic__sub">SF-2026-00006 · SC 1013545473</div></td>
+                <td>₹2,80,000</td>
+                <td><span class="sf-list-chip" style="background:#E5F5EA;color:#15803D;border:1px solid #BEE3C8;">Approved</span></td>
+                <td class="sf-list-next">PO released 12.08.2026</td>
+                <td>12.08.2026</td>
+                <td><a href="/requests/6" class="sf-btn sf-btn--secondary sf-btn--sm">View</a></td>
+            </tr>
+            <tr data-category="completed">
+                <td><div class="sf-list-topic">Meeting room displays</div><div class="sf-list-topic__sub">SF-2026-00001 · SC 1013204778</div></td>
+                <td>₹5,40,000</td>
+                <td><span class="sf-list-chip" style="background:#E5F5EA;color:#15803D;border:1px solid #BEE3C8;">Approved</span></td>
+                <td class="sf-list-next">PO released 30.07.2026</td>
+                <td>30.07.2026</td>
+                <td><a href="/requests/1" class="sf-btn sf-btn--secondary sf-btn--sm">View</a></td>
+            </tr>
+            <tr data-category="completed">
+                <td><div class="sf-list-topic">Annual toolkit refresh</div><div class="sf-list-topic__sub">SF-2025-00097 · SC 1012984410</div></td>
+                <td>₹1,90,000</td>
+                <td><span class="sf-list-chip" style="background:#E5F5EA;color:#15803D;border:1px solid #BEE3C8;">Approved</span></td>
+                <td class="sf-list-next">PO released 18.06.2026</td>
+                <td>18.06.2026</td>
+                <td><a href="/requests/97" class="sf-btn sf-btn--secondary sf-btn--sm">View</a></td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+
+    <p class="sf-list-summary">10 requests · 2 need your input</p>
+
+</main>
+
+<script>
+(function () {
+    var tabs = document.querySelectorAll("[data-tab-filter]");
+    var rows = document.querySelectorAll("tbody tr[data-category]");
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function (e) {
+            e.preventDefault();
+            tabs.forEach(function (t) { t.classList.remove("active"); });
+            tab.classList.add("active");
+            var filter = tab.getAttribute("data-tab-filter");
+            rows.forEach(function (row) {
+                row.style.display = (filter === "all" || row.getAttribute("data-category") === filter) ? "" : "none";
+            });
+        });
+    });
+})();
+</script>
+</body>
+</html>

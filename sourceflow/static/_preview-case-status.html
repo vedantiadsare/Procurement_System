@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Request Status · Samagra (preview)</title>
+<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/header.css">
+<link rel="stylesheet" href="/static/css/forms.css">
+<link rel="stylesheet" href="/static/css/detail-hero.css">
+<link rel="stylesheet" href="/static/css/case-status.css">
+<style>
+.sf-preview-banner{background:#1f2937;color:#fff;font-size:12px;text-align:center;padding:6px;}
+.sf-demo-divider{font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--sf-text-faint);text-align:center;padding:12px 0;background:var(--sf-surface-alt);border-top:1px dashed var(--sf-border-strong);border-bottom:1px dashed var(--sf-border-strong);}
+</style>
+</head>
+<body>
+<div class="sf-preview-banner">PREVIEW — not a live route, for review only</div>
+
+<!-- ============ STATE 1: ENQUIRED - buyer is waiting on the requester ============ -->
+<div class="sf-shell-header">
+    <div class="sf-shell-header__row">
+        <div class="sf-shell-brand">
+            <svg class="sf-shell-brand__mark" width="22" height="22" viewBox="0 0 50 50" fill="none">
+                <rect x="4" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".38"/>
+                <rect x="28" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="4" y="28" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="28" y="28" width="18" height="18" rx="4" fill="#fff"/>
+            </svg>
+            <span class="sf-shell-brand__name">Samagra</span>
+            <span class="sf-shell-brand__dept">General Procurement</span>
+        </div>
+        <form class="sf-shell-search" method="get" action="/requests">
+            <svg class="sf-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" name="q" placeholder="Search requests, tickets, suppliers...">
+        </form>
+        <div class="sf-shell-actions">
+            <button type="button" class="sf-shell-icon-btn" title="Notifications">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </button>
+            <a class="sf-shell-icon-btn" href="mailto:procurement.intake.demo@outlook.com" title="Help &amp; support">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.7"></path><line x1="12" y1="17.5" x2="12" y2="17.6"></line></svg>
+            </a>
+            <div class="sf-shell-user">
+                <span class="sf-avatar">AK</span>
+                <div class="sf-shell-user__meta">
+                    <span class="sf-shell-user__name">Ananya Kulkarni</span>
+                    <span class="sf-shell-user__role">Requester</span>
+                </div>
+            </div>
+            <button type="button" class="sf-shell-icon-btn" title="Log out">
+                <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+        </div>
+    </div>
+</div>
+<div class="sf-shell-subnav">
+    <div class="sf-shell-subnav__row">
+        <a class="sf-shell-subnav__link" href="#">Home</a>
+        <a class="sf-shell-subnav__link" href="/requests/new">New Sourcing Request</a>
+        <a class="sf-shell-subnav__link active" href="/requests">My Requests</a>
+    </div>
+</div>
+
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb"><a href="/requests">My Requests</a> / SF-2026-00011</div>
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">Plant simulation training</h1>
+                <span class="sf-status-onteal">Awaiting Documents</span>
+            </div>
+            <div class="sf-hero-actions">
+                <a href="/requests/11/edit" class="sf-hero-btn sf-hero-btn--solid">Upload documents</a>
+            </div>
+        </div>
+        <p class="sf-hero-meta">SF-2026-00011 · SC 1013301912 · with Sayali Parikh · ₹34,51,500 · required by 25.09.2026</p>
+    </div>
+</div>
+
+<main class="sf-content">
+    <div class="sf-cs-tabs">
+        <a href="#" class="active">Status</a>
+        <a href="#">Documents</a>
+        <a href="#">Conversation</a>
+    </div>
+
+    <div class="sf-cs-layout">
+        <div>
+            <div class="sf-cs-banner">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8791A" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="7.5" x2="12" y2="13"></line><line x1="12" y1="16.5" x2="12" y2="16.6"></line></svg>
+                <div><b>Procurement is waiting on you.</b> Send the signed SFO and confirm the line 2 quantity. Your request hasn't started counting yet — the clock begins the day everything is in.</div>
+            </div>
+
+            <div class="sf-card">
+                <div class="sf-cs-card__title">Where your request is</div>
+                <div class="sf-cs-stepper">
+                    <div class="sf-cs-step is-done"></div>
+                    <div class="sf-cs-step is-current"></div>
+                    <div class="sf-cs-step"></div>
+                    <div class="sf-cs-step"></div>
+                </div>
+                <div class="sf-cs-stepper-labels">
+                    <span>Submitted</span>
+                    <span class="is-current">Documents complete</span>
+                    <span>Under review</span>
+                    <span>PO released</span>
+                </div>
+            </div>
+
+            <div class="sf-card">
+                <div class="sf-cs-card__title">Procurement has asked you something <span class="sf-cs-card__meta">Asked 6 working days ago</span></div>
+
+                <div class="sf-cs-msg">
+                    <div class="sf-cs-msg__avatar">SP</div>
+                    <div class="sf-cs-msg__body">
+                        <div class="sf-cs-msg__head">
+                            <span class="sf-cs-msg__name">Sayali Parikh</span>
+                            <span class="sf-cs-msg__role">Buyer</span>
+                            <span class="sf-cs-msg__time">09.08.2026 · 09:45</span>
+                        </div>
+                        <div class="sf-cs-msg__text">
+                            Two things before I can start on this:
+                            <ul>
+                                <li>The signed SFO isn't in the package — only the unsigned draft.</li>
+                                <li>Line 2 quantity says 12 in the cart but 15 in the Alpha Tech offer. Which is right?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sf-cs-msg">
+                    <div class="sf-cs-msg__avatar">AK</div>
+                    <div class="sf-cs-msg__body">
+                        <div class="sf-cs-msg__head">
+                            <span class="sf-cs-msg__name">You</span>
+                            <span class="sf-cs-msg__role">Requester</span>
+                            <span class="sf-cs-msg__time">11.08.2026 · 16:02</span>
+                        </div>
+                        <div class="sf-cs-msg__text">Quantity should be 15 — the cart was raised before the team size changed. Chasing my manager for the SFO signature, should have it this week.</div>
+                    </div>
+                </div>
+
+                <div class="sf-cs-msg">
+                    <div class="sf-cs-msg__avatar">SP</div>
+                    <div class="sf-cs-msg__body">
+                        <div class="sf-cs-msg__head">
+                            <span class="sf-cs-msg__name">Sayali Parikh</span>
+                            <span class="sf-cs-msg__role">Buyer</span>
+                            <span class="sf-cs-msg__time">Today · 09:10</span>
+                        </div>
+                        <div class="sf-cs-msg__text">Following up on the signed SFO — the clock hasn't started, and your PO date moves out a day for each day it waits.</div>
+                    </div>
+                </div>
+
+                <div class="sf-cs-reply">
+                    <label for="reply-text">Your reply</label>
+                    <textarea id="reply-text" placeholder="Answer the buyer's question here."></textarea>
+                    <p class="sf-cs-reply__hint">You can reply because procurement has an open question. Attach the signed SFO and the clock starts as soon as your set is complete.</p>
+                    <div class="sf-cs-reply__row">
+                        <button type="button" class="sf-btn sf-btn--secondary sf-btn--sm">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95L10.13 17.1a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                            Attach the signed SFO
+                        </button>
+                        <div class="sf-cs-reply__actions">
+                            <button type="button" class="sf-btn sf-btn--secondary sf-btn--sm">Save draft</button>
+                            <button type="button" class="sf-btn sf-btn--primary sf-btn--sm">Send reply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sf-card">
+                <div class="sf-cs-card__title">Your documents <span class="sf-cs-card__meta">What procurement has, and what's still needed</span></div>
+                <div class="sf-cs-doc">
+                    <span class="sf-cs-doc__icon sf-cs-doc__icon--ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                    <div class="sf-cs-doc__body">
+                        <div class="sf-cs-doc__name">Approved shopping cart</div>
+                        <div class="sf-cs-doc__detail">Shopping_Cart-1013301912.pdf · accepted</div>
+                    </div>
+                </div>
+                <div class="sf-cs-doc">
+                    <span class="sf-cs-doc__icon sf-cs-doc__icon--bad"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
+                    <div class="sf-cs-doc__body">
+                        <div class="sf-cs-doc__name">Signed SFO</div>
+                        <div class="sf-cs-doc__detail">You sent the draft — procurement needs the version with the signature</div>
+                    </div>
+                    <a href="/requests/11/edit" class="sf-btn sf-btn--primary sf-btn--sm">Upload</a>
+                </div>
+                <div class="sf-cs-doc">
+                    <span class="sf-cs-doc__icon sf-cs-doc__icon--ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                    <div class="sf-cs-doc__body">
+                        <div class="sf-cs-doc__name">Supplier offers</div>
+                        <div class="sf-cs-doc__detail">3 of 3 received · accepted</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="sf-card">
+                <div class="sf-cs-card__title">Your request</div>
+                <dl class="sf-cs-kv"><dt>Status</dt><dd>Awaiting documents</dd></dl>
+                <dl class="sf-cs-kv"><dt>Buyer</dt><dd>Sayali Parikh</dd></dl>
+                <dl class="sf-cs-kv"><dt>Submitted</dt><dd>08.08.2026</dd></dl>
+                <dl class="sf-cs-kv"><dt>Waiting on you</dt><dd>6 working days</dd></dl>
+                <dl class="sf-cs-kv"><dt>Required by</dt><dd>25.09.2026</dd></dl>
+            </div>
+            <div class="sf-card">
+                <div class="sf-cs-card__title">Topic</div>
+                <dl class="sf-cs-kv"><dt>Value</dt><dd>₹34,51,500</dd></dl>
+                <dl class="sf-cs-kv"><dt>Type</dt><dd>Service · Training</dd></dl>
+                <dl class="sf-cs-kv"><dt>Delivery</dt><dd>Pune</dd></dl>
+                <dl class="sf-cs-kv"><dt>Offers</dt><dd>3 attached</dd></dl>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div class="sf-demo-divider">↓ SAME PAGE, FOR A CASE UNDER REVIEW WITH NOTHING NEEDED FROM THE REQUESTER ↓</div>
+
+<!-- ============ STATE 2: IN_PROGRESS - nothing needed, clock running ============ -->
+<div class="sf-shell-header">
+    <div class="sf-shell-header__row">
+        <div class="sf-shell-brand">
+            <svg class="sf-shell-brand__mark" width="22" height="22" viewBox="0 0 50 50" fill="none">
+                <rect x="4" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".38"/>
+                <rect x="28" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="4" y="28" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="28" y="28" width="18" height="18" rx="4" fill="#fff"/>
+            </svg>
+            <span class="sf-shell-brand__name">Samagra</span>
+            <span class="sf-shell-brand__dept">General Procurement</span>
+        </div>
+        <form class="sf-shell-search" method="get" action="/requests">
+            <svg class="sf-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" name="q" placeholder="Search requests, tickets, suppliers...">
+        </form>
+        <div class="sf-shell-actions">
+            <button type="button" class="sf-shell-icon-btn" title="Notifications">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </button>
+            <a class="sf-shell-icon-btn" href="mailto:procurement.intake.demo@outlook.com" title="Help &amp; support">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.7"></path><line x1="12" y1="17.5" x2="12" y2="17.6"></line></svg>
+            </a>
+            <div class="sf-shell-user">
+                <span class="sf-avatar">AK</span>
+                <div class="sf-shell-user__meta">
+                    <span class="sf-shell-user__name">Ananya Kulkarni</span>
+                    <span class="sf-shell-user__role">Requester</span>
+                </div>
+            </div>
+            <button type="button" class="sf-shell-icon-btn" title="Log out">
+                <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+        </div>
+    </div>
+</div>
+<div class="sf-shell-subnav">
+    <div class="sf-shell-subnav__row">
+        <a class="sf-shell-subnav__link" href="#">Home</a>
+        <a class="sf-shell-subnav__link" href="/requests/new">New Sourcing Request</a>
+        <a class="sf-shell-subnav__link active" href="/requests">My Requests</a>
+    </div>
+</div>
+
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb"><a href="/requests">My Requests</a> / SF-2026-00008</div>
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">IT products for HR</h1>
+                <span class="sf-status-onteal">In Review</span>
+            </div>
+        </div>
+        <p class="sf-hero-meta">SF-2026-00008 · SC 9970656893 · with Sayali Parikh · ₹17,00,000 · required by 30.09.2026</p>
+    </div>
+</div>
+
+<main class="sf-content">
+    <div class="sf-cs-tabs">
+        <a href="#" class="active">Status</a>
+        <a href="#">Documents</a>
+        <a href="#">Conversation</a>
+    </div>
+
+    <div class="sf-cs-layout">
+        <div>
+            <div class="sf-card">
+                <div class="sf-cs-card__title">Where your request is</div>
+                <div class="sf-cs-stepper">
+                    <div class="sf-cs-step is-done"></div>
+                    <div class="sf-cs-step is-done"></div>
+                    <div class="sf-cs-step is-current"></div>
+                    <div class="sf-cs-step"></div>
+                </div>
+                <div class="sf-cs-stepper-labels">
+                    <span>Submitted</span>
+                    <span>Documents complete</span>
+                    <span class="is-current">Under review</span>
+                    <span>PO released</span>
+                </div>
+                <p class="sf-cs-stepper-note">Your document set was complete on 14.08.2026, so the clock started that day. Sayali is comparing the offers — expected PO closure <strong>30.09.2026</strong>, 22 working days left.</p>
+            </div>
+
+            <div class="sf-card">
+                <div class="sf-cs-card__title">Conversation <span class="sf-cs-card__meta">Nothing open</span></div>
+
+                <div class="sf-cs-msg">
+                    <div class="sf-cs-msg__avatar">AK</div>
+                    <div class="sf-cs-msg__body">
+                        <div class="sf-cs-msg__head">
+                            <span class="sf-cs-msg__name">You</span>
+                            <span class="sf-cs-msg__role">Requester</span>
+                            <span class="sf-cs-msg__time">14.08.2026 · 10:12</span>
+                        </div>
+                        <div class="sf-cs-msg__text">Submitted through the portal with the cart, signed SFO and three offers.</div>
+                        <div class="sf-cs-msg__attachments">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M6 3h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path></svg>
+                            5 attachments
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sf-cs-locked">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="11" width="16" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                    Nothing is needed from you right now. If the buyer has a question, a reply box will appear here and you'll get a mail.
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="sf-card">
+                <div class="sf-cs-card__title">Your request</div>
+                <dl class="sf-cs-kv"><dt>Status</dt><dd>In review</dd></dl>
+                <dl class="sf-cs-kv"><dt>Buyer</dt><dd>Sayali Parikh</dd></dl>
+                <dl class="sf-cs-kv"><dt>Submitted</dt><dd>14.08.2026</dd></dl>
+                <dl class="sf-cs-kv"><dt>Clock started</dt><dd>14.08.2026</dd></dl>
+                <dl class="sf-cs-kv"><dt>PO expected</dt><dd>30.09.2026</dd></dl>
+            </div>
+            <div class="sf-card">
+                <div class="sf-cs-card__title">Topic</div>
+                <dl class="sf-cs-kv"><dt>Value</dt><dd>₹17,00,000</dd></dl>
+                <dl class="sf-cs-kv"><dt>Type</dt><dd>Product · IT Hardware</dd></dl>
+                <dl class="sf-cs-kv"><dt>Delivery</dt><dd>Pune</dd></dl>
+                <dl class="sf-cs-kv"><dt>Offers</dt><dd>3 attached</dd></dl>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

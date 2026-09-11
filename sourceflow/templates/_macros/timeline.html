@@ -1,0 +1,23 @@
+{% import "_macros/icons.html" as ic %}
+{% macro render(events) %}
+<div class="sf-timeline">
+    {% for e in events %}
+    <div class="sf-timeline__item">
+        <div class="sf-timeline__marker">
+            {% if e.action == "APPROVED" %}{{ ic.icon("check-circle", 14) }}
+            {% elif e.action == "REJECTED" %}{{ ic.icon("alert-circle", 14) }}
+            {% elif e.action in ("ENQUIRED", "COMMENT", "REMARK") %}{{ ic.icon("message-square", 14) }}
+            {% else %}{{ ic.icon("circle", 10) }}{% endif %}
+        </div>
+        <div class="sf-timeline__content">
+            <div class="sf-timeline__row">
+                <span class="sf-timeline__action">{{ e.action | status_label }}</span>
+                <span class="sf-timeline__time">{{ e.created_at | timestamp }}</span>
+            </div>
+            <div class="sf-timeline__meta">{{ e.actor }}{% if e.visibility == "internal" %} · internal{% endif %}</div>
+            {% if e.detail %}<div class="sf-timeline__detail">{{ e.detail }}</div>{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endmacro %}

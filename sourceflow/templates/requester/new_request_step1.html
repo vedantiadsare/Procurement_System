@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% import "_macros/step_indicator.html" as steps %}
+{% import "_macros/icons.html" as ic %}
+{% block title %}New Sourcing Request · Samagra{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band sf-nr-hero">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb"><a href="/requests">My Requests</a> / New Sourcing Request</div>
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">New Sourcing Request</h1>
+            </div>
+        </div>
+        <div class="sf-hero-meta">Send an approved Shopping Cart to Procurement for sourcing. Step 1 of 2 — you'll review parsed line items before this is submitted.</div>
+        {{ steps.render(1) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+{% if errors %}
+<div class="sf-errors">
+    <strong>Please fix the following before you can continue:</strong>
+    <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" action="/requests/new" enctype="multipart/form-data" data-conditional-form novalidate>
+<div class="sf-nr-layout">
+
+<div>
+    {% include "requester/_request_fields.html" %}
+    <div class="sf-form-actions">
+        <a href="/requests" class="sf-btn sf-btn--secondary">Cancel</a>
+        <button type="submit" class="sf-btn sf-btn--primary">Review submission</button>
+    </div>
+</div>
+
+<div class="sf-nr-rail">
+    <div class="sf-card sf-nr-card">
+        <div class="sf-nr-card__head">
+            <span class="sf-nr-card__icon">{{ ic.icon("check-circle", 16) }}</span>
+            <div class="sf-nr-card__title">Before you submit</div>
+        </div>
+        <div class="sf-checklist" data-checklist>
+            <div class="sf-checklist__item" data-checklist-tag="SC">
+                <span class="sf-checklist__dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                <div><div class="sf-checklist__label">Approved Shopping Cart attached</div></div>
+            </div>
+            <div class="sf-checklist__item" data-checklist-tag="SFO">
+                <span class="sf-checklist__dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                <div><div class="sf-checklist__label">Deviation Note/SFO attached</div></div>
+            </div>
+            <div class="sf-checklist__item" data-checklist-tag="RFQ">
+                <span class="sf-checklist__dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                <div><div class="sf-checklist__label">RFQ attached</div></div>
+            </div>
+            <div class="sf-checklist__item" data-checklist-tag="OFFER">
+                <span class="sf-checklist__dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                <div>
+                    <div class="sf-checklist__label">Offer from each bidder</div>
+                    <div class="sf-checklist__sub">At least one supplier offer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sf-alert sf-alert--warning">
+        The TAT clock starts once your case is submitted and all required documents are on file — not before.
+    </div>
+</div>
+
+</div>
+</form>
+
+{% endblock %}
+{% block extra_scripts %}
+<script src="{{ asset_url('/static/js/conditional-fields.js') }}"></script>
+<script src="{{ asset_url('/static/js/fx-convert.js') }}"></script>
+<script src="{{ asset_url('/static/js/file-upload.js') }}"></script>
+<script src="{{ asset_url('/static/js/new-request-upload.js') }}"></script>
+<script src="{{ asset_url('/static/js/date-mask.js') }}"></script>
+<script src="{{ asset_url('/static/js/inr-input.js') }}"></script>
+<script src="{{ asset_url('/static/js/tat-preview.js') }}"></script>
+{% endblock %}

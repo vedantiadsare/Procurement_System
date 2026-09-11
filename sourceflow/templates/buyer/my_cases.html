@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}My Cases · Samagra{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">My Cases</h1>
+            </div>
+            <div class="sf-hero-actions">
+                <a href="/queue" class="sf-hero-btn sf-hero-btn--solid">Go to queue</a>
+            </div>
+        </div>
+        <p class="sf-hero-meta">{{ open_count }} open · {{ counts.waiting }} waiting on a requester</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="sf-list-tabs" data-list-tabs>
+    <a href="#" class="sf-list-tabs__item active" data-tab-filter="all">Open <span class="sf-list-tabs__count">{{ open_count }}</span></a>
+    <a href="#" class="sf-list-tabs__item" data-tab-filter="decision">Needs my decision <span class="sf-list-tabs__count">{{ counts.decision }}</span></a>
+    <a href="#" class="sf-list-tabs__item" data-tab-filter="waiting">Waiting on requester <span class="sf-list-tabs__count">{{ counts.waiting }}</span></a>
+    <a href="#" class="sf-list-tabs__item" data-tab-filter="completed">Completed <span class="sf-list-tabs__count">{{ counts.completed }}</span></a>
+</div>
+
+<form method="get" action="/queue/mine" class="sf-filters" style="margin:16px 0;">
+    <div class="sf-field sf-field--search" style="margin-bottom:0;">
+        <input type="text" name="q" value="{{ q }}" placeholder="Case, SC number, or topic...">
+    </div>
+    <button type="submit" class="sf-btn sf-btn--secondary">Search</button>
+</form>
+
+{% if not cases %}
+<div class="sf-card"><p class="sf-muted" style="margin:0;">No cases are assigned to you{{ ' matching "' ~ q ~ '"' if q }}.</p></div>
+{% else %}
+<div class="sf-list-table-wrap">
+<table class="sf-table">
+    <thead><tr><th>Topic</th><th>Requester</th><th>Value</th><th>Status</th><th>Clock</th><th></th></tr></thead>
+    <tbody>
+    {% for c in cases %}
+    <tr data-category="{{ c.category }}">
+        <td><div class="sf-list-topic">{{ c.topic_title }}</div><div class="sf-list-topic__sub">{{ c.ticket_no }} · {{ c.sc_number }}</div></td>
+        <td><div class="sf-list-req">{{ c.requestor_name }}</div><span class="sf-list-req__sub">{{ c.requesting_dept }}</span></td>
+        <td>{{ c.topic_value_inr | inr }}</td>
+        <td>{{ c.status | status_chip }}</td>
+        <td>
+            {% if c.defined_tat %}
+            <span class="sf-list-clock__main {{ 'sf-list-clock__main--danger' if 'overdue' in c.days_text else 'sf-list-clock__main--ok' }}">{{ c.days_text }}</span>
+            {% if c.expected_po_closure %}<span class="sf-list-clock__sub">due {{ c.expected_po_closure | date }}</span>{% endif %}
+            {% else %}
+            <span class="sf-list-clock__main sf-list-clock__main--muted">Not started</span>
+            {% endif %}
+        </td>
+        <td><a href="/queue/{{ c.id }}" class="sf-btn sf-btn--secondary sf-btn--sm">Open</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endif %}
+
+{% endblock %}
+{% block extra_scripts %}
+<script>
+(function () {
+    var tabs = document.querySelectorAll("[data-tab-filter]");
+    var rows = document.querySelectorAll("tbody tr[data-category]");
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function (e) {
+            e.preventDefault();
+            tabs.forEach(function (t) { t.classList.remove("active"); });
+            tab.classList.add("active");
+            var filter = tab.getAttribute("data-tab-filter");
+            rows.forEach(function (row) {
+                var cat = row.getAttribute("data-category");
+                var show = filter === "all" ? cat !== "completed" : cat === filter;
+                row.style.display = show ? "" : "none";
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}

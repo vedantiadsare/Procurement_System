@@ -1,0 +1,83 @@
+{% import "_macros/icons.html" as ic %}
+
+<div class="sf-card sf-nr-card">
+    <div class="sf-grid sf-grid--3">
+        <div>
+            <h4 class="sf-section-header" style="margin-top:0;">Requester</h4>
+            <div class="sf-field-block"><div class="sf-field-block__label">Name</div><div class="sf-field-block__value">{{ case.requestor_name }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Email</div><div class="sf-field-block__value">{{ case.requestor_email }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Contact</div><div class="sf-field-block__value">{{ case.requestor_contact or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Department</div><div class="sf-field-block__value">{{ case.requesting_dept }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Cost center</div><div class="sf-field-block__value">{{ case.cost_center or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Employee code</div><div class="sf-field-block__value">{{ case.employee_code or "-" }}</div></div>
+            {% if case.is_on_behalf %}
+            <p class="sf-caption">Filed on their behalf by {{ case.submitted_by_name }} ({{ case.submitted_by_email }}).</p>
+            {% endif %}
+        </div>
+        <div>
+            <h4 class="sf-section-header" style="margin-top:0;">Topic</h4>
+            <div class="sf-field-block"><div class="sf-field-block__label">Sourcing type</div><div class="sf-field-block__value">{{ case.sourcing_type or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Commodity</div><div class="sf-field-block__value">{{ case.expense_commodity or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Delivery location</div><div class="sf-field-block__value">{{ case.delivery_location or "-" }}</div></div>
+            {% if case.sourcing_type == "Service" %}
+            <div class="sf-field-block"><div class="sf-field-block__label">Service delivery</div><div class="sf-field-block__value">{{ case.delivery_from_date | date }} – {{ case.delivery_to_date | date }}</div></div>
+            {% endif %}
+            <div class="sf-field-block"><div class="sf-field-block__label">Description</div><div class="sf-field-block__value">{{ case.description or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">MRM</div><div class="sf-field-block__value">{% if case.mrm_relevant == "No" %}Not relevant{% else %}{{ case.mrm_conducted or "-" }}{% endif %}</div></div>
+            {% if case.mrm_relevant != "No" and case.mrm_conducted == "No" %}
+            <div class="sf-field-block"><div class="sf-field-block__label">Reason</div><div class="sf-field-block__value">{{ case.mrm_reason or "-" }}</div></div>
+            {% endif %}
+        </div>
+        <div>
+            <h4 class="sf-section-header" style="margin-top:0;">Commercial</h4>
+            <div class="sf-field-block"><div class="sf-field-block__label">Topic value</div><div class="sf-field-block__value">{{ case.topic_value_inr | inr }}</div></div>
+            {% if case.currency and case.currency != "INR" and case.topic_value_foreign %}
+            <p class="sf-caption">{{ case.currency }} {{ "%.2f" | format(case.topic_value_foreign) }} @ rate {{ case.fx_rate or 1.0 }}</p>
+            {% endif %}
+            <div class="sf-field-block"><div class="sf-field-block__label">Currency of offers</div><div class="sf-field-block__value">{{ case.currency or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Topic value is</div><div class="sf-field-block__value">{{ case.tax_basis or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Current Contract Expiry</div><div class="sf-field-block__value">{{ case.fc_valid_till | date }}</div></div>
+        </div>
+    </div>
+</div>
+
+{% if not case.in_scope %}
+<div class="sf-alert sf-alert--warning">Out of scope for this portal (topic value &gt; ₹40,00,000) — handle manually.</div>
+{% endif %}
+
+<div class="sf-card sf-nr-card">
+    <div class="sf-confirm-section-title">Supplier offers received: {{ offers | length }}</div>
+    {% if not offers %}
+    <p class="sf-caption">No offers attached.</p>
+    {% else %}
+    {% for o in offers %}
+    <div class="sf-offer-row">
+        <span class="sf-offer-row__icon">{{ ic.icon("file-text", 16) }}</span>
+        <span class="sf-offer-row__name">{{ o.filename }}</span>
+        <a class="sf-offer-row__download" href="/attachments/{{ o.id }}/download">Download</a>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+
+<div class="sf-card sf-nr-card">
+    <div class="sf-confirm-section-title">AI offer analysis</div>
+    {% if not llm_configured %}
+    <p class="sf-caption">Not available right now — the AI model isn't configured or isn't running.</p>
+    {% else %}
+        {% if offer_analysis_error %}
+        <div class="sf-alert sf-alert--warning">{{ offer_analysis_error }}</div>
+        {% endif %}
+        {% if case.offer_analysis %}
+        <p class="sf-caption">Generated {{ case.offer_analysis_at | date }} · AI-generated — verify before relying on it.</p>
+        <div style="white-space:pre-wrap;line-height:1.5;">{{ case.offer_analysis }}</div>
+        {% else %}
+        <p class="sf-caption">No analysis generated yet.</p>
+        {% endif %}
+        <form method="post" action="/queue/{{ case.id }}/analyze-offers" style="margin-top:10px;" data-analyze-offers-form>
+            <button type="submit" class="sf-btn sf-btn--secondary sf-btn--sm" {{ "disabled" if not offers }}>{{ "Re-analyze offers" if case.offer_analysis else "Analyze offers with AI" }}</button>
+            <p class="sf-caption" data-analyze-offers-hint hidden>Reading offers and asking the AI model — this runs on this machine and can take up to a minute. Don't navigate away.</p>
+        </form>
+        {% if not offers %}<p class="sf-caption">Attach at least one supplier offer first.</p>{% endif %}
+    {% endif %}
+</div>

@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% import "_macros/icons.html" as ic %}
+{% block title %}Queue · Samagra{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">Queue</h1>
+            </div>
+            <div class="sf-hero-actions">
+                <form method="post" action="/mailbox/check">
+                    <button type="submit" class="sf-hero-btn sf-hero-btn--solid">{{ ic.icon("inbox", 14) }} Check mailbox now</button>
+                </form>
+            </div>
+        </div>
+        <p class="sf-hero-meta">Everything received from the portal and the mailbox · {{ counts.unclaimed }} waiting to be picked up</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="sf-list-tabs" data-list-tabs>
+    <a href="#" class="sf-list-tabs__item active" data-tab-filter="all">All open <span class="sf-list-tabs__count">{{ counts.open }}</span></a>
+    <a href="#" class="sf-list-tabs__item" data-tab-filter="unclaimed">Unclaimed <span class="sf-list-tabs__count">{{ counts.unclaimed }}</span></a>
+    <a href="#" class="sf-list-tabs__item" data-tab-filter="waiting">Waiting on requester <span class="sf-list-tabs__count">{{ counts.waiting }}</span></a>
+    <a href="#" class="sf-list-tabs__item" data-tab-filter="completed">Completed <span class="sf-list-tabs__count">{{ counts.completed }}</span></a>
+</div>
+
+<details style="margin:16px 0;">
+    <summary class="sf-caption" style="cursor:pointer;font-weight:600;">Filter by department, buyer, or date range</summary>
+    <form method="get" action="/queue" class="sf-filters" style="margin-top:10px;">
+        <div class="sf-field sf-field--search">
+            <label for="q">Search</label>
+            <input type="text" id="q" name="q" value="{{ filters.q }}" placeholder="Ticket, SC number, topic, or requester...">
+        </div>
+        <div class="sf-field">
+            <label for="dept">Department</label>
+            <select id="dept" name="dept" onchange="this.form.submit()">
+                <option value="All" {{ "selected" if filters.dept == "All" }}>All</option>
+                {% for d in departments %}
+                <option value="{{ d }}" {{ "selected" if filters.dept == d }}>{{ d }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="sf-field">
+            <label for="status">Status</label>
+            <select id="status" name="status" onchange="this.form.submit()">
+                <option value="All" {{ "selected" if filters.status == "All" }}>All</option>
+                {% for s in statuses %}
+                <option value="{{ s }}" {{ "selected" if filters.status == s }}>{{ s | status_label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="sf-field">
+            <label for="buyer">Buyer</label>
+            <select id="buyer" name="buyer" onchange="this.form.submit()">
+                <option value="All" {{ "selected" if filters.buyer == "All" }}>All</option>
+                {% for b in all_buyers %}
+                <option value="{{ b }}" {{ "selected" if filters.buyer == b }}>{{ b }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="sf-field">
+            <label for="date_from">Submitted from</label>
+            <input type="date" id="date_from" name="date_from" value="{{ filters.date_from }}" onchange="this.form.submit()">
+        </div>
+        <div class="sf-field">
+            <label for="date_to">Submitted to</label>
+            <input type="date" id="date_to" name="date_to" value="{{ filters.date_to }}" onchange="this.form.submit()">
+        </div>
+        <div class="sf-field">
+            <button type="submit" class="sf-btn sf-btn--secondary">Search</button>
+        </div>
+    </form>
+</details>
+
+{% if not cases %}
+<div class="sf-card">
+    <p class="sf-muted" style="margin:0;">No cases match these filters.</p>
+</div>
+{% else %}
+<div class="sf-list-table-wrap">
+<table class="sf-table">
+    <thead>
+    <tr>
+        <th>Topic</th><th>Came from</th><th>Requester</th><th>Value</th>
+        <th>Documents</th><th>Buyer</th><th>Clock</th><th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for c in cases %}
+    <tr data-category="{{ c.category }}">
+        <td><div class="sf-list-topic">{{ c.topic_title }}</div><div class="sf-list-topic__sub">{{ c.ticket_no }} · {{ c.sc_number }}</div></td>
+        <td>
+            <div class="sf-list-came">
+                {% if c.came_from == "Mailbox" %}{{ ic.icon("paperclip", 14) }}Mailbox{% else %}{{ ic.icon("layout", 14) }}Portal{% endif %}
+            </div>
+            <span class="sf-list-came__date">{{ c.submitted_at | date }}</span>
+        </td>
+        <td><div class="sf-list-req">{{ c.requestor_name }}</div><span class="sf-list-req__sub">{{ c.requesting_dept }}</span></td>
+        <td>{{ c.topic_value_inr | inr }}</td>
+        <td>
+            {% if c.docs_complete %}
+            <span class="sf-list-chip" style="background:#E5F5EA;color:#15803D;border:1px solid #BEE3C8;">Complete</span>
+            {% else %}
+            <span class="sf-list-chip" style="background:#FCF5D8;color:#8A6D0B;border:1px solid #EEDD9F;">{{ c.docs_missing_text }}</span>
+            {% endif %}
+        </td>
+        <td>{% if c.assigned_buyer %}<span class="sf-list-buyer">{{ c.assigned_buyer }}</span>{% else %}<span class="sf-list-buyer sf-list-buyer--unclaimed">Unclaimed</span>{% endif %}</td>
+        <td>
+            {% if c.defined_tat %}
+            <span class="sf-list-clock__main {{ 'sf-list-clock__main--danger' if 'overdue' in c.days_text else 'sf-list-clock__main--ok' }}">{{ c.days_text }}</span>
+            {% if c.expected_po_closure %}<span class="sf-list-clock__sub">due {{ c.expected_po_closure | date }}</span>{% endif %}
+            {% else %}
+            <span class="sf-list-clock__main sf-list-clock__main--muted">Not started</span>
+            {% endif %}
+        </td>
+        <td><a href="/queue/{{ c.id }}" class="sf-btn {{ 'sf-btn--primary' if c.category in ('unclaimed', 'waiting') else 'sf-btn--secondary' }} sf-btn--sm">{{ "Pick up" if c.category == "unclaimed" else "Open" }}</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+<p class="sf-list-summary">{{ cases | length }} case{{ "s" if cases | length != 1 }}</p>
+{% endif %}
+
+{% endblock %}
+{% block extra_scripts %}
+<script>
+(function () {
+    var tabs = document.querySelectorAll("[data-tab-filter]");
+    var rows = document.querySelectorAll("tbody tr[data-category]");
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function (e) {
+            e.preventDefault();
+            tabs.forEach(function (t) { t.classList.remove("active"); });
+            tab.classList.add("active");
+            var filter = tab.getAttribute("data-tab-filter");
+            rows.forEach(function (row) {
+                var cat = row.getAttribute("data-category");
+                var show = filter === "all" ? cat !== "completed" : cat === filter;
+                row.style.display = show ? "" : "none";
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}

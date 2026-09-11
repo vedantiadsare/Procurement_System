@@ -1,0 +1,193 @@
+/* Split-screen sign-in: teal brand panel (left) + form panel (right).
+   Reuses the sf-hero-teal tokens and the same abstract hexagon/line motif
+   as the other hero bands (own composition, not the Oracle Redwood
+   wavy-line/circle signature), recomposed for a tall vertical panel
+   instead of a short wide band. Own classes, own font stack. */
+
+/* base.html always wraps {% block content %} in <main class="sf-content">,
+   which carries site-wide max-width/padding - opt this one full-bleed page
+   out of that via the body_class block instead of fighting it with !important. */
+body.sf-login-page main.sf-content {
+    max-width: none;
+    padding: 0;
+}
+
+.sf-login-shell {
+    display: grid;
+    grid-template-columns: 1.05fr .95fr;
+    min-height: 100vh;
+}
+@media (max-width: 900px) {
+    .sf-login-shell { grid-template-columns: 1fr; }
+}
+
+/* ---- left brand panel ---- */
+.sf-login-side {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    padding: 46px 50px;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(155deg, var(--sf-hero-teal) 0%, var(--sf-hero-teal-deep) 100%);
+}
+.sf-login-side::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='1000' viewBox='0 0 600 1000'><g stroke='%23ffffff' fill='none' stroke-width='1.4' stroke-linecap='round'><line x1='120' y1='260' x2='340' y2='40' stroke-opacity='.16'/><line x1='260' y1='300' x2='560' y2='90' stroke-opacity='.13'/><line x1='40' y1='150' x2='260' y2='300' stroke-opacity='.11'/></g><g fill='%23ffffff'><circle cx='340' cy='40' r='3.2' fill-opacity='.30'/><circle cx='560' cy='90' r='3' fill-opacity='.26'/><circle cx='120' cy='260' r='3' fill-opacity='.24'/></g><g stroke='%23ffffff' fill='none' stroke-width='1.2' stroke-linecap='round'><line x1='60' y1='760' x2='260' y2='620' stroke-opacity='.10'/><line x1='260' y1='620' x2='480' y2='740' stroke-opacity='.08'/></g><g fill='%23ffffff'><circle cx='260' cy='620' r='2.6' fill-opacity='.20'/><circle cx='480' cy='740' r='2.4' fill-opacity='.16'/></g></svg>");
+    background-repeat: no-repeat;
+    background-position: right top;
+    background-size: 100% 100%;
+    pointer-events: none;
+}
+.sf-login-side > * { position: relative; z-index: 1; }
+
+.sf-login-mark {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+.sf-login-mark__name {
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+}
+.sf-login-mark__dept {
+    display: block;
+    font-weight: 400;
+    opacity: .65;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+
+.sf-login-mid {
+    margin-top: auto;
+    max-width: 440px;
+}
+.sf-login-mid h2 {
+    color: #fff;
+    font-size: 1.35rem;
+    font-weight: 500;
+    line-height: 1.35;
+    margin: 0 0 10px;
+}
+.sf-login-mid p {
+    font-size: 0.84rem;
+    color: rgba(255, 255, 255, .78);
+    line-height: 1.6;
+    margin: 0 0 20px;
+}
+.sf-login-pts {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 11px;
+}
+.sf-login-pts li {
+    display: flex;
+    gap: 11px;
+    font-size: 0.84rem;
+    color: rgba(255, 255, 255, .92);
+}
+.sf-login-pts svg { flex-shrink: 0; margin-top: 2px; opacity: .9; }
+
+.sf-login-foot {
+    margin-top: auto;
+    padding-top: 30px;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, .55);
+}
+
+/* ---- right form panel ---- */
+.sf-login-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 46px 36px;
+    background: var(--sf-surface);
+}
+.sf-login-box { width: 100%; max-width: 372px; }
+.sf-login-box h1 { font-size: 1.5rem; margin: 0 0 6px; color: var(--sf-text); font-weight: 700; }
+.sf-login-box .sf-login-sub { font-size: 0.82rem; color: var(--sf-text-muted); margin: 0 0 24px; line-height: 1.55; }
+
+.sf-login-err {
+    display: flex;
+    gap: 10px;
+    background: var(--sf-danger-bg);
+    border: 1px solid #F2C4C0;
+    border-radius: 4px;
+    padding: 11px 13px;
+    font-size: 0.78rem;
+    color: var(--sf-danger);
+    line-height: 1.5;
+    margin-bottom: 18px;
+}
+.sf-login-err svg { flex-shrink: 0; margin-top: 1px; }
+
+.sf-login-pw { position: relative; }
+.sf-login-pw input { padding-right: 58px; }
+.sf-login-pw button {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    height: 28px;
+    border: 0;
+    background: none;
+    color: var(--sf-text-muted);
+    font: 700 0.7rem/1 var(--sf-font);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 0 8px;
+}
+.sf-login-pw button:hover { color: var(--sf-text); }
+
+.sf-login-rowline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 2px 0 20px;
+}
+.sf-login-remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--sf-text);
+}
+.sf-login-remember input { width: 15px; height: 15px; accent-color: var(--sf-hero-teal); }
+.sf-login-rowline a { font-size: 0.82rem; }
+
+.sf-login-submit {
+    width: 100%;
+    height: 42px;
+    border: 0;
+    border-radius: 4px;
+    background: var(--sf-hero-teal);
+    color: #fff;
+    font: 700 0.92rem/1 var(--sf-font);
+    cursor: pointer;
+}
+.sf-login-submit:hover { background: var(--sf-hero-teal-deep); }
+
+.sf-login-helper {
+    font-size: 0.78rem;
+    color: var(--sf-text-muted);
+    margin: 16px 0 0;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.sf-login-legal {
+    margin-top: 22px;
+    font-size: 0.72rem;
+    color: var(--sf-text-faint);
+    line-height: 1.6;
+    text-align: center;
+}

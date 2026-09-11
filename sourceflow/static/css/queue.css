@@ -1,0 +1,165 @@
+.sf-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+.sf-filters .sf-field {
+    margin-bottom: 0;
+    min-width: 140px;
+}
+
+.sf-filters .sf-field--search {
+    flex: 1 1 220px;
+}
+
+.sf-detail-layout {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .sf-detail-layout { grid-template-columns: 1fr; }
+}
+
+.sf-tabs {
+    display: flex;
+    gap: 20px;
+    border-bottom: 1px solid var(--sf-border);
+    margin-bottom: 16px;
+}
+
+.sf-tab {
+    padding: 8px 0.1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--sf-text-muted);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+}
+.sf-tab:hover {
+    color: var(--sf-text);
+}
+.sf-tab.active {
+    color: var(--sf-text);
+    border-bottom-color: var(--sf-accent);
+}
+
+.sf-tab-panel {
+    display: none;
+}
+.sf-tab-panel.active {
+    display: block;
+}
+
+.sf-action-toolbar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.sf-action-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 20;
+    width: 320px;
+    background: #fff;
+    border: 1px solid var(--sf-border-strong);
+    border-radius: var(--sf-radius-lg);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+    padding: 14px;
+    display: none;
+}
+.sf-action-panel.is-open {
+    display: block;
+}
+
+.sf-record-info dl {
+    margin: 0;
+}
+.sf-record-info dt {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--sf-text-muted);
+    margin-top: 12px;
+}
+.sf-record-info dt:first-child {
+    margin-top: 0;
+}
+.sf-record-info dd {
+    margin: 2px 0 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Activity timeline */
+.sf-timeline {
+    position: relative;
+    padding-left: 4px;
+}
+.sf-timeline__item {
+    display: flex;
+    gap: 12px;
+    position: relative;
+    padding-bottom: 18px;
+}
+.sf-timeline__item:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 11px;
+    top: 22px;
+    bottom: 0;
+    width: 1px;
+    background: var(--sf-border-strong);
+}
+.sf-timeline__marker {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--sf-surface-alt);
+    border: 1px solid var(--sf-border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sf-text-muted);
+}
+.sf-timeline__content {
+    flex: 1;
+    padding-top: 2px;
+}
+.sf-timeline__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+.sf-timeline__action {
+    font-weight: 600;
+    font-size: 0.82rem;
+}
+.sf-timeline__time {
+    font-size: 0.72rem;
+    color: var(--sf-text-faint);
+    white-space: nowrap;
+}
+.sf-timeline__meta {
+    font-size: 0.75rem;
+    color: var(--sf-text-muted);
+    margin-top: 1px;
+}
+.sf-timeline__detail {
+    font-size: 0.8rem;
+    margin-top: 4px;
+    color: var(--sf-text);
+}

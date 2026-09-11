@@ -1,0 +1,307 @@
+/* New Sourcing Request (wizard step 1): compact teal hero + two-column layout
+   (form cards on the left, a sticky "before you submit" checklist on the
+   right). Own build, own classes - reuses .sf-hero-band/.sf-card/.sf-field/
+   .sf-radio-group from detail-hero.css/forms.css rather than duplicating
+   them. No third-party asset. */
+
+/* ---- hero variant: title + subtitle only, no status/actions ---- */
+.sf-nr-hero .sf-hero-title {
+    font-size: 1.25rem;
+}
+.sf-nr-hero .sf-hero-meta {
+    margin-top: 4px;
+}
+
+/* ---- two column layout ---- */
+.sf-nr-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 22px;
+    align-items: start;
+}
+@media (max-width: 980px) {
+    .sf-nr-layout { grid-template-columns: 1fr; }
+}
+
+.sf-nr-rail {
+    position: sticky;
+    top: 16px;
+}
+
+/* ---- form card with an icon + title head ---- */
+.sf-nr-card {
+    box-shadow: var(--sf-card-shadow);
+}
+.sf-nr-card__head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--sf-border);
+}
+.sf-nr-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(0, 140, 130, 0.10);
+    color: var(--sf-hero-teal);
+    flex-shrink: 0;
+}
+.sf-nr-card__title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--sf-text);
+}
+.sf-nr-card__subtitle {
+    font-size: 0.76rem;
+    color: var(--sf-text-muted);
+    margin-top: 1px;
+}
+
+/* ---- a field that's genuinely tied to the signed-in identity (name/email
+   when filing on your own behalf) - visually distinct from a normal
+   editable field so it doesn't look like a fillable box, without implying
+   every field on this page is SSO-sourced. ---- */
+.sf-locked-field .sf-field label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.sf-locked-field input:disabled {
+    background: var(--sf-surface-alt);
+    color: var(--sf-text-muted);
+    cursor: not-allowed;
+}
+
+/* ---- single dropzone, all documents dropped/browsed here then tagged ---- */
+.sf-dropzone {
+    position: relative;
+    border: 1.5px dashed var(--sf-border-strong);
+    border-radius: var(--sf-radius-lg);
+    background: var(--sf-surface-alt);
+    padding: 22px 20px;
+    text-align: center;
+    color: var(--sf-text-muted);
+    transition: background-color .12s, border-color .12s;
+}
+.sf-dropzone.is-dragover {
+    background: rgba(0, 140, 130, 0.07);
+    border-color: var(--sf-hero-teal);
+}
+.sf-dropzone__icon {
+    color: var(--sf-text-faint);
+    margin-bottom: 6px;
+}
+.sf-dropzone__title {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--sf-text);
+}
+.sf-dropzone__browse {
+    color: var(--sf-accent);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.sf-dropzone__hint {
+    font-size: 0.76rem;
+    margin-top: 4px;
+}
+
+/* ---- flat list of attached files, each with a correctable type tag ---- */
+.sf-doc-list {
+    margin-top: 12px;
+}
+.sf-doc-list__empty {
+    font-size: 0.8rem;
+    color: var(--sf-text-faint);
+    text-align: center;
+    padding: 10px 0;
+    margin: 0;
+}
+.sf-doc-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 2px;
+    border-bottom: 1px solid var(--sf-border);
+}
+.sf-doc-item:last-child {
+    border-bottom: none;
+}
+.sf-doc-item__icon {
+    flex-shrink: 0;
+    display: flex;
+    color: var(--sf-text-faint);
+}
+.sf-doc-item__name {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.84rem;
+    color: var(--sf-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.sf-doc-item__hint {
+    flex-shrink: 0;
+    font-size: 0.76rem;
+    color: var(--sf-text-faint);
+    white-space: nowrap;
+}
+.sf-doc-item__tag {
+    flex-shrink: 0;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--sf-hero-teal-deep);
+    background: rgba(0, 140, 130, 0.08);
+    border: 1px solid rgba(0, 140, 130, 0.25);
+    border-radius: 4px;
+    padding: 3px 6px;
+}
+.sf-doc-item__remove {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: var(--sf-text-faint);
+    cursor: pointer;
+}
+.sf-doc-item__remove:hover {
+    background: var(--sf-danger-bg);
+    color: var(--sf-danger);
+}
+
+/* ---- custom-styled file picker: hides the native input's own "Choose
+   File / No file chosen" chrome behind a themed button + filename text ---- */
+.sf-file-picker {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 200px;
+}
+.sf-file-picker__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+}
+.sf-file-picker__btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+.sf-file-picker__name {
+    font-size: 0.76rem;
+    color: var(--sf-text-faint);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.sf-file-picker__input:focus-visible + .sf-file-picker__btn {
+    outline: 2px solid var(--sf-accent);
+    outline-offset: 2px;
+}
+
+/* ---- dd.mm.yyyy text-mask date fields ---- */
+.sf-date-input {
+    max-width: 150px;
+}
+
+/* ---- ₹ prefixed, comma-formatted topic value ---- */
+.sf-inr-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--sf-border-strong);
+    border-radius: 4px;
+    background: #fff;
+    padding: 0 0.7rem;
+}
+.sf-inr-input:focus-within {
+    border-color: var(--sf-accent);
+    box-shadow: 0 0 0 3px rgba(0, 67, 122, 0.12);
+}
+.sf-inr-input__prefix {
+    color: var(--sf-text-muted);
+    font-weight: 600;
+    margin-right: 2px;
+}
+.sf-inr-input__display {
+    border: none !important;
+    padding: 0.55rem 0 !important;
+    box-shadow: none !important;
+}
+.sf-inr-input__display:focus {
+    outline: none;
+    box-shadow: none !important;
+}
+.sf-field-warning {
+    font-size: 0.78rem;
+    color: var(--sf-warning);
+    margin-top: 0.4rem;
+}
+.sf-field-warning[hidden] {
+    display: none;
+}
+
+/* ---- primary submit button: brand teal, same as the hero actions
+   elsewhere, not the older navy .sf-btn--primary ---- */
+.sf-form-actions .sf-btn--primary {
+    background: var(--sf-hero-teal);
+    border-color: var(--sf-hero-teal);
+}
+.sf-form-actions .sf-btn--primary:hover {
+    background: var(--sf-hero-teal-deep);
+    border-color: var(--sf-hero-teal-deep);
+}
+
+/* ---- "Before you submit" checklist, right rail ---- */
+.sf-checklist__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--sf-border);
+}
+.sf-checklist__item:last-child {
+    border-bottom: none;
+}
+.sf-checklist__dot {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--sf-border-strong);
+    color: transparent;
+    margin-top: 1px;
+}
+.sf-checklist__item.is-done .sf-checklist__dot {
+    background: var(--sf-success);
+    border-color: var(--sf-success);
+    color: #fff;
+}
+.sf-checklist__label {
+    font-size: 0.82rem;
+    color: var(--sf-text);
+}
+.sf-checklist__item.is-done .sf-checklist__label {
+    color: var(--sf-text-muted);
+}
+.sf-checklist__sub {
+    font-size: 0.74rem;
+    color: var(--sf-text-faint);
+    margin-top: 1px;
+}

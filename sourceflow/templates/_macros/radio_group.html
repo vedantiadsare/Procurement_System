@@ -1,0 +1,13 @@
+{% macro radios(name, label, options, value="", required=False, data_attrs="") %}
+<div class="sf-field">
+    <label>{{ label }}{% if required %}<span class="sf-required">*</span>{% endif %}</label>
+    <div class="sf-radio-group" {{ data_attrs | safe }}>
+        {% for opt in options %}
+        <label>
+            <input type="radio" name="{{ name }}" value="{{ opt }}" {{ "checked" if opt == value or (not value and loop.first) }} {{ "required" if required }}>
+            {{ opt }}
+        </label>
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}

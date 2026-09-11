@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confirm submission · Samagra (preview)</title>
+<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/header.css">
+<link rel="stylesheet" href="/static/css/forms.css">
+<link rel="stylesheet" href="/static/css/detail-hero.css">
+<link rel="stylesheet" href="/static/css/new-request-form.css">
+<link rel="stylesheet" href="/static/css/confirm-success.css">
+<style>
+.sf-preview-banner{background:#1f2937;color:#fff;font-size:12px;text-align:center;padding:6px;}
+</style>
+</head>
+<body>
+<div class="sf-preview-banner">PREVIEW — not a live route, for review only</div>
+
+<div class="sf-shell-header">
+    <div class="sf-shell-header__row">
+        <div class="sf-shell-brand">
+            <svg class="sf-shell-brand__mark" width="22" height="22" viewBox="0 0 50 50" fill="none">
+                <rect x="4" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".38"/>
+                <rect x="28" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="4" y="28" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="28" y="28" width="18" height="18" rx="4" fill="#fff"/>
+            </svg>
+            <span class="sf-shell-brand__name">Samagra</span>
+            <span class="sf-shell-brand__dept">General Procurement</span>
+        </div>
+        <form class="sf-shell-search" method="get" action="/requests">
+            <svg class="sf-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" name="q" placeholder="Search requests, tickets, suppliers...">
+        </form>
+        <div class="sf-shell-actions">
+            <button type="button" class="sf-shell-icon-btn" title="Notifications">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </button>
+            <a class="sf-shell-icon-btn" href="mailto:procurement.intake.demo@outlook.com" title="Help &amp; support">
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.7"></path><line x1="12" y1="17.5" x2="12" y2="17.6"></line></svg>
+            </a>
+            <div class="sf-shell-user">
+                <span class="sf-avatar">AK</span>
+                <div class="sf-shell-user__meta">
+                    <span class="sf-shell-user__name">Ananya Kulkarni</span>
+                    <span class="sf-shell-user__role">Requester</span>
+                </div>
+            </div>
+            <button type="button" class="sf-shell-icon-btn" title="Log out">
+                <svg class="sf-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+        </div>
+    </div>
+</div>
+<div class="sf-shell-subnav">
+    <div class="sf-shell-subnav__row">
+        <a class="sf-shell-subnav__link" href="#">Home</a>
+        <a class="sf-shell-subnav__link active" href="#">New Sourcing Request</a>
+        <a class="sf-shell-subnav__link" href="#">My Requests</a>
+    </div>
+</div>
+
+<div class="sf-hero-band sf-nr-hero">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb">Home / New Sourcing Request / Review</div>
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">Check what we read from your cart</h1>
+            </div>
+        </div>
+        <div class="sf-confirm-steps">
+            <b><span class="sf-confirm-steps__n">✓</span> Details</b>
+            <span class="sf-confirm-steps__sep"></span>
+            <b class="is-current"><span class="sf-confirm-steps__n">2</span> Review &amp; submit</b>
+        </div>
+    </div>
+</div>
+
+<main class="sf-content">
+<div class="sf-nr-layout">
+
+<div>
+
+    <div class="sf-confirm-warn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8791A" stroke-width="1.8"><path d="M12 3 2 20h20L12 3z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></svg>
+        <div>
+            <b>Two things to look at before you submit</b>
+            <ul>
+                <li>Line 3 has no unit price in the cart — your buyer will ask the supplier to quote it.</li>
+                <li>The cart total is ₹40,50,000, above the ₹40,00,000 limit for standard TAT bands on this route.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="sf-card sf-nr-card">
+        <div class="sf-confirm-section-title">Line items</div>
+        <div class="sf-confirm-section-sub">Read from Shopping_Cart-1013301912.pdf. To change these, fix the cart and upload it again — nothing here is typed by hand.</div>
+        <div style="overflow-x:auto;">
+        <table class="sf-table">
+            <thead><tr><th>Item</th><th>Description</th><th>Qty</th><th>UoM</th><th>Unit price</th><th>Amount</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Business Laptop — Intel Core Ultra 7, 32GB RAM, 1TB SSD, 14-inch</td>
+                    <td>30</td><td>EA</td><td>₹1,20,000</td><td>₹36,00,000</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>USB-C Docking Station, dual display, 100W PD</td>
+                    <td>30</td><td>EA</td><td>₹15,000</td><td>₹4,50,000</td>
+                </tr>
+                <tr class="sf-row-flag">
+                    <td>3</td>
+                    <td>On-site installation and asset tagging</td>
+                    <td>1</td><td>LOT</td><td>—</td><td>—</td>
+                </tr>
+                <tr class="sf-row-flag sf-row-warn">
+                    <td></td>
+                    <td colspan="5">No price found for this line in the cart. Your buyer will ask the supplier to quote it.</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr><td colspan="5" style="text-align:right;">Total read from cart</td><td>₹40,50,000</td></tr>
+            </tfoot>
+        </table>
+        </div>
+        <div class="sf-grid sf-grid--2" style="margin-top:1rem;">
+            <div>
+                <div class="sf-caption">Topic value you entered</div>
+                <div style="font-weight:700;font-size:1.1rem;">₹40,50,000</div>
+            </div>
+            <div>
+                <div class="sf-caption">SC total we read</div>
+                <div style="font-weight:700;font-size:1.1rem;">₹40,50,000</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sf-card sf-nr-card">
+        <div class="sf-confirm-section-title">Header details</div>
+        <div class="sf-confirm-section-sub">Filing as <strong>Ananya Kulkarni</strong> (ananya.kulkarni@vw-gp.com).</div>
+
+        <div class="sf-grid sf-grid--3">
+            <div class="sf-field-block"><div class="sf-field-block__label">Department</div><div class="sf-field-block__value">Procurement</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Requesting BU</div><div class="sf-field-block__value">VW GDS India</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Cost center</div><div class="sf-field-block__value">4471</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Employee code</div><div class="sf-field-block__value">VWI09231</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">User ID</div><div class="sf-field-block__value">AKULKAR3</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Shopping cart</div><div class="sf-field-block__value">1013301912</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Topic</div><div class="sf-field-block__value">Business laptops and docks for HR</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Sourcing type</div><div class="sf-field-block__value">Product</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Commodity</div><div class="sf-field-block__value">IT Hardware</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Delivery location</div><div class="sf-field-block__value">Pune</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Required by</div><div class="sf-field-block__value">30.09.2026</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Currency</div><div class="sf-field-block__value">INR</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Tax basis</div><div class="sf-field-block__value">Inclusive of GST</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">MRM conducted</div><div class="sf-field-block__value">No — below threshold</div></div>
+        </div>
+    </div>
+
+    <div class="sf-card sf-nr-card">
+        <div class="sf-confirm-section-title">Documents attached</div>
+        <div class="sf-confirm-file">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M6 3h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path></svg>
+            Shopping_Cart-1013301912.pdf <span class="sf-confirm-file__tag">Approved cart</span>
+        </div>
+        <div class="sf-confirm-file">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M6 3h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path></svg>
+            SFO_Signed.pdf <span class="sf-confirm-file__tag">Signed SFO</span>
+        </div>
+        <div class="sf-confirm-file">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M6 3h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path></svg>
+            RFQ_LaptopsHR.pdf <span class="sf-confirm-file__tag">RFQ</span>
+        </div>
+        <div class="sf-confirm-file">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18H5z"></path><path d="M9 8h6M9 12h6"></path></svg>
+            Offer_AlphaTech.xlsx <span class="sf-confirm-file__tag">Offer</span>
+        </div>
+        <div class="sf-confirm-file">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18H5z"></path><path d="M9 8h6M9 12h6"></path></svg>
+            Offer_BetaInfotech.xlsx <span class="sf-confirm-file__tag">Offer</span>
+        </div>
+    </div>
+
+    <div class="sf-confirm-actions">
+        <button type="button" class="sf-btn sf-btn--secondary">Discard and start over</button>
+        <button type="button" class="sf-btn sf-btn--primary">Confirm &amp; submit</button>
+    </div>
+
+</div>
+
+<div class="sf-nr-rail">
+    <div class="sf-card sf-nr-card">
+        <div class="sf-nr-card__title" style="margin-bottom:12px;">Document set</div>
+        <div class="sf-checklist">
+            <div class="sf-checklist__item is-done"><span class="sf-checklist__dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><div><div class="sf-checklist__label">Approved shopping cart</div><div class="sf-checklist__sub">1 file</div></div></div>
+            <div class="sf-checklist__item is-done"><span class="sf-checklist__dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><div><div class="sf-checklist__label">Signed SFO</div><div class="sf-checklist__sub">1 file</div></div></div>
+            <div class="sf-checklist__item is-done"><span class="sf-checklist__dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><div><div class="sf-checklist__label">RFQ</div><div class="sf-checklist__sub">1 file</div></div></div>
+            <div class="sf-checklist__item is-done"><span class="sf-checklist__dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span><div><div class="sf-checklist__label">Offer from each bidder</div><div class="sf-checklist__sub">2 offers</div></div></div>
+            <div class="sf-checklist__item"><span class="sf-checklist__dot"></span><div><div class="sf-checklist__label">Regret letters</div><div class="sf-checklist__sub">Optional</div></div></div>
+        </div>
+        <div class="sf-alert sf-alert--warning" style="margin:14px 0 0;">Your document set looks complete. The turnaround clock starts once your buyer confirms it — not at submission.</div>
+    </div>
+
+    <div class="sf-card sf-nr-card">
+        <div class="sf-nr-card__title" style="margin-bottom:8px;">Above the limit</div>
+        <p class="sf-caption" style="margin:0;">The cart totals <strong>₹40,50,000</strong>, over the ₹40,00,000 ceiling for standard TAT bands. You can still submit — your buyer will handle timelines manually instead.</p>
+    </div>
+</div>
+
+</div>
+</main>
+</body>
+</html>

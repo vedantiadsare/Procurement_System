@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Samagra{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ asset_url('/static/css/dashboard.css') }}">
+{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-dash-top sf-dash-top--onband">
+            <div>
+                <h1 class="sf-dash-greet" id="greet"></h1>
+                <div class="sf-dash-datebar" id="dateBar"></div>
+            </div>
+            <div class="sf-dash-acts">
+                <button class="sf-dash-btn-onband" id="exportAll" type="button">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>
+                    Export to Excel
+                </button>
+            </div>
+        </div>
+        {% if data.scope == "buyer" %}
+        <div class="sf-dash-tabs" role="tablist" aria-label="Which cases to show">
+            <button type="button" class="sf-dash-tab is-active" role="tab"
+                    aria-selected="true" data-scope="me">My cases</button>
+            <button type="button" class="sf-dash-tab" role="tab"
+                    aria-selected="false" data-scope="all">All departments</button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div id="noData" class="sf-card" hidden>
+    <h3 class="sf-section-header" style="margin-top:0;">Nothing to report yet</h3>
+    <p class="sf-caption" style="margin:0;">
+        {% if data.scope == "buyer" %}
+        No sourcing cases have been submitted yet. This page fills in automatically as requests arrive.
+        {% else %}
+        You haven't raised any sourcing requests yet. <a href="/requests/new">Raise your first one</a> and it'll show up here.
+        {% endif %}
+    </p>
+</div>
+
+<div id="dashBody">
+
+    <div class="sf-dash-status">
+        <div>
+            <div class="l">Overall status</div>
+            <div class="big"><b id="sOpen"></b><span>open {{ "cases" if data.scope == "buyer" else "requests" }}</span></div>
+            <div class="d" id="sSub"></div>
+        </div>
+        <div class="div"></div>
+        <div class="pct">
+            <div class="bar"><i id="sBar"></i></div>
+            <div>
+                <b id="sPct"></b>
+                <div class="t">POs closed on time</div>
+                <div class="s" id="sPctSub"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sf-dash-panels">
+        <div class="sf-dash-card">
+            <h3>{{ "Cases" if data.scope == "buyer" else "Requests" }} by stage <span>Click a segment to filter your {{ "cases" if data.scope == "buyer" else "requests" }}</span></h3>
+            <div class="sf-dash-dn">
+                <div class="sf-dash-ch"><canvas id="cStage"></canvas></div>
+                <div class="sf-dash-lg" id="lg"></div>
+            </div>
+        </div>
+        <div class="sf-dash-card">
+            <h3>PO due (next 14 days)</h3>
+            <div class="sf-dash-cs">Where your open {{ "cases" if data.scope == "buyer" else "requests" }} are expected to close</div>
+            <div class="sf-dash-bars" id="bars"></div>
+            <div class="sf-dash-pofoot">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                <span id="fA"></span><i>·</i><span id="fB"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sf-dash-panels">
+        <div class="sf-dash-card">
+            <h3>{{ "Cases" if data.scope == "buyer" else "Requests" }} by {{ "department" if data.scope == "buyer" else "commodity" }} <span id="deptCount"></span></h3>
+            <div class="sf-dash-cs">All {{ "cases" if data.scope == "buyer" else "requests" }} raised · click a bar to filter the list below</div>
+            <div class="sf-dash-chart" style="height:250px"><canvas id="cDept"></canvas></div>
+            <div class="sf-dash-deptlegend" id="deptLegend"></div>
+        </div>
+        <div class="sf-dash-card">
+            <h3>TAT performance by {{ "department" if data.scope == "buyer" else "commodity" }}</h3>
+            <div class="sf-dash-cs">Share of completed {{ "cases" if data.scope == "buyer" else "requests" }} closed within the agreed TAT</div>
+            <div class="sf-dash-tatlist" id="tatList"></div>
+        </div>
+    </div>
+
+    <div class="sf-dash-card sf-dash-attn">
+        <h3><span id="attnTitle">⚡ Needs {{ "your" if data.scope == "buyer" else "" }} attention</span>
+            <span class="sf-dash-badge" id="nAttn"></span>
+            <a href="{{ '/queue' if data.scope == 'buyer' else '/requests' }}" class="va">View all {{ "cases" if data.scope == "buyer" else "requests" }} →</a>
+        </h3>
+        <div class="sf-dash-attnfilters" id="attnFilters"></div>
+        <table class="sf-dash-tbl" id="attn"></table>
+    </div>
+
+    <div class="sf-dash-card">
+        <div class="sf-dash-rechead">
+            <h3 id="recTitle"></h3>
+            <span class="sf-dash-badge neutral" id="nRec"></span>
+            <span class="sf-dash-recshown" id="recShown"></span>
+        </div>
+        <div class="sf-dash-scroll sf-dash-recscroll">
+            <table class="sf-dash-tbl sf-dash-rectbl" id="recTable"></table>
+        </div>
+        <div class="sf-dash-recpager" id="recPager"></div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script id="dashData" type="application/json">{{ data.cases | tojson }}</script>
+<script>
+  window.SAMAGRA_DASH = {
+      scope: {{ data.scope | tojson }},
+      today: {{ data.today | tojson }},
+      userName: {{ user.name | tojson }},
+      caseUrlBase: {{ ("/queue/" if data.scope == "buyer" else "/requests/") | tojson }},
+      org: {{ "Volkswagen Group Digital Solutions · Indirect Procurement" | tojson }}
+  };
+</script>
+<script src="/static/js/vendor/chart.umd.min.js"></script>
+<script src="/static/js/vendor/xlsx.full.min.js"></script>
+<script src="{{ asset_url('/static/js/dashboard.js') }}"></script>
+{% endblock %}

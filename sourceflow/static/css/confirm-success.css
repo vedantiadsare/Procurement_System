@@ -1,0 +1,221 @@
+/* New Request step 2 (confirm/review) + success page. Reuses .sf-hero-band's
+   gradient/texture, .sf-checklist from new-request-form.css, and .sf-card
+   from base.css - only page-specific pieces defined here. */
+
+/* ---- step indicator inside the hero ---- */
+.sf-confirm-steps {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, .7);
+}
+.sf-confirm-steps b {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, .7);
+}
+.sf-confirm-steps .sf-confirm-steps__n {
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, .5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+}
+.sf-confirm-steps .is-current {
+    color: #fff;
+    font-weight: 600;
+}
+.sf-confirm-steps .is-current .sf-confirm-steps__n {
+    background: #fff;
+    color: var(--sf-hero-teal-deep);
+    border-color: #fff;
+    font-weight: 700;
+}
+.sf-confirm-steps__sep {
+    width: 24px;
+    height: 1px;
+    background: rgba(255, 255, 255, .35);
+}
+
+/* ---- combined "things to look at" warning banner ---- */
+.sf-confirm-warn {
+    display: flex;
+    gap: 12px;
+    border-radius: var(--sf-radius);
+    padding: 13px 15px;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    margin-bottom: 18px;
+    background: var(--sf-warning-bg);
+    border: 1px solid #F6DBA8;
+    color: #7A4F0D;
+}
+.sf-confirm-warn svg { flex-shrink: 0; margin-top: 1px; }
+.sf-confirm-warn b { display: block; margin-bottom: 3px; color: #7A4F0D; }
+.sf-confirm-warn ul { margin: 2px 0 0; padding-left: 18px; }
+
+/* ---- line items table: flagged rows for missing prices ---- */
+tr.sf-row-flag td {
+    background: #FFFBF3;
+}
+tr.sf-row-warn td {
+    font-size: 0.76rem;
+    color: #8A5A0F;
+    padding-top: 0;
+    border-bottom: 1px solid var(--sf-border);
+}
+
+/* ---- header-details field groups (reuses .sf-field-block from detail-hero.css) ---- */
+.sf-confirm-section-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--sf-text);
+    margin: 0 0 4px;
+}
+.sf-confirm-section-sub {
+    font-size: 0.78rem;
+    color: var(--sf-text-muted);
+    margin: 0 0 14px;
+}
+
+/* ---- read-only attached-file rows ---- */
+.sf-confirm-file {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--sf-border);
+    font-size: 0.84rem;
+    color: var(--sf-text);
+}
+.sf-confirm-file:last-child { border-bottom: none; }
+.sf-confirm-file__tag {
+    margin-left: auto;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: rgba(0, 140, 130, 0.08);
+    color: var(--sf-hero-teal-deep);
+    border: 1px solid rgba(0, 140, 130, 0.22);
+    border-radius: 3px;
+    padding: 2px 8px;
+}
+
+/* ---- action bar ---- */
+.sf-confirm-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+/* ---- success hero: bigger, celebratory ---- */
+.sf-win-hero {
+    min-height: 0;
+    justify-content: flex-start;
+    padding: 44px 28px 50px;
+}
+.sf-win-tick {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .16);
+    border: 1.5px solid rgba(255, 255, 255, .5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.sf-win-hero h1 {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+}
+.sf-win-hero .sf-win-lede {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, .82);
+    margin: 0 0 22px;
+    max-width: 520px;
+    line-height: 1.6;
+}
+.sf-win-caseid {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 12px;
+    background: #fff;
+    color: var(--sf-hero-teal-deep);
+    border-radius: 5px;
+    padding: 12px 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .18);
+}
+.sf-win-caseid small {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: .6;
+}
+.sf-win-caseid b { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.005em; }
+.sf-win-clockline {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: rgba(255, 255, 255, .13);
+    border: 1px solid rgba(255, 255, 255, .32);
+    border-radius: 5px;
+    padding: 14px 16px;
+    font-size: 0.82rem;
+    color: #fff;
+    line-height: 1.55;
+    max-width: 600px;
+}
+.sf-win-clockline svg { flex-shrink: 0; margin-top: 1px; }
+.sf-win-clockline b { font-weight: 600; }
+
+/* ---- what happens next ---- */
+.sf-next-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 26px;
+}
+@media (max-width: 900px) { .sf-next-row { grid-template-columns: 1fr; } }
+.sf-next-card__num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--sf-hero-teal);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+.sf-next-card b {
+    display: block;
+    font-size: 0.88rem;
+    color: var(--sf-text);
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+.sf-next-card p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--sf-text-muted);
+    line-height: 1.55;
+}
+.sf-win-donebtns { display: flex; gap: 10px; flex-wrap: wrap; }

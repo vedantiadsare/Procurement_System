@@ -1,0 +1,38 @@
+{% macro text(name, label, value="", type="text", required=False, help="", attrs="") %}
+<div class="sf-field">
+    <label for="f_{{ name }}">{{ label }}{% if required %}<span class="sf-required">*</span>{% endif %}</label>
+    <input type="{{ type }}" id="f_{{ name }}" name="{{ name }}" value="{{ value or '' }}" {{ "required" if required }} {{ attrs | safe }}>
+    {% if help %}<div class="sf-hint">{{ help }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro textarea(name, label, value="", required=False, help="") %}
+<div class="sf-field">
+    <label for="f_{{ name }}">{{ label }}{% if required %}<span class="sf-required">*</span>{% endif %}</label>
+    <textarea id="f_{{ name }}" name="{{ name }}" {{ "required" if required }}>{{ value or '' }}</textarea>
+    {% if help %}<div class="sf-hint">{{ help }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro select(name, label, options, value="", required=False, help="") %}
+<div class="sf-field">
+    <label for="f_{{ name }}">{{ label }}{% if required %}<span class="sf-required">*</span>{% endif %}</label>
+    <select id="f_{{ name }}" name="{{ name }}" {{ "required" if required }}>
+        {% for opt in options %}
+        <option value="{{ opt }}" {{ "selected" if opt == value }}>{{ opt }}</option>
+        {% endfor %}
+    </select>
+    {% if help %}<div class="sf-hint">{{ help }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro file(name, label, required=False, multiple=False, accept="") %}
+<div class="sf-field">
+    <label for="f_{{ name }}">{{ label }}{% if required %}<span class="sf-required">*</span>{% endif %}</label>
+    <div class="sf-file-picker" style="max-width:none;">
+        <input type="file" id="f_{{ name }}" name="{{ name }}" class="sf-file-picker__input" {{ "multiple" if multiple }} {% if accept %}accept="{{ accept }}"{% endif %}>
+        <label for="f_{{ name }}" class="sf-file-picker__btn sf-btn sf-btn--secondary sf-btn--sm">{{ "Choose files" if multiple else "Choose file" }}</label>
+        <span class="sf-file-picker__name" data-file-name>No file chosen</span>
+    </div>
+</div>
+{% endmacro %}

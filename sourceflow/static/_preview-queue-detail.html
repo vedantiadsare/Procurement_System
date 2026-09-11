@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PREVIEW — queue detail redesign</title>
+<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/header.css">
+<link rel="stylesheet" href="/static/css/forms.css">
+<link rel="stylesheet" href="/static/css/queue.css">
+<link rel="stylesheet" href="/static/css/detail-hero.css">
+<style>
+  .preview-banner {
+      background: #B45309; color: #fff; text-align: center;
+      font-size: 0.78rem; font-weight: 700; padding: 6px;
+      letter-spacing: 0.03em; text-transform: uppercase;
+  }
+  .sf-preview-addendum-divider {
+      font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
+      color: #5B6472; text-align: center; padding: 14px 20px;
+      background: #F7F8FA; border-top: 1px dashed #C7CCD4; border-bottom: 1px dashed #C7CCD4;
+  }
+</style>
+</head>
+<body>
+<div class="preview-banner">PREVIEW ONLY — REAL CASE DATA (SF-2026-00008), NO ROUTE WIRED, BUTTONS DON'T SUBMIT</div>
+
+<div class="sf-shell-header">
+    <div class="sf-shell-header__row">
+        <div class="sf-shell-brand">
+            <svg class="sf-shell-brand__mark" width="22" height="22" viewBox="0 0 50 50" fill="none">
+                <rect x="4" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".38"/>
+                <rect x="28" y="4" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="4" y="28" width="18" height="18" rx="4" fill="#fff" fill-opacity=".62"/>
+                <rect x="28" y="28" width="18" height="18" rx="4" fill="#fff"/>
+            </svg>
+            <span class="sf-shell-brand__name">Samagra</span>
+            <span class="sf-shell-brand__dept">General Procurement</span>
+        </div>
+        <div class="sf-shell-search">
+            <svg class="sf-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="Search requests, tickets, suppliers..." disabled>
+        </div>
+        <div class="sf-shell-actions">
+            <button class="sf-shell-icon-btn" type="button" disabled>
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </button>
+            <button class="sf-shell-icon-btn" type="button" disabled>
+                <svg class="sf-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.7"></path></svg>
+            </button>
+            <div class="sf-shell-user">
+                <span class="sf-avatar">PD</span>
+                <div class="sf-shell-user__meta">
+                    <span class="sf-shell-user__name">Procurement Demo</span>
+                    <span class="sf-shell-user__role">Buyer (GP)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- black "Queue" subnav bar deliberately removed - breadcrumb inside the hero replaces it -->
+
+<!-- ===================== compact teal band: ~160px ===================== -->
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb"><a href="#">Queue</a> / SF-2026-00008</div>
+        <div class="sf-hero-row">
+            <div>
+                <div class="sf-hero-title-group">
+                    <h1 class="sf-hero-title">SF-2026-00008 — It</h1>
+                    <span class="sf-status-onteal">In Review</span>
+                </div>
+                <p class="sf-hero-meta">SC 9970656893 · Requested by Vedanti Adsare (vedanti.adsare@vwgds.in) · HR · Product</p>
+            </div>
+            <div class="sf-hero-actions">
+                <button type="button" class="sf-hero-btn sf-hero-btn--outline" onclick="toggleActionPanel('p-enquire')">Enquire</button>
+                <button type="button" class="sf-hero-btn sf-hero-btn--solid" onclick="toggleActionPanel('p-approve')">Approve</button>
+                <button type="button" class="sf-hero-btn sf-hero-btn--text" onclick="toggleActionPanel('p-reject')">Reject</button>
+
+                <div id="p-enquire" class="sf-action-panel">
+                    <p class="sf-caption">Tell the requester what's missing or needs correction.</p>
+                    <form onsubmit="return false">
+                        <div class="sf-field"><label>Comment *</label><textarea required></textarea></div>
+                        <button type="submit" class="sf-btn sf-btn--primary">Send enquiry</button>
+                    </form>
+                </div>
+                <div id="p-approve" class="sf-action-panel">
+                    <p class="sf-caption">Confirm approval and record the PO number.</p>
+                    <form onsubmit="return false">
+                        <div class="sf-field"><label>PO number *</label><input type="text" required></div>
+                        <button type="submit" class="sf-btn sf-btn--primary">Confirm approval</button>
+                    </form>
+                </div>
+                <div id="p-reject" class="sf-action-panel">
+                    <p class="sf-caption">This is terminal — the requester will need to submit a new case.</p>
+                    <form onsubmit="return false">
+                        <div class="sf-field"><label>Reason *</label><textarea required></textarea></div>
+                        <button type="submit" class="sf-btn sf-btn--danger">Confirm rejection</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ===================== end hero band ===================== -->
+
+<main class="sf-content">
+    <div class="sf-tabs">
+        <a href="#" class="sf-tab active" data-tab-link="summary" onclick="return showTab('summary', this)">Summary</a>
+        <a href="#" class="sf-tab" data-tab-link="documents" onclick="return showTab('documents', this)">Documents</a>
+        <a href="#" class="sf-tab" data-tab-link="activity" onclick="return showTab('activity', this)">Activity</a>
+    </div>
+
+    <div class="sf-detail-layout">
+        <div>
+            <div id="tab-summary" class="tab-panel">
+                <div class="sf-card">
+                    <div class="sf-grid sf-grid--3">
+                        <div>
+                            <h4 class="sf-section-header" style="margin-top:0;">Requester</h4>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Name</div><div class="sf-field-block__value">Vedanti Adsare</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Email</div><div class="sf-field-block__value">vedanti.adsare@vwgds.in</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Contact</div><div class="sf-field-block__value">9172638769</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Department</div><div class="sf-field-block__value">HR</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Business unit</div><div class="sf-field-block__value">VW GDS India</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Cost center</div><div class="sf-field-block__value">0005</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Employee code</div><div class="sf-field-block__value">107297</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">User ID</div><div class="sf-field-block__value">uoxd09</div></div>
+                        </div>
+                        <div>
+                            <h4 class="sf-section-header" style="margin-top:0;">Topic</h4>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Sourcing type</div><div class="sf-field-block__value">Product</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Commodity</div><div class="sf-field-block__value">IT Hardware</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Delivery location</div><div class="sf-field-block__value">Pune</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Description</div><div class="sf-field-block__value">It products for HR</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">MRM conducted</div><div class="sf-field-block__value">No</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Reason</div><div class="sf-field-block__value">Was not needed</div></div>
+                        </div>
+                        <div>
+                            <h4 class="sf-section-header" style="margin-top:0;">Commercial</h4>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Topic value</div><div class="sf-field-block__value" style="font-size:1rem;font-weight:700;">₹17,00,000</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Currency of offers</div><div class="sf-field-block__value">INR</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Tax basis</div><div class="sf-field-block__value">Exclusive of GST</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">FC valid till</div><div class="sf-field-block__value">30.09.2026</div></div>
+                            <div class="sf-field-block"><div class="sf-field-block__label">Required by</div><div class="sf-field-block__value">30.09.2026</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sf-card">
+                    <h3 class="sf-section-header" style="margin-top:0;">Parsed line items</h3>
+                    <!-- Updated to the freshly-parsed values (all 6 columns populate now
+                         that parser.py's header-matching + currency-prefix bugs are
+                         fixed) - this case's stored data predates both fixes, so this
+                         table shows what a re-parse produces, not case 8's stale DB row.
+                         Empty-column hiding still applies per-column when a real document
+                         genuinely has no data for a field - it just isn't this document. -->
+                    <table class="sf-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th><th>Description</th>
+                                <th style="text-align:right;">Qty</th><th>UoM</th>
+                                <th style="text-align:right;">Unit price</th><th style="text-align:right;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>Business Laptop — Intel Core Ultra 7, 32GB RAM, 1TB SSD, 14-inch, Windows 11 Pro</td><td style="text-align:right;">10</td><td>AU</td><td style="text-align:right;">₹1,20,000</td><td style="text-align:right;">₹12,00,000</td></tr>
+                            <tr><td>2</td><td>27-inch QHD IPS Monitor, USB-C, height adjustable</td><td style="text-align:right;">10</td><td>AU</td><td style="text-align:right;">₹25,000</td><td style="text-align:right;">₹2,50,000</td></tr>
+                            <tr><td>3</td><td>USB-C Docking Station, dual display, 100W PD, Gigabit Ethernet</td><td style="text-align:right;">10</td><td>AU</td><td style="text-align:right;">₹15,000</td><td style="text-align:right;">₹1,50,000</td></tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="font-weight:700;">
+                                <td colspan="5" style="text-align:right;border-top:2px solid var(--sf-border-strong);">Total</td>
+                                <td style="text-align:right;border-top:2px solid var(--sf-border-strong);">₹16,00,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-documents" class="tab-panel" style="display:none;">
+                <table class="sf-table">
+                    <thead><tr><th>Type</th><th>Filename</th><th></th></tr></thead>
+                    <tbody>
+                        <tr><td>SC</td><td>Shopping_Cart_SC_1012684357.docx</td><td style="text-align:right;"><span class="sf-btn sf-btn--secondary sf-btn--sm">Download</span></td></tr>
+                        <tr><td>SFO</td><td>SFO_1012684357.docx</td><td style="text-align:right;"><span class="sf-btn sf-btn--secondary sf-btn--sm">Download</span></td></tr>
+                        <tr><td>RFQ</td><td>03_RFQ_RFQ-2026-0831.docx</td><td style="text-align:right;"><span class="sf-btn sf-btn--secondary sf-btn--sm">Download</span></td></tr>
+                        <tr><td>OFFER</td><td>Supplier_Offer_EuroTech.docx</td><td style="text-align:right;"><span class="sf-btn sf-btn--secondary sf-btn--sm">Download</span></td></tr>
+                        <tr><td>OFFER</td><td>Supplier_Offer_GlobalHardware.docx</td><td style="text-align:right;"><span class="sf-btn sf-btn--secondary sf-btn--sm">Download</span></td></tr>
+                        <tr><td>OFFER</td><td>Supplier_Offer_TechNova.docx</td><td style="text-align:right;"><span class="sf-btn sf-btn--secondary sf-btn--sm">Download</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="tab-activity" class="tab-panel" style="display:none;">
+                <p class="sf-caption" style="margin:0;">No activity yet.</p>
+            </div>
+        </div>
+
+        <div>
+            <div class="sf-card">
+                <div class="sf-rail-primary">
+                    <div class="sf-field-block">
+                        <div class="sf-field-block__label">TAT commitment</div>
+                        <div class="sf-field-block__value" style="font-size:0.95rem;font-weight:700;">30 working days</div>
+                        <div class="sf-caption">due 25.09.2026</div>
+                    </div>
+                    <div class="sf-field-block">
+                        <div class="sf-field-block__label">Working days remaining</div>
+                        <div class="sf-field-block__value" style="font-size:0.95rem;font-weight:700;color:var(--sf-success);">29 working days</div>
+                    </div>
+                </div>
+                <div class="sf-field-block"><div class="sf-field-block__label">Assigned buyer</div><div class="sf-field-block__value">Procurement Demo</div></div>
+                <div class="sf-field-block"><div class="sf-field-block__label">Submitted</div><div class="sf-field-block__value">14.08.2026</div></div>
+            </div>
+
+            <div class="sf-card">
+                <h3 class="sf-section-header" style="margin-top:0;">Supplier offers received: 3</h3>
+                <div class="sf-offer-row">
+                    <span class="sf-offer-row__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M6 3h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path></svg>
+                    </span>
+                    <span class="sf-offer-row__name">Supplier_Offer_EuroTech.docx</span>
+                    <a class="sf-offer-row__download" href="#">Download</a>
+                </div>
+                <div class="sf-offer-row">
+                    <span class="sf-offer-row__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M6 3h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path></svg>
+                    </span>
+                    <span class="sf-offer-row__name">Supplier_Offer_GlobalHardware.docx</span>
+                    <a class="sf-offer-row__download" href="#">Download</a>
+                </div>
+                <div class="sf-offer-row">
+                    <span class="sf-offer-row__icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M6 3h8l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path></svg>
+                    </span>
+                    <span class="sf-offer-row__name">Supplier_Offer_TechNova.docx</span>
+                    <a class="sf-offer-row__download" href="#">Download</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div class="sf-preview-addendum-divider">↓ SAME HERO, FOR A CASE STILL AWAITING DOCUMENT CHECK (STATUS: SUBMITTED) — "CHECK" REPLACES "APPROVE" ↓</div>
+
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb"><a href="#">Queue</a> / SF-2026-00015</div>
+        <div class="sf-hero-row">
+            <div>
+                <div class="sf-hero-title-group">
+                    <h1 class="sf-hero-title">SF-2026-00015 — Ergonomic chairs, Pune office</h1>
+                    <span class="sf-status-onteal">Submitted</span>
+                </div>
+                <p class="sf-hero-meta">SC 5100234988 · Requested by Rohit Shinde (rohit.shinde@vwgds.in) · Facilities · Product</p>
+            </div>
+            <div class="sf-hero-actions">
+                <button type="button" class="sf-hero-btn sf-hero-btn--solid" onclick="toggleActionPanel('p-check')">Check</button>
+                <button type="button" class="sf-hero-btn sf-hero-btn--outline" onclick="toggleActionPanel('p-enquire2')">Enquire</button>
+                <button type="button" class="sf-hero-btn sf-hero-btn--text" onclick="toggleActionPanel('p-reject2')">Reject</button>
+
+                <div id="p-check" class="sf-action-panel is-open">
+                    <p class="sf-caption">Suggested TAT for a topic of this value: <strong>15 working days</strong>. Adjust if this case needs something different.</p>
+                    <form onsubmit="return false">
+                        <div class="sf-field"><label>TAT (working days)</label><input type="number" min="1" step="1" value="15" required></div>
+                        <button type="submit" class="sf-btn sf-btn--primary">Confirm &amp; start clock</button>
+                    </form>
+                </div>
+                <div id="p-enquire2" class="sf-action-panel">
+                    <p class="sf-caption">Tell the requester what's missing or needs correction.</p>
+                    <form onsubmit="return false">
+                        <div class="sf-field"><label>Comment *</label><textarea required></textarea></div>
+                        <button type="submit" class="sf-btn sf-btn--primary">Send enquiry</button>
+                    </form>
+                </div>
+                <div id="p-reject2" class="sf-action-panel">
+                    <p class="sf-caption">This is terminal — the requester will need to submit a new case.</p>
+                    <form onsubmit="return false">
+                        <div class="sf-field"><label>Reason *</label><textarea required></textarea></div>
+                        <button type="submit" class="sf-btn sf-btn--danger">Confirm rejection</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(name, el) {
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.style.display = 'none'; });
+    document.getElementById('tab-' + name).style.display = 'block';
+    document.querySelectorAll('.sf-tab').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    return false;
+}
+
+// Only one action panel open at a time.
+function toggleActionPanel(id) {
+    var target = document.getElementById(id);
+    var wasOpen = target.classList.contains('is-open');
+    document.querySelectorAll('.sf-action-panel').forEach(function(p) { p.classList.remove('is-open'); });
+    if (!wasOpen) target.classList.add('is-open');
+}
+</script>
+</body>
+</html>

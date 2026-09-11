@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Edit & resubmit · Samagra{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb"><a href="/requests">My Requests</a> / <a href="/requests/{{ case.id }}">{{ case.ticket_no }}</a> / Edit</div>
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">Edit &amp; Resubmit</h1>
+            </div>
+        </div>
+        <p class="sf-hero-meta">{{ case.ticket_no }} — {{ case.topic_title }}. The TAT clock restarts once Procurement rechecks it.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+{% if case.remarks_for_user %}
+<div class="sf-alert sf-alert--warning"><strong>Procurement's comment:</strong> {{ case.remarks_for_user }}</div>
+{% endif %}
+
+{% if errors %}
+<div class="sf-errors">
+    <strong>Please fix the following before you can resubmit:</strong>
+    <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" action="/requests/{{ case.id }}/edit" enctype="multipart/form-data" data-conditional-form novalidate>
+    {% include "requester/_request_fields.html" %}
+    <div class="sf-form-actions">
+        <a href="/requests/{{ case.id }}" class="sf-btn sf-btn--secondary">Cancel editing</a>
+        <button type="submit" class="sf-btn sf-btn--primary">Resubmit to Procurement</button>
+    </div>
+</form>
+
+{% endblock %}
+{% block extra_scripts %}
+<script src="/static/js/conditional-fields.js"></script>
+<script src="/static/js/fx-convert.js"></script>
+<script src="/static/js/file-upload.js"></script>
+<script src="/static/js/inr-input.js"></script>
+<script src="/static/js/tat-preview.js"></script>
+{% endblock %}

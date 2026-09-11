@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% import "_macros/icons.html" as ic %}
+{% block title %}{{ item.subject or "Mailbox item" }} · Samagra{% endblock %}
+
+{% block content %}
+
+<div class="sf-detail-header">
+    <a class="sf-detail-header__back" href="/mailbox">{{ ic.icon("arrow-left", 13) }} Back to Mailbox</a>
+    <div class="sf-detail-header__top">
+        <div>
+            <h1 class="sf-detail-header__title">{{ item.subject or "(no subject)" }}</h1>
+            <p class="sf-detail-header__subtitle">
+                From {{ item.from_name or item.from_email }} ({{ item.from_email }}) · Received {{ item.received_at | timestamp }}
+            </p>
+        </div>
+    </div>
+</div>
+
+{% if item.status != "UNREVIEWED" %}
+<div class="sf-alert sf-alert--info">This item is already {{ item.status | status_label | lower }} — nothing more to do here.</div>
+{% endif %}
+
+<div class="sf-card">
+    <h3 class="sf-section-header" style="margin-top:0;">Message</h3>
+    <p style="white-space:pre-wrap;">{{ item.body_preview or "(no preview available)" }}</p>
+</div>
+
+{% if item.status == "UNREVIEWED" %}
+<form method="post" action="/mailbox/{{ item.id }}/file">
+    <div class="sf-card">
+        <h3 class="sf-section-header" style="margin-top:0;">Attachments — tag each one you want to file</h3>
+        <p class="sf-caption">Leave the type as "Don't file" for anything that isn't a real document for this case (signatures, logos, etc.).</p>
+        <table class="sf-table">
+            <thead><tr><th>File</th><th>Size</th><th>File as</th></tr></thead>
+            <tbody>
+            {% for a in attachments %}
+            <tr>
+                <td style="display:flex;align-items:center;gap:8px;">{{ ic.icon("file-text", 15) }}{{ a.filename }}</td>
+                <td>{{ ((a.size_bytes or 0) / 1024) | round }} KB</td>
+                <td>
+                    <select name="doc_type_{{ a.id }}">
+                        <option value="">Don't file</option>
+                        {% for dt in doc_types %}
+                        <option value="{{ dt }}">{{ dt }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sf-card">
+        <h3 class="sf-section-header" style="margin-top:0;">File into which case?</h3>
+        <p class="sf-caption">Search by ticket number, SC number, or topic. New-case filing isn't supported here yet — the case must already exist.</p>
+        <div class="sf-field sf-field--search">
+            <input type="text" id="case-search" placeholder="Search cases..." autocomplete="off">
+        </div>
+        <div id="case-results">
+            <p class="sf-caption">Search above to find a case.</p>
+        </div>
+    </div>
+
+    <div class="sf-form-actions">
+        <button type="submit" class="sf-btn sf-btn--primary">File into case</button>
+    </div>
+</form>
+
+<script>
+(function () {
+    var input = document.getElementById("case-search");
+    var results = document.getElementById("case-results");
+    var timer = null;
+
+    function render(cases, query) {
+        if (!cases.length) {
+            results.innerHTML = '<p class="sf-caption">No cases match "' + query + '".</p>';
+            return;
+        }
+        var html = "";
+        cases.forEach(function (c) {
+            html += '<label style="display:block;padding:8px 0;border-bottom:1px solid var(--sf-border);">' +
+                '<input type="radio" name="case_id" value="' + c.id + '" required> ' +
+                '<strong>' + c.ticket_no + '</strong> — ' + c.topic_title +
+                ' (' + c.sc_number + ', ' + c.requestor_name + ')</label>';
+        });
+        results.innerHTML = html;
+    }
+
+    input.addEventListener("input", function () {
+        var query = input.value.trim();
+        clearTimeout(timer);
+        if (!query) {
+            results.innerHTML = '<p class="sf-caption">Search above to find a case.</p>';
+            return;
+        }
+        timer = setTimeout(function () {
+            fetch("/mailbox/{{ item.id }}/case-search?q=" + encodeURIComponent(query))
+                .then(function (r) { return r.json(); })
+                .then(function (cases) { render(cases, query); });
+        }, 250);
+    });
+})();
+</script>
+
+<form method="post" action="/mailbox/{{ item.id }}/ignore" style="margin-top:12px;">
+    <button type="submit" class="sf-btn sf-btn--secondary sf-btn--sm">Ignore this email</button>
+</form>
+{% endif %}
+
+{% endblock %}

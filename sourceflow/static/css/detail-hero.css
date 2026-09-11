@@ -1,0 +1,231 @@
+/* Case/request detail page: a compact teal band (breadcrumb, title, status,
+   action buttons only) + a normal tab strip below it + a single white card
+   for the field groups. No app-tile grid, no vertical quick-actions list,
+   no black subnav bar on this page - see the redesign brief this replaced.
+   Own build, own classes, no third-party asset. */
+
+:root {
+    --sf-hero-teal: #008C82;
+    --sf-hero-teal-deep: #00504A;
+    --sf-oracle-red: #C74634;
+    --sf-card-shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 6px 18px rgba(15, 23, 42, .05);
+}
+
+/* ---- compact hero: ~160px, breadcrumb + title + status + actions only ---- */
+.sf-hero-band {
+    position: relative;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: linear-gradient(155deg, var(--sf-hero-teal) 0%, var(--sf-hero-teal-deep) 100%);
+    color: #fff;
+    padding: 16px 28px;
+}
+/* Abstract angular line art with node points, own composition - a loose
+   geometric weave, not the Oracle Redwood wavy-line/concentric-circle
+   signature. Bolder/wider than the earlier hexagon attempt so it actually
+   reads at a glance instead of disappearing into the corner. */
+.sf-hero-band::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='320' viewBox='0 0 1000 320'><g stroke='%23ffffff' fill='none' stroke-width='1.4' stroke-linecap='round'><line x1='480' y1='300' x2='700' y2='30' stroke-opacity='.22'/><line x1='600' y1='330' x2='960' y2='70' stroke-opacity='.18'/><line x1='760' y1='310' x2='990' y2='140' stroke-opacity='.20'/><line x1='540' y1='50' x2='860' y2='230' stroke-opacity='.16'/><line x1='660' y1='-20' x2='920' y2='270' stroke-opacity='.14'/></g><g fill='%23ffffff'><circle cx='700' cy='30' r='3.5' fill-opacity='.35'/><circle cx='860' cy='230' r='3.5' fill-opacity='.30'/><circle cx='960' cy='70' r='3' fill-opacity='.30'/><circle cx='600' cy='330' r='3' fill-opacity='.25'/><circle cx='990' cy='140' r='3' fill-opacity='.28'/></g></svg>");
+    background-repeat: no-repeat;
+    background-position: right top;
+    background-size: 720px auto;
+    pointer-events: none;
+}
+
+.sf-hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 1320px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.sf-hero-breadcrumb {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.72);
+    margin-bottom: 10px;
+}
+.sf-hero-breadcrumb a {
+    color: rgba(255, 255, 255, 0.72);
+}
+.sf-hero-breadcrumb a:hover {
+    color: #fff;
+}
+
+.sf-hero-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.sf-hero-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sf-hero-title {
+    font-size: 1.3rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    color: #fff;
+    margin: 0;
+}
+
+.sf-hero-title-group .sf-status-onteal {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    color: #fff;
+    padding: 4px 11px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* action buttons live next to the title, not a separate vertical list */
+.sf-hero-actions {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sf-hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 4px;
+    padding: 7px 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    font-family: inherit;
+    line-height: 1.3;
+}
+.sf-hero-btn--solid {
+    background: #fff;
+    color: var(--sf-hero-teal-deep);
+}
+.sf-hero-btn--solid:hover {
+    background: rgba(255, 255, 255, 0.88);
+}
+.sf-hero-btn--outline {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.65);
+    color: #fff;
+}
+.sf-hero-btn--outline:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+.sf-hero-btn--text {
+    background: transparent;
+    border-color: transparent;
+    color: #FF8A70;
+    padding: 7px 6px;
+}
+.sf-hero-btn--text:hover {
+    color: #FFA98F;
+    text-decoration: underline;
+}
+
+/* Action form panels drop down below the whole button row (there's no room
+   inside a 160px band), all anchored to .sf-hero-actions so whichever one
+   opens always lands in the same spot instead of shifting per-button. */
+.sf-hero-actions .sf-action-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 300px;
+    z-index: 30;
+    color: var(--sf-text);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, .10), 0 14px 32px rgba(15, 23, 42, .10);
+    border: none;
+}
+
+/* ---- meta line, inside the hero under the title row ---- */
+.sf-hero-meta {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.78);
+    margin-top: 6px;
+}
+
+/* ---- offer rows: icon, name, download - no bullet list ---- */
+.sf-offer-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--sf-border);
+}
+.sf-offer-row:last-child {
+    border-bottom: none;
+}
+.sf-offer-row__icon {
+    flex-shrink: 0;
+    color: var(--sf-text-faint);
+    display: flex;
+}
+.sf-offer-row__name {
+    flex: 1;
+    font-size: 0.84rem;
+    color: var(--sf-text);
+}
+.sf-offer-row__download {
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--sf-accent);
+}
+.sf-offer-row__download:hover {
+    text-decoration: underline;
+}
+
+/* ---- field-group card: label-above-value, three columns ---- */
+.sf-field-block {
+    margin-bottom: 14px;
+}
+.sf-field-block:last-child {
+    margin-bottom: 0;
+}
+.sf-field-block__label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--sf-text-faint);
+    margin-bottom: 2px;
+}
+.sf-field-block__value {
+    font-size: 0.86rem;
+    color: var(--sf-text);
+}
+
+/* ---- right rail: TAT + days remaining lead, most time-critical first ---- */
+.sf-rail-primary {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--sf-border);
+}
+.sf-rail-primary .sf-field-block {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.sf-card {
+    box-shadow: var(--sf-card-shadow);
+}
