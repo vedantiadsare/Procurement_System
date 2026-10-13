@@ -17,6 +17,7 @@ passed is closed whether or not anyone pressed a button, so a link that leaks
 after the fact opens nothing.
 """
 
+import json
 import re
 import secrets
 from datetime import date, datetime, timedelta
@@ -178,7 +179,7 @@ def portal_link(token: str) -> str:
 
 
 def create_round(subject, message, created_by, closes_on, recipients, files,
-                 case_id=None, created_by_email=None) -> dict:
+                 case_id=None, created_by_email=None, infosec_answers=None) -> dict:
     """Creates the round, stores the documents, then mails every bidder.
 
     The mail loop never raises: one bad address must not stop the other
@@ -193,7 +194,8 @@ def create_round(subject, message, created_by, closes_on, recipients, files,
     closes_at = datetime.combine(closes_on, datetime.max.time()).isoformat(timespec="seconds")
 
     round_id = db.insert_rfq_round(reference, subject, message, created_by, closes_at,
-                               case_id, created_by_email)
+                               case_id, created_by_email,
+                               json.dumps(infosec_answers) if infosec_answers else None)
     for f in stored:
         db.insert_rfq_document(round_id, f.get("doc_type"), f["filename"], f["path"],
                                f["ext"], f["size_bytes"])
@@ -278,11 +280,15 @@ def record_response(round_, decision, text, files) -> dict:
     for f in stored:
         db.insert_rfq_response_file(round_["invitation_id"], f["filename"], f["path"],
                                     f["ext"], f["size_bytes"])
-    db.record_rfq_response(round_["invitation_id"], decision, text)
+    # What they said before this answer - round_ was read before the update -
+    # so the requester's mail can say "withdrew" or "changed their mind"
+    # rather than describe each answer as if it were the first.
+    previous = round_.get("decision")
+    db.record_rfq_response(round_["invitation_id"], decision, text, files=len(stored))
 
     try:
         notifications.notify_buyer_supplier_responded(
-            round_, {**round_, "response_text": text}, decision)
+            round_, {**round_, "response_text": text}, decision, previous=previous)
     except Exception:                                 # noqa: BLE001
         pass
 
@@ -293,6 +299,31 @@ def record_response(round_, decision, text, files) -> dict:
     if decision == "ACCEPTED" and stored:
         _fire_offer_agent(round_["id"])
     return {"files": len(stored)}
+
+
+def response_history(invitation) -> list:
+    """The supplier's answers in order, each named for what it meant at the
+    time: [{"label", "at", "tone"}]. An invitation answered before the
+    history was kept has only its latest answer, shown as that."""
+    try:
+        history = json.loads(invitation.get("response_history") or "[]")
+    except (TypeError, ValueError):
+        history = []
+    if not history and invitation.get("responded_at"):
+        history = [{"decision": invitation.get("decision"), "at": invitation["responded_at"]}]
+
+    steps, quoted_before = [], False
+    for h in history:
+        if h.get("decision") == "ACCEPTED":
+            label = "Revised quotation" if quoted_before else "Quoted"
+            if not quoted_before and steps:
+                label = "Quoted after declining"
+            tone, quoted_before = "quoted", True
+        else:
+            label, tone = ("Withdrew quotation", "withdrew") if quoted_before else ("Declined", "declined")
+            quoted_before = False
+        steps.append({"label": label, "at": h.get("at"), "tone": tone})
+    return steps
 
 
 def _fire_offer_agent(round_id):

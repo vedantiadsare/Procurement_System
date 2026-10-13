@@ -1,5 +1,6 @@
 """SQLite access layer. Plain sqlite3, no ORM. All queries live here."""
 
+import json
 import sqlite3
 from datetime import date, datetime, timedelta
 
@@ -260,6 +261,10 @@ _CASES_MIGRATED_COLUMNS = [
     # What the case's catalog items sell for online, beside what each supplier
     # quoted for them - see benchmark.py. JSON, rewritten on each check.
     ("market_benchmark", "TEXT"),
+    # InfoSec screening: the five answers as JSON ({"data": true, ...}) and
+    # whether any of them made clearance a required document.
+    ("infosec_answers", "TEXT"),
+    ("infosec_required", "INTEGER"),
     ("market_benchmark_at", "TIMESTAMP"),
     # The case brief: three sentences the model writes from the case's facts,
     # stored with a fingerprint of those facts so it is rewritten only when
@@ -297,6 +302,9 @@ _AUDIT_TRAIL_MIGRATED_COLUMNS = [
 # completed the Graph login, so this is what Reply-To is set to - a supplier
 # hitting Reply reaches the person who actually wants the quotation.
 _RFQ_ROUNDS_MIGRATED_COLUMNS = [
+    # The requester's InfoSec check when floating the enquiry - a heads-up
+    # recorded on the round, not a gate on it.
+    ("infosec_answers", "TEXT"),
     ("created_by_email", "TEXT"),
     # Written by the Offer agent as quotations arrive through the portal.
     ("offer_analysis", "TEXT"),
@@ -307,6 +315,11 @@ _RFQ_ROUNDS_MIGRATED_COLUMNS = [
 # quotation left out. A re-submission after this stamp is a new quotation
 # and may be asked again; nothing before it is.
 _RFQ_INVITATIONS_MIGRATED_COLUMNS = [
+    # Every answer the supplier gave, oldest first, as JSON:
+    # [{"decision": "DECLINED", "at": "...", "files": 0}, ...]. decision and
+    # response_text above hold only the latest; this keeps a change of mind -
+    # declined then quoted, quoted then withdrew - on the record.
+    ("response_history", "TEXT"),
     ("clarified_at", "TIMESTAMP"),          # when the buyer SENT the question
     ("clarified_about", "TEXT"),
     # The Offer agent writes the question; a person sends it. The draft waits
@@ -414,6 +427,7 @@ def insert_case(data: dict) -> int:
         "mrm_relevant", "mrm_conducted", "mrm_reason", "po_number",
         "source", "external_case_id", "category", "est_value", "est_currency",
         "rfq_deadline", "external_status", "sourcing_basis", "value_eur",
+        "infosec_answers", "infosec_required",
     ]
     values = [data.get(f) for f in fields]
     placeholders = ", ".join("?" for _ in fields)
@@ -1430,15 +1444,15 @@ def seed_dummy_data():
 # --- Supplier RFQ rounds -------------------------------------------------------
 
 def insert_rfq_round(reference, subject, message, created_by, closes_at, case_id=None,
-                     created_by_email=None) -> int:
+                     created_by_email=None, infosec_answers=None) -> int:
     conn = get_connection()
     try:
         cur = conn.execute(
             "INSERT INTO rfq_rounds (reference, case_id, subject, message, created_by, "
-            "created_by_email, created_at, closes_at, status) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'OPEN')",
+            "created_by_email, created_at, closes_at, status, infosec_answers) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?)",
             (reference, case_id, subject, message, created_by, created_by_email,
-             datetime.now().isoformat(timespec="seconds"), closes_at),
+             datetime.now().isoformat(timespec="seconds"), closes_at, infosec_answers),
         )
         conn.commit()
         return cur.lastrowid
@@ -1524,7 +1538,7 @@ def get_rfq_round_by_token(token) -> dict:
     try:
         row = conn.execute(
             "SELECT r.*, i.id AS invitation_id, i.supplier_name, i.supplier_email, "
-            "i.decision, i.responded_at, i.response_text, i.first_opened_at "
+            "i.decision, i.responded_at, i.response_text, i.first_opened_at, i.response_history "
             "FROM rfq_invitations i JOIN rfq_rounds r ON r.id = i.round_id "
             "WHERE i.token = ?", (token,)).fetchone()
         return _row_to_dict(row)
@@ -1566,13 +1580,21 @@ def mark_rfq_opened(invitation_id):
         conn.close()
 
 
-def record_rfq_response(invitation_id, decision, response_text):
+def record_rfq_response(invitation_id, decision, response_text, files=0):
+    now = datetime.now().isoformat(timespec="seconds")
     conn = get_connection()
     try:
+        row = conn.execute("SELECT response_history FROM rfq_invitations WHERE id = ?",
+                           (invitation_id,)).fetchone()
+        try:
+            history = json.loads(row[0]) if row and row[0] else []
+        except (TypeError, ValueError):
+            history = []
+        history.append({"decision": decision, "at": now, "files": files})
         conn.execute(
-            "UPDATE rfq_invitations SET decision = ?, response_text = ?, responded_at = ? "
-            "WHERE id = ?",
-            (decision, response_text, datetime.now().isoformat(timespec="seconds"), invitation_id),
+            "UPDATE rfq_invitations SET decision = ?, response_text = ?, responded_at = ?, "
+            "response_history = ? WHERE id = ?",
+            (decision, response_text, now, json.dumps(history), invitation_id),
         )
         conn.commit()
     finally:

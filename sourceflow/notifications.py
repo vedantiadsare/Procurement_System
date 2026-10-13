@@ -20,6 +20,7 @@ must be an app password (Account > Security > App passwords), not the normal
 sign-in password - Microsoft rejects plain SMTP AUTH for MFA accounts.
 """
 
+import json
 import logging
 import os
 import smtplib
@@ -258,6 +259,18 @@ def notify_supplier_invited(invitation: dict, round_: dict, link: str,
     if attachments:
         body += ("Attached to this mail:\n"
                  + "".join(f"  - {a['filename']}\n" for a in attachments) + "\n")
+    # A supplier who would touch VW data or systems needs InfoSec clearance
+    # before onboarding; better they hear it with the enquiry than after
+    # winning it.
+    try:
+        needs_infosec = any(json.loads(round_.get("infosec_answers") or "{}").values())
+    except (TypeError, ValueError):
+        needs_infosec = False
+    if needs_infosec:
+        body += ("Please note: this engagement involves access to Volkswagen company data,\n"
+                 "systems or information. If selected, you will need to sign an NDA, hold\n"
+                 "TISAX (Volkswagen Group projects) or ISO 27001 certification, and complete\n"
+                 "our vendor security assessment before onboarding.\n\n")
     body += (
         "To submit your quotation, accept or decline this enquiry, open your\n"
         "response page:\n\n"
@@ -290,21 +303,34 @@ def notify_supplier_deadline_changed(invitation: dict, round_: dict, link: str) 
                       body, reply_to=round_.get("created_by_email"))
 
 
-def notify_buyer_supplier_responded(round_: dict, invitation: dict, decision: str) -> dict:
+def notify_buyer_supplier_responded(round_: dict, invitation: dict, decision: str,
+                                    previous: str = None) -> dict:
     """Straight to the buyer who floated the round, so a quotation landing
-    does not depend on anyone refreshing a page."""
+    does not depend on anyone refreshing a page. A change of mind is named as
+    one: a supplier who quoted and now declines has withdrawn their quote."""
     from config import BUYER_EMAILS
     who = invitation.get("supplier_name") or invitation["supplier_email"]
-    verb = {"ACCEPTED": "submitted a quotation for",
-            "DECLINED": "declined"}.get(decision, "responded to")
+    if previous == "ACCEPTED" and decision == "DECLINED":
+        verb = "withdrew their quotation for"
+    elif previous == "ACCEPTED" and decision == "ACCEPTED":
+        verb = "sent a revised quotation for"
+    elif previous == "DECLINED" and decision == "ACCEPTED":
+        verb = "changed their mind and submitted a quotation for"
+    else:
+        verb = {"ACCEPTED": "submitted a quotation for",
+                "DECLINED": "declined"}.get(decision, "responded to")
     body = (
         f"{who} has {verb} enquiry {round_['reference']} ({round_['subject']}).\n\n"
     )
     if invitation.get("response_text"):
         body += f"Their message:\n{invitation['response_text']}\n\n"
     body += "Open the round in Samagra to see the full response and any attachments.\n"
+    headline = {"withdrew their quotation for": "withdrew their quotation",
+                "sent a revised quotation for": "sent a revised quotation",
+                "changed their mind and submitted a quotation for": "now quoted, after declining"
+                }.get(verb, verb.split()[0])
     return send_email(round_.get("created_by_email") or BUYER_EMAILS[0],
-                      f"[{round_['reference']}] {who} {verb.split()[0]}", body)
+                      f"[{round_['reference']}] {who} {headline}", body)
 
 def clarification_text(invitation: dict, round_: dict, link: str, missing: list) -> str:
     """The question the Offer agent drafts when a quotation cannot be compared

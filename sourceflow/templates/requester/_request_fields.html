@@ -135,11 +135,52 @@
     </div>
 </div>
 
+{# InfoSec screening. Five questions, each answered on purpose - none is
+   pre-selected, so the screening can't be skipped by not reading it. Any
+   Yes makes InfoSec clearance a required document: the request reaches
+   Procurement only once the supplier has been cleared. #}
+{% if mode != "edit" %}
+{% set infosec_ans = values.infosec_answers or {} %}
+<div class="sf-card sf-nr-card">
+    <div class="sf-nr-card__head">
+        <span class="sf-nr-card__icon">{{ ic.icon("shield", 16) }}</span>
+        <div>
+            <div class="sf-nr-card__title">C. InfoSec screening</div>
+            <div class="sf-nr-card__subtitle">Will the supplier touch company data, systems or information? Answer each question about this purchase.</div>
+        </div>
+    </div>
+    <div class="sf-infosec">
+        {% for key, question in infosec_questions %}
+        <div class="sf-infosec__q">
+            <span class="sf-infosec__text">{{ question }}<span class="sf-required">*</span></span>
+            <span class="sf-infosec__answers">
+                <label><input type="radio" name="infosec_{{ key }}" value="Yes" {{ "checked" if infosec_ans.get(key) == true }}> Yes</label>
+                <label><input type="radio" name="infosec_{{ key }}" value="No" {{ "checked" if infosec_ans.get(key) == false }}> No</label>
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div data-show-if="infosec_data=Yes|infosec_systems=Yes|infosec_hosting=Yes|infosec_confidential=Yes|infosec_impact=Yes">
+        <div class="sf-infosec__notice sf-infosec__notice--needed">
+            <strong>InfoSec clearance is needed before this goes to Procurement.</strong>
+            Contact <a href="mailto:{{ infosec_contact }}">{{ infosec_contact }}</a> to start the review. Usually the supplier
+            signs an NDA, holds TISAX (for Volkswagen Group projects) or ISO 27001 certification, and completes the
+            Vendor Security Assessment from OneConnect. Attach everything InfoSec cleared below; you can add several files.
+        </div>
+        {{ ff.file("infosec_files", "InfoSec clearance documents", required=True, multiple=True) }}
+    </div>
+    <div data-show-if="infosec_data=No&infosec_systems=No&infosec_hosting=No&infosec_confidential=No&infosec_impact=No">
+        <div class="sf-infosec__notice sf-infosec__notice--clear">No InfoSec clearance needed for this purchase.</div>
+    </div>
+</div>
+{% endif %}
+
 <div class="sf-card sf-nr-card">
     <div class="sf-nr-card__head">
         <span class="sf-nr-card__icon">{{ ic.icon("paperclip", 16) }}</span>
         <div>
-            <div class="sf-nr-card__title">C. Documents</div>
+            <div class="sf-nr-card__title">D. Documents</div>
             <div class="sf-nr-card__subtitle">Accepted: {{ allowed_extensions | join(", ") }}. Max {{ max_file_mb }} MB per file.</div>
         </div>
     </div>

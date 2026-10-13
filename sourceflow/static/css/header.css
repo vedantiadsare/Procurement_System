@@ -243,3 +243,8 @@ form.sf-logout-form {
     font-size: 0.7rem;
     color: var(--sf-text-muted);
 }
+
+/* The brand is the way home, as on most sites. */
+a.sf-shell-brand, a.sf-shell-brand:hover, a.sf-shell-brand:visited { text-decoration: none; color: #fff; border-radius: var(--sf-radius); }
+a.sf-shell-brand:hover .sf-shell-brand__name { opacity: .85; }
+a.sf-shell-brand:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }

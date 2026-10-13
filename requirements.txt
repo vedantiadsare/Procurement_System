@@ -9,3 +9,4 @@ openpyxl
 python-docx
 msal
 httpx
+fpdf2

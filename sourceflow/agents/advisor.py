@@ -21,7 +21,7 @@ import re
 from datetime import date, datetime
 
 import db
-from config import as_of_date, required_doc_types
+from config import as_of_date, case_required_docs, required_doc_types
 from tat import parse_date, working_days_between, working_days_remaining
 
 from .base import Agent, RunLog, register
@@ -32,7 +32,8 @@ STALE_ENQUIRY_DAYS = 3
 STALE_UNCLAIMED_DAYS = 2
 
 DOC_LABELS = {"SC": "approved shopping cart", "SFO": "deviation note / SFO",
-              "RFQ": "RFQ", "OFFER": "supplier offer"}
+              "RFQ": "RFQ", "OFFER": "supplier offer",
+              "INFOSEC_CLEARANCE": "InfoSec clearance"}
 
 
 def _days_since(stamp) -> int:
@@ -45,7 +46,7 @@ def facts_for(case: dict) -> dict:
     handover can print the same facts the recommendation was built from."""
     attachments = db.list_attachments(case["id"])
     present = {a["doc_type"] for a in attachments}
-    required = required_doc_types(case.get("sourcing_basis"))
+    required = case_required_docs(case)
     offers = [a for a in attachments if a["doc_type"] == "OFFER"]
     audit = db.list_audit(case["id"])
 

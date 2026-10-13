@@ -21,7 +21,7 @@
             {% elif result.get('error') %}
                 Reset link generated, but the email failed to send: {{ result.error }}
             {% else %}
-                Reset link generated. SMTP isn't configured, so use the link below directly instead of checking your inbox.
+                Reset link generated. Email isn't set up, so use the link below directly instead of checking your inbox.
             {% endif %}
         </div>
         <details class="sf-email-preview" {{ "open" if not result.sent }}>

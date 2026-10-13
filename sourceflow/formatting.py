@@ -166,6 +166,8 @@ DOC_TYPE_DISPLAY = {
     "OFFER": "Supplier offer",
     "REGRET": "Regret letter",
     "MRM_APPROVAL": "MRM approval",
+    "BUDGET_APPROVAL": "Budget approval",
+    "INFOSEC_CLEARANCE": "InfoSec clearance",
     "OTHER": "Other document",
 }
 
@@ -225,3 +227,26 @@ def days_remaining_color(days) -> str:
     if days <= 5:
         return "#9A5B00"
     return "#0F7A45"
+
+
+def infosec_summary(case, attachments=None) -> dict:
+    """The InfoSec screening as the case pages show it.
+
+    state: "not_screened" - raised before screening existed, or through the
+                            mailbox, so no answers were ever given
+           "not_needed"   - all five criteria answered No
+           "cleared"      - clearance needed and documents are on the case
+           "missing"      - clearance needed and nothing attached"""
+    import json
+    from config import INFOSEC_QUESTIONS
+    try:
+        answers = json.loads(case.get("infosec_answers") or "null")
+    except (TypeError, ValueError):
+        answers = None
+    docs = [a for a in (attachments or []) if a["doc_type"] == "INFOSEC_CLEARANCE"]
+    if not answers:
+        return {"state": "not_screened", "yes": [], "docs": docs}
+    yes = [q for key, q in INFOSEC_QUESTIONS if answers.get(key)]
+    if not yes:
+        return {"state": "not_needed", "yes": [], "docs": docs}
+    return {"state": "cleared" if docs else "missing", "yes": yes, "docs": docs}

@@ -68,6 +68,8 @@
             <div class="sf-field-block"><div class="sf-field-block__label">Currency</div><div class="sf-field-block__value">{{ v.currency or "-" }}</div></div>
             <div class="sf-field-block"><div class="sf-field-block__label">Topic value is</div><div class="sf-field-block__value">{{ v.tax_basis or "-" }}</div></div>
             <div class="sf-field-block"><div class="sf-field-block__label">MRM</div><div class="sf-field-block__value">{% if v.mrm_relevant == "No" %}Not relevant{% else %}{{ v.mrm_conducted or "-" }}{{ " — " ~ v.mrm_reason if v.mrm_conducted == "No" and v.mrm_reason }}{% endif %}</div></div>
+            {% set infosec_yes = (v.infosec_answers or {}).values() | select | list %}
+            <div class="sf-field-block"><div class="sf-field-block__label">InfoSec</div><div class="sf-field-block__value">{% if infosec_yes %}Clearance needed — {{ infosec_yes | length }} of 5 criteria apply; clearance documents attached{% else %}Not needed — all five criteria answered No{% endif %}</div></div>
         </div>
     </div>
 

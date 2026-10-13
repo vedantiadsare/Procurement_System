@@ -96,6 +96,36 @@
 <div class="sf-alert sf-alert--warning">Out of scope for this portal (topic value &gt; ₹40,00,000) — handle manually.</div>
 {% endif %}
 
+{# InfoSec screening, as the requester answered it. #}
+{% set infosec = infosec_summary(case, attachments) %}
+<div class="sf-card sf-nr-card">
+    <div class="sf-confirm-section-title">InfoSec screening</div>
+    {% if infosec.state == "not_screened" %}
+    <p class="sf-caption" style="margin:0;">Not screened. This case was raised before InfoSec screening existed, or arrived by email.</p>
+    {% elif infosec.state == "not_needed" %}
+    <p style="margin:0;"><span class="sf-infosec-chip sf-infosec-chip--ok">Not needed</span>
+        <span class="sf-caption">The requester answered No to all five InfoSec criteria.</span></p>
+    {% else %}
+    <p style="margin:0 0 8px;">
+        {% if infosec.state == "cleared" %}<span class="sf-infosec-chip sf-infosec-chip--ok">Cleared</span>
+        <span class="sf-caption">{{ infosec.docs | length }} clearance document{{ "s" if infosec.docs | length != 1 }} on the case.</span>
+        {% else %}<span class="sf-infosec-chip sf-infosec-chip--bad">Clearance missing</span>
+        <span class="sf-caption">Clearance is required, but nothing is attached. Ask the requester for it before releasing a PO.</span>{% endif %}
+    </p>
+    <p class="sf-caption" style="margin:0 0 4px;">Requester answered Yes to:</p>
+    <ul class="sf-infosec-yes">{% for q in infosec.yes %}<li>{{ q }}</li>{% endfor %}</ul>
+    {% if infosec.docs %}
+    {% for d in infosec.docs %}
+    <div class="sf-offer-row">
+        <span class="sf-offer-row__icon">{{ ic.icon("shield", 16) }}</span>
+        <span class="sf-offer-row__name">{{ d.filename }}</span>
+        <a class="sf-offer-row__download" href="/attachments/{{ d.id }}/download">Download</a>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endif %}
+</div>
+
 <div class="sf-card sf-nr-card">
     <div class="sf-confirm-section-title">Supplier offers received: {{ offers | length }}</div>
     {% if not offers %}

@@ -8,7 +8,8 @@ framework-specific upload object, so this stays reusable from any route.
 import re
 
 import db
-from config import required_doc_types, ALLOWED_EXTENSIONS, MAX_FILE_MB, REPO_DIR
+from config import (required_doc_types, ALLOWED_EXTENSIONS, MAX_FILE_MB, REPO_DIR,
+                    INFOSEC_CONTACT, INFOSEC_QUESTIONS, infosec_required)
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 ILLEGAL_CHARS_RE = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
@@ -90,6 +91,21 @@ def validate(v: dict, tagged_files: list, mode: str = "new") -> list:
         for doc_type in required_doc_types(v.get("sourcing_basis")):
             if doc_type not in doc_types_present:
                 errors.append(messages.get(doc_type, f"{doc_type} document is required."))
+
+    # InfoSec screening: every question answered, and clearance attached
+    # whenever any answer is Yes - the request does not reach Procurement
+    # before InfoSec has cleared the supplier.
+    if mode == "new":
+        answers = v.get("infosec_answers") or {}
+        unanswered = [q for key, q in INFOSEC_QUESTIONS if answers.get(key) is None]
+        if unanswered:
+            errors.append(f"InfoSec screening: answer all five questions "
+                          f"({len(unanswered)} still open).")
+        elif infosec_required(answers) and not any(
+                f["doc_type"] == "INFOSEC_CLEARANCE" for f in tagged_files):
+            errors.append("InfoSec clearance is needed for this request - attach the clearance "
+                          "documents (NDA, certification, security assessment, InfoSec's approval) "
+                          f"before submitting. Contact {INFOSEC_CONTACT} to start the review.")
 
     max_bytes = MAX_FILE_MB * 1024 * 1024
     for f in tagged_files:

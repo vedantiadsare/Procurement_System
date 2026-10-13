@@ -372,7 +372,8 @@ CURRENCY_OPTIONS = [(c, f"{c} - {CURRENCY_NAMES[c]}") for c in CURRENCIES]
 
 TAX_BASES = ["Inclusive of taxes", "Exclusive of taxes"]
 
-DOC_TYPES = ["SC", "SFO", "RFQ", "OFFER", "REGRET", "MRM_APPROVAL", "BUDGET_APPROVAL", "OTHER"]
+DOC_TYPES = ["SC", "SFO", "RFQ", "OFFER", "REGRET", "MRM_APPROVAL", "BUDGET_APPROVAL",
+             "INFOSEC_CLEARANCE", "OTHER"]
 
 SOURCING_TYPES = ["Service", "Product", "Product+Service"]
 
@@ -423,6 +424,39 @@ def required_doc_types(sourcing_basis):
     """Document types a case must carry. Unknown or missing basis falls back to
     the stricter one-time set, so an older case never silently loses a check."""
     return REQUIRED_DOCS_BY_BASIS.get(sourcing_basis, REQUIRED_DOCS_BY_BASIS[SOURCING_BASES[0]])
+
+
+# --- InfoSec screening ------------------------------------------------------------
+# VW GDS Information Security's criteria for when a supplier engagement needs
+# their review. Asked as five separate questions rather than one "does this
+# need InfoSec?" - a requester rarely knows the criteria, but can answer
+# each of these about their own purchase, and the answers become the record
+# of why clearance was or wasn't needed.
+INFOSEC_QUESTIONS = [
+    ("data", "Will the vendor access company data?"),
+    ("systems", "Will the vendor access company systems, applications or networks?"),
+    ("hosting", "Will the vendor host or process company information?"),
+    ("confidential", "Will the vendor receive confidential, personal, financial or source code information?"),
+    ("impact", "Could a compromise of the vendor impact business operations or the "
+               "information security of our organisation?"),
+]
+INFOSEC_CONTACT = "infosec@vwgds.in"
+
+
+def infosec_required(answers) -> bool:
+    """Any one Yes means InfoSec has to clear the supplier first."""
+    return any(bool(v) for v in (answers or {}).values())
+
+
+def case_required_docs(case) -> list:
+    """The documents THIS case must carry: the basis's own set, plus InfoSec
+    clearance when the requester's screening said a supplier will touch
+    company data, systems or information. A case raised before screening
+    existed has no answers and is held to the basis's set alone."""
+    required = list(required_doc_types(case.get("sourcing_basis")))
+    if case.get("infosec_required"):
+        required.append("INFOSEC_CLEARANCE")
+    return required
 
 STATUSES = ["SUBMITTED", "IN_PROGRESS", "ENQUIRED", "APPROVED", "REJECTED"]
 

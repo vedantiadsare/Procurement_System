@@ -297,3 +297,12 @@
 
 .sf-home-attn-card__action { font-weight: 600; color: var(--sf-text); margin: 0 0 4px; font-size: 0.92rem; }
 .sf-home-attn-card__why { color: var(--sf-text-muted); font-size: 0.8rem; margin: 0 0 10px; }
+/* Four tiles share the row evenly rather than each being a fixed 210px -
+   at a fixed width the fourth (Dashboard) dropped to a line of its own. */
+.sf-home-tiles { flex-wrap: nowrap; gap: 16px; }
+.sf-home-tilecol { flex: 1 1 0; min-width: 0; width: auto; }
+.sf-home-tilecol .sf-home-tile { width: 100%; }
+@media (max-width: 980px) {
+    .sf-home-tiles { flex-wrap: wrap; }
+    .sf-home-tilecol { flex: 1 1 calc(50% - 8px); }
+}

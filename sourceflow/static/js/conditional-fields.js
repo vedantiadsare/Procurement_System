@@ -19,16 +19,26 @@
         return field.value;
     }
 
+    // One clause: "field=value" or "field!=value".
+    function holds(clause) {
+        var negate = clause.indexOf("!=") !== -1;
+        var eqIdx = clause.indexOf(negate ? "!=" : "=");
+        var fieldName = clause.slice(0, eqIdx);
+        var accepted = clause.slice(eqIdx + (negate ? 2 : 1)).split(",");
+        var hit = accepted.indexOf(currentValue(fieldName)) !== -1;
+        return negate ? !hit : hit;
+    }
+
+    // Clauses joined by "|" show the element when ANY holds, by "&" when ALL
+    // do - the InfoSec screening shows its upload on any Yes, and its
+    // "not needed" note only once every answer is No.
     function apply() {
         watchers.forEach(function (el) {
             var rule = el.getAttribute("data-show-if");
-            var negate = rule.indexOf("!=") !== -1;
-            var eqIdx = rule.indexOf(negate ? "!=" : "=");
-            var fieldName = rule.slice(0, eqIdx);
-            var accepted = rule.slice(eqIdx + (negate ? 2 : 1)).split(",");
-            var value = currentValue(fieldName);
-            var hit = accepted.indexOf(value) !== -1;
-            el.classList.toggle("is-visible", negate ? !hit : hit);
+            var shown = rule.indexOf("&") !== -1
+                ? rule.split("&").every(holds)
+                : rule.split("|").some(holds);
+            el.classList.toggle("is-visible", shown);
         });
     }
 

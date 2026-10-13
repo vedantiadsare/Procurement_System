@@ -134,6 +134,10 @@
         <dl class="sf-cs-kv"><dt>Type</dt><dd>{{ case.sourcing_type or "-" }}{{ " · " ~ case.expense_commodity if case.expense_commodity }}</dd></dl>
         <dl class="sf-cs-kv"><dt>Delivery</dt><dd>{{ case.delivery_location or "-" }}</dd></dl>
         <dl class="sf-cs-kv"><dt>Offers</dt><dd>{{ offer_count }} attached</dd></dl>
+        {% set infosec = infosec_summary(case, attachments) %}
+        {% if infosec.state != "not_screened" %}
+        <dl class="sf-cs-kv"><dt>InfoSec</dt><dd>{% if infosec.state == "not_needed" %}Not needed{% elif infosec.state == "cleared" %}Cleared · {{ infosec.docs | length }} document{{ "s" if infosec.docs | length != 1 }}{% else %}Clearance missing{% endif %}</dd></dl>
+        {% endif %}
     </div>
 </div>
 </div>

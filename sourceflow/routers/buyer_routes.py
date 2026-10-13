@@ -16,7 +16,7 @@ import notifications
 import parser as sc_parser
 import rate_sheet
 from config import (DEPARTMENTS, REPO_DIR, STATUSES, TAT_MEDIUM_DAYS, as_of_date,
-                    default_fx_rate, required_doc_types)
+                    case_required_docs, default_fx_rate, required_doc_types)
 from deps import require_buyer
 from formatting import format_inr
 from tat import (add_working_days, clock_for, days_remaining, days_remaining_text,
@@ -183,8 +183,9 @@ async def queue_list(
         atts = db.list_attachments(c["id"])
         # Which documents are required depends on the case: a frame contract
         # has no approved cart yet, so flagging one as missing would be wrong.
-        required = required_doc_types(c["sourcing_basis"] if "sourcing_basis" in c.keys() else None)
-        labels = {"SC": "SC", "SFO": "Deviation Note/SFO", "RFQ": "RFQ", "OFFER": "offer"}
+        required = case_required_docs(dict(c))
+        labels = {"SC": "SC", "SFO": "Deviation Note/SFO", "RFQ": "RFQ", "OFFER": "offer",
+                  "INFOSEC_CLEARANCE": "InfoSec clearance"}
         missing = [labels.get(d, d) for d in required
                    if not any(a["doc_type"] == d for a in atts)]
         c["docs_complete"] = not missing

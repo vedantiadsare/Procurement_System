@@ -109,6 +109,7 @@
 <div class="sf-sups">
 {% for i in invitations %}
 {% set state = "quoted" if i.decision == "ACCEPTED" else "declined" if i.decision == "DECLINED" else "pending" %}
+{% set last_step = i.history[-1] if i.history else none %}
 <div class="sf-card sf-sup sf-sup--{{ state }}">
 
     {# Who, where they stand, and the mail trail - one line. #}
@@ -120,6 +121,8 @@
         <div class="sf-sup__state">
             {% if state == "quoted" %}
             <span class="sf-list-chip" style="background:#E5F5EA;color:#15803D;border:1px solid #BEE3C8;">Quoted</span>
+            {% elif state == "declined" and last_step and last_step.tone == "withdrew" %}
+            <span class="sf-list-chip" style="background:#FBEAEA;color:#B42318;border:1px solid #F2C9C5;">Withdrew quotation</span>
             {% elif state == "declined" %}
             <span class="sf-list-chip" style="background:#FCF5D8;color:#8A6D0B;border:1px solid #EEDD9F;">Declined</span>
             {% else %}
@@ -146,6 +149,15 @@
             <button type="button" class="sf-btn sf-btn--ghost sf-btn--sm sf-copy" data-copy="{{ i.link }}" title="{{ i.link }}">Copy link</button>
         </div>
     </div>
+
+    {# Every answer, not just the latest: a supplier who declined and then
+       quoted, or quoted and then withdrew, shows it here. #}
+    {% if i.history | length > 1 %}
+    <div class="sf-sup__history">
+        <span class="sf-sup__history-label">History</span>
+        {% for h in i.history %}<span class="sf-sup__step sf-sup__step--{{ h.tone }}">{{ h.label }} {{ h.at | timestamp }}</span>{% if not loop.last %}<span class="sf-sup__arrow">→</span>{% endif %}{% endfor %}
+    </div>
+    {% endif %}
 
     {% if i.response_text or i.check or i.versions %}
     <div class="sf-sup__body">

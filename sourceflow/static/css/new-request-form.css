@@ -305,3 +305,19 @@
     color: var(--sf-text-faint);
     margin-top: 1px;
 }
+
+/* --- InfoSec screening ------------------------------------------------------ */
+.sf-infosec { display: grid; gap: 2px; }
+.sf-infosec__q { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 10px 0; border-bottom: 1px solid var(--sf-border); }
+.sf-infosec__q:last-child { border-bottom: 0; }
+.sf-infosec__text { font-size: .88rem; color: var(--sf-text); }
+.sf-infosec__answers { display: flex; gap: 18px; flex-shrink: 0; }
+.sf-infosec__answers label { display: flex; align-items: center; gap: 6px; font-size: .88rem; cursor: pointer; }
+.sf-infosec__notice { margin: 14px 0 10px; padding: 10px 14px; border-radius: var(--sf-radius);
+    font-size: .85rem; line-height: 1.5; border-left: 3px solid; }
+.sf-infosec__notice--needed { background: var(--sf-warning-bg); border-left-color: var(--sf-warning); }
+.sf-infosec__notice--clear { background: var(--sf-success-bg); border-left-color: var(--sf-success); color: var(--sf-success); }
+@media (max-width: 640px) {
+    .sf-infosec__q { flex-direction: column; align-items: flex-start; gap: 6px; }
+}

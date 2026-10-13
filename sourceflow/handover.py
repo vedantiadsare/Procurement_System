@@ -17,7 +17,7 @@ from datetime import datetime
 
 import db
 from agents.advisor import DOC_LABELS, alerts_for, facts_for, recommend
-from config import required_doc_types, to_eur
+from config import case_required_docs, required_doc_types, to_eur
 
 CONTRACT_VERSION = "1.0"
 
@@ -112,7 +112,7 @@ def build(case: dict) -> dict:
             "download": f"/attachments/{a['id']}/download",
         })
     inventory = {
-        "expected": [{"type": d, "label": DOC_LABELS.get(d, d)} for d in required_doc_types(case.get("sourcing_basis"))],
+        "expected": [{"type": d, "label": DOC_LABELS.get(d, d)} for d in case_required_docs(case)],
         "received": present,
         "missing": [{"type": d, "label": DOC_LABELS.get(d, d)} for d in facts["missing_docs"]],
     }

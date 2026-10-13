@@ -493,3 +493,20 @@
 }
 .sf-mkt__blocked { margin-top: 10px; padding: 8px 12px; border-radius: var(--sf-radius); background: var(--sf-surface-alt); }
 .sf-mkt__badge--ignored { background: var(--sf-surface-alt); color: var(--sf-text-faint); text-decoration: line-through; }
+
+/* --- InfoSec screening on case pages ------------------------------------------ */
+.sf-infosec-chip { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .76rem; font-weight: 600; margin-right: 6px; }
+.sf-infosec-chip--ok { background: var(--sf-success-bg); color: var(--sf-success); }
+.sf-infosec-chip--bad { background: var(--sf-danger-bg); color: var(--sf-danger); }
+.sf-infosec-chip--muted { background: var(--sf-surface-alt); color: var(--sf-text-muted); }
+.sf-infosec-yes { margin: 0 0 10px; padding-left: 18px; font-size: .84rem; color: var(--sf-text); }
+.sf-infosec-yes li { margin: 2px 0; }
+
+/* --- A supplier's answers over time, on the enquiry page ------------------------- */
+.sf-sup__history { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 2px; font-size: .78rem; }
+.sf-sup__history-label { color: var(--sf-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; font-size: .7rem; margin-right: 2px; }
+.sf-sup__step { padding: 1px 8px; border-radius: 999px; background: var(--sf-surface-alt); color: var(--sf-text-muted); }
+.sf-sup__step--quoted { background: var(--sf-success-bg); color: var(--sf-success); }
+.sf-sup__step--declined { background: var(--sf-warning-bg); color: var(--sf-warning); }
+.sf-sup__step--withdrew { background: var(--sf-danger-bg); color: var(--sf-danger); }
+.sf-sup__arrow { color: var(--sf-text-faint); }

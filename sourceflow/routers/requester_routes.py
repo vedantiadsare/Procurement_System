@@ -16,6 +16,7 @@ from config import (
     SOURCING_BASES, DRAFT_TTL_MINUTES, EXPENSE_COMMODITIES, MAX_FILE_MB, REPO_DIR,
     REQUISITIONING_BUS, SOURCING_TYPES, TAX_BASES, to_eur, default_fx_rate,
     buyer_for_commodity, required_doc_types,
+    INFOSEC_CONTACT, INFOSEC_QUESTIONS, infosec_required,
 )
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -40,6 +41,8 @@ FORM_DROPDOWNS = {
     "sourcing_types": SOURCING_TYPES,
     "allowed_extensions": ALLOWED_EXTENSIONS,
     "max_file_mb": MAX_FILE_MB,
+    "infosec_questions": INFOSEC_QUESTIONS,
+    "infosec_contact": INFOSEC_CONTACT,
 }
 
 
@@ -83,7 +86,11 @@ async def _collect_tagged_files(form) -> list:
         if _provided(upload):
             tagged.append({"doc_type": doc_type, **(await _read_file(upload))})
 
-    multi_slots = [("offer_files", "OFFER"), ("regret_files", "REGRET"), ("other_files", "OTHER")]
+    # InfoSec clearance is rarely one document - an NDA, a TISAX or ISO 27001
+    # certificate, the vendor security assessment, InfoSec's own approval -
+    # so it takes as many files as the requester has.
+    multi_slots = [("offer_files", "OFFER"), ("regret_files", "REGRET"), ("other_files", "OTHER"),
+                   ("infosec_files", "INFOSEC_CLEARANCE")]
     for field_name, doc_type in multi_slots:
         for upload in form.getlist(field_name):
             if _provided(upload):
@@ -148,6 +155,10 @@ def _extract_form_values(form, user, is_edit_defaults=None):
         is_on_behalf=on_own_behalf == "No",
         submitted_by_name=user["name"],
         submitted_by_email=user["email"],
+        # None until answered - never defaulted to "No", or a requester could
+        # skip the screening by not reading it.
+        infosec_answers={key: {"Yes": True, "No": False}.get(form.get(f"infosec_{key}"))
+                         for key, _ in INFOSEC_QUESTIONS},
     )
 
 
@@ -535,6 +546,8 @@ def _finalize_draft(draft, token) -> str:
         sourcing_basis=v["sourcing_basis"],
         delivery_from_date=v["delivery_from_date"], delivery_to_date=v["delivery_to_date"],
         mrm_relevant=v["mrm_relevant"], mrm_conducted=v["mrm_conducted"], mrm_reason=v["mrm_reason"] or None, po_number=None,
+        infosec_answers=json.dumps(v.get("infosec_answers") or {}),
+        infosec_required=1 if infosec_required(v.get("infosec_answers")) else 0,
     ))
 
     for f in saved_files:
@@ -563,6 +576,18 @@ def _finalize_draft(draft, token) -> str:
     if v["is_on_behalf"]:
         detail += f" Filed on behalf of {v['requestor_name']}."
     db.insert_audit(case_id, v["submitted_by_name"], "SUBMITTED", detail, visibility="external")
+    answers = v.get("infosec_answers") or {}
+    if infosec_required(answers):
+        reasons = "; ".join(q.rstrip("?") for key, q in INFOSEC_QUESTIONS if answers.get(key))
+        cleared = sum(1 for f in saved_files if f["doc_type"] == "INFOSEC_CLEARANCE")
+        db.insert_audit(case_id, v["submitted_by_name"], "REMARK",
+                        f"InfoSec clearance needed - answered Yes to: {reasons}. "
+                        f"{cleared} clearance document{'s' if cleared != 1 else ''} attached.",
+                        visibility="external")
+    elif answers:
+        db.insert_audit(case_id, v["submitted_by_name"], "REMARK",
+                        "InfoSec screening: all five criteria answered No - no clearance needed.",
+                        visibility="external")
     if buyer:
         db.insert_audit(case_id, "Samagra", "ASSIGNED",
                         f"Assigned to {buyer}: {v['expense_commodity']} is in their sourcing categories.",

@@ -25,7 +25,7 @@ import notifications
 import quotation_check
 import supplier_rfq
 from config import (ALLOWED_EXTENSIONS, MAX_FILE_MB, RFQ_DEFAULT_OPEN_DAYS,
-                    SOURCEFLOW_ROOT)
+                    SOURCEFLOW_ROOT, INFOSEC_CONTACT, INFOSEC_QUESTIONS, infosec_required)
 from deps import require_requester
 from templating import templates
 
@@ -181,15 +181,19 @@ async def rfq_create(request: Request, user=Depends(require_requester)):
             "allowed_extensions": ALLOWED_EXTENSIONS,
         }, status_code=400)
 
+    infosec = {key: form.get(f"infosec_{key}") == "Yes" for key, _ in INFOSEC_QUESTIONS}
     result = supplier_rfq.create_round(
         subject, message, user["name"], closes_on, recipients, files,
         case_id=int(case_id) if case_id else None,
-        created_by_email=user["email"])
+        created_by_email=user["email"], infosec_answers=infosec)
 
     note = f"{result['reference']} sent to {result['sent']} supplier"
     note += "" if result["sent"] == 1 else "s"
     if result["failed"]:
         note += f" — {result['failed']} could not be mailed (see the round for which)"
+    if infosec_required(infosec):
+        note += (f". InfoSec clearance will be needed before the sourcing request goes to "
+                 f"Procurement - contact {INFOSEC_CONTACT} now, the review takes time.")
     request.session["rfq_flash"] = note
     return RedirectResponse(url=f"/supplier-rfq/{result['round_id']}", status_code=303)
 
@@ -206,6 +210,7 @@ async def rfq_detail(request: Request, round_id: int, user=Depends(require_reque
     for inv in invitations:
         inv["files"] = db.list_rfq_response_files(inv["id"])
         inv["versions"] = supplier_rfq.versions(inv["files"])
+        inv["history"] = supplier_rfq.response_history(inv)
         inv["link"] = supplier_rfq.portal_link(inv["token"])
 
         # The Offer agent's verdict on this submission, if it has read it.
@@ -333,6 +338,8 @@ def _supplier_page(request, round_, **extra):
     context.update(extra)
     if context.get("files") is not None:
         context["versions"] = supplier_rfq.versions(context["files"])
+    steps = supplier_rfq.response_history(round_) if round_ else []
+    context["withdrew"] = bool(steps) and steps[-1]["tone"] == "withdrew"
     return templates.TemplateResponse(request, "supplier/rfq_portal.html", context,
                                       status_code=status_code)
 

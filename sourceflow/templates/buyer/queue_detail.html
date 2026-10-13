@@ -38,7 +38,7 @@
     {% elif flash.get('error') %}
         Could not send email to {{ flash.to }}: {{ flash.error }}
     {% else %}
-        Requester notified in-app only — SMTP isn't configured, so no email went to {{ flash.to }}.
+        Requester notified in-app only — email isn't set up, so nothing went to {{ flash.to }}.
     {% endif %}
     <details class="sf-email-preview">
         <summary>Email content</summary>

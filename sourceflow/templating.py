@@ -97,6 +97,10 @@ def _amount(value, currency="INR"):
 templates.env.filters["amount"] = _amount
 templates.env.globals["money_in"] = formatting.money_in
 templates.env.filters["date"] = formatting.format_date
+templates.env.globals["infosec_summary"] = formatting.infosec_summary
+from config import INFOSEC_CONTACT as _IC, INFOSEC_QUESTIONS as _IQ  # noqa: E402
+templates.env.globals["infosec_questions"] = _IQ
+templates.env.globals["infosec_contact"] = _IC
 templates.env.filters["timestamp"] = formatting.format_timestamp
 templates.env.filters["status_label"] = formatting.status_label
 templates.env.filters["action_label"] = formatting.action_label

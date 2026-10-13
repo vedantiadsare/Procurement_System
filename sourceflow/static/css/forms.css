@@ -170,3 +170,15 @@
     margin: 0 12px;
     min-width: 24px;
 }
+
+/* --- InfoSec check on floating an enquiry -------------------------------------- */
+.sf-infosec-dialog { max-width: 560px; width: calc(100% - 32px); border: 0; border-radius: var(--sf-radius-lg);
+    padding: 22px 24px; box-shadow: var(--sf-shadow-lg); color: var(--sf-text); background: var(--sf-surface); }
+.sf-infosec-dialog::backdrop { background: rgba(0, 39, 51, .45); }
+.sf-infosec-dialog h2 { margin: 0 0 4px; font-size: 1.05rem; }
+.sf-infosec-dialog__q { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0;
+    border-bottom: 1px solid var(--sf-border); font-size: .88rem; cursor: pointer; }
+.sf-infosec-dialog__q input { margin-top: 3px; flex-shrink: 0; }
+.sf-infosec-dialog__note { margin: 14px 0 0; padding: 10px 14px; border-radius: var(--sf-radius); font-size: .84rem;
+    line-height: 1.5; background: var(--sf-warning-bg); border-left: 3px solid var(--sf-warning); }
+.sf-infosec-dialog__actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }

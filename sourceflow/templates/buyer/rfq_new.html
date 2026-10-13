@@ -128,9 +128,30 @@
     <div class="sf-rfqn-actions">
         <button type="submit" class="sf-btn sf-btn--primary sf-btn--lg" id="sendBtn">Send enquiry</button>
         <a href="/supplier-rfq" class="sf-btn sf-btn--secondary">Cancel</a>
-        <span class="sf-caption">Sending mails every address on the list immediately.</span>
+        <span class="sf-caption">You'll answer a quick InfoSec check first; then every address on the list is mailed.</span>
     </div>
 </div>
+
+{# InfoSec check: asked when Send is pressed, before anything is mailed. It
+   doesn't stop the enquiry - suppliers can quote while InfoSec reviews - but
+   the requester learns now that clearance will be needed for the sourcing
+   request, while there is still time to get it. #}
+<dialog class="sf-infosec-dialog" id="infosecDialog">
+    <h2>Before you send: InfoSec check</h2>
+    <p class="sf-caption">Tick anything that applies to this purchase.</p>
+    {% for key, question in infosec_questions %}
+    <label class="sf-infosec-dialog__q"><input type="checkbox" name="infosec_{{ key }}" value="Yes"> {{ question }}</label>
+    {% endfor %}
+    <p class="sf-infosec-dialog__note" id="infosecNote" hidden>
+        <strong>InfoSec clearance will be needed</strong> before your sourcing request can go to Procurement.
+        The enquiry still goes out now. Contact <a href="mailto:{{ infosec_contact }}">{{ infosec_contact }}</a>
+        to start the review early, as it takes time. Suppliers will be told they may need an NDA and TISAX or ISO 27001 certification.
+    </p>
+    <div class="sf-infosec-dialog__actions">
+        <button type="button" class="sf-btn sf-btn--secondary" id="infosecBack">Back</button>
+        <button type="button" class="sf-btn sf-btn--primary" id="infosecSend">Send enquiry</button>
+    </div>
+</dialog>
 
 </form>
 {% endblock %}
@@ -252,6 +273,29 @@
             .catch(function () { note.textContent = "Couldn't draft just now. Try again."; })
             .finally(function () { btn.disabled = false; btn.textContent = was; });
     });
+    // --- InfoSec check on Send: shown once, then the form really submits
+    (function () {
+        var form = $("rfqForm"), dlg = $("infosecDialog");
+        if (!form || !dlg || !dlg.showModal) return;
+        var boxes = dlg.querySelectorAll('input[type="checkbox"]');
+        var noteEl = $("infosecNote"), confirmed = false;
+        boxes.forEach(function (b) {
+            b.addEventListener("change", function () {
+                noteEl.hidden = !Array.prototype.some.call(boxes, function (x) { return x.checked; });
+            });
+        });
+        form.addEventListener("submit", function (e) {
+            if (confirmed) return;
+            e.preventDefault();
+            dlg.showModal();
+        });
+        $("infosecBack").addEventListener("click", function () { dlg.close(); });
+        $("infosecSend").addEventListener("click", function () {
+            confirmed = true;
+            dlg.close();
+            form.requestSubmit ? form.requestSubmit($("sendBtn")) : form.submit();
+        });
+    })();
 }());
 </script>
 {% endblock %}

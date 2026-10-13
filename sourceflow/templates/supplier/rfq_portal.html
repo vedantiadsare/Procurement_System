@@ -63,6 +63,7 @@
     <h2 class="sf-section-header" style="margin-top:0;">What you have sent us</h2>
     <p style="margin:0 0 8px;">
         {% if round.decision == "ACCEPTED" %}You submitted a quotation on {{ round.responded_at | timestamp }}.
+        {% elif withdrew %}You withdrew your quotation on {{ round.responded_at | timestamp }}. Your earlier files are kept on record.
         {% else %}You declined this enquiry on {{ round.responded_at | timestamp }}.{% endif %}
     </p>
     {% if round.response_text %}<p style="white-space:pre-line;margin:0 0 8px;">{{ round.response_text }}</p>{% endif %}
