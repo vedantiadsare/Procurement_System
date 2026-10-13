@@ -14,12 +14,14 @@
             </div>
             {% if case.status == "ENQUIRED" %}
             <div class="sf-hero-actions">
-                <a href="/requests/{{ case.id }}/edit" class="sf-hero-btn sf-hero-btn--solid">Upload documents</a>
+                <a href="/requests/{{ case.id }}?tab=activity" class="sf-hero-btn sf-hero-btn--solid">Reply to procurement</a>
             </div>
             {% endif %}
         </div>
         <p class="sf-hero-meta">
-            {{ case.ticket_no }} · SC {{ case.sc_number }}{% if case.assigned_buyer %} · with {{ case.assigned_buyer }}{% endif %} · {{ case.topic_value_inr | inr }}
+            {# A frame contract has no cart, so "SC —" would read as a missing
+               document rather than as a different kind of case. #}
+            {{ case.ticket_no }}{% if case.sourcing_basis == "Frame contract" %} · Frame contract{% else %} · SC {{ case.sc_number }}{% endif %}{% if case.assigned_buyer %} · with {{ case.assigned_buyer }}{% endif %} · {{ case | money }}
         </p>
     </div>
 </div>
@@ -30,7 +32,7 @@
 <div class="sf-cs-tabs">
     <a href="?tab=status" class="{{ 'active' if active_tab == 'status' }}" data-tab-link="status">Status</a>
     <a href="?tab=documents" class="{{ 'active' if active_tab == 'documents' }}" data-tab-link="documents">Documents</a>
-    <a href="?tab=conversation" class="{{ 'active' if active_tab == 'conversation' }}" data-tab-link="conversation">Conversation</a>
+    <a href="?tab=activity" class="{{ 'active' if active_tab == 'activity' }}" data-tab-link="activity">Activity{% if case.status == "ENQUIRED" %} <span class="sf-cs-tabs__dot" title="Procurement is waiting on you"></span>{% endif %}</a>
 </div>
 
 <div class="sf-tab-panel {{ 'active' if active_tab == 'status' }}" data-tab-panel="status">
@@ -44,7 +46,7 @@
     </div>
     {% endif %}
     {% if case.status == "APPROVED" %}
-    <div class="sf-alert sf-alert--success"><strong>Approved.</strong> PO number: {{ case.po_number or "not recorded (migrated case)" }}</div>
+    <div class="sf-alert sf-alert--success"><strong>Approved.</strong> {{ case.sourcing_basis | closing_ref_label }}: {{ case.po_number or "not recorded (migrated case)" }}</div>
     {% endif %}
     {% if case.status == "REJECTED" %}
     <div class="sf-alert sf-alert--danger"><strong>Rejected.</strong>{% if case.remarks_for_user %} Reason: {{ case.remarks_for_user }}{% endif %}</div>
@@ -62,10 +64,14 @@
             <span class="{{ 'is-current' if stepper_stage == 1 }}">Submitted</span>
             <span class="{{ 'is-current' if stepper_stage == 2 }}">Documents complete</span>
             <span class="{{ 'is-current' if stepper_stage == 3 }}">Under review</span>
-            <span class="{{ 'is-current' if stepper_stage == 4 }}">PO released</span>
+            <span class="{{ 'is-current' if stepper_stage == 4 }}">{{ "Contract issued" if case.sourcing_basis == "Frame contract" else "PO released" }}</span>
         </div>
         {% if docs_checked and case.status not in ("APPROVED", "REJECTED") %}
         <p class="sf-cs-stepper-note">Your document set was complete on {{ case.final_corrected_docs_date | date }}, so the clock started that day.{% if case.expected_po_closure %} Expected PO closure <strong>{{ case.expected_po_closure | date }}</strong>, {{ days_text }} left.{% endif %}</p>
+        {% elif case.status == "APPROVED" %}
+        {# The stepper's last step is "PO released" - so say when, rather than
+           leaving the requester to work it out from the activity log. #}
+        <p class="sf-cs-stepper-note">{{ "Your frame contract was issued on" if case.sourcing_basis == "Frame contract" else "Your PO was released on" }} <strong>{{ po_released_on | date if po_released_on else "a date that wasn't recorded" }}</strong>{% if case.po_number %} — {{ case.sourcing_basis | closing_ref_label | lower }} {{ case.po_number }}{% endif %}.{% if clock.sub %} {{ clock.sub }}{% endif %}</p>
         {% elif not docs_checked %}
         <p class="sf-cs-stepper-note">Awaiting document check by your buyer — the clock hasn't started yet.</p>
         {% endif %}
@@ -73,14 +79,25 @@
 
     <div class="sf-card">
         <div class="sf-cs-card__title">Your documents <span class="sf-cs-card__meta">What procurement has, and what's still needed</span></div>
+        {# A frame contract is sourced before there is anything to put on a
+           cart, so the cart is not on its checklist at all. Controlling's
+           budget confirmation takes its place where one exists - optional,
+           because a rate agreement with no committed spend needs none. #}
+        {% if case.sourcing_basis != "Frame contract" %}
         <div class="sf-cs-doc">
             <span class="sf-cs-doc__icon {{ 'sf-cs-doc__icon--ok' if has_sc else 'sf-cs-doc__icon--bad' }}">{% if has_sc %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>{% else %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>{% endif %}</span>
             <div class="sf-cs-doc__body"><div class="sf-cs-doc__name">Approved shopping cart</div></div>
         </div>
+        {% else %}
+        <div class="sf-cs-doc">
+            <span class="sf-cs-doc__icon {{ 'sf-cs-doc__icon--ok' if has_budget else 'sf-cs-doc__icon--opt' }}">{% if has_budget %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>{% else %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="7" y1="12" x2="17" y2="12"></line></svg>{% endif %}</span>
+            <div class="sf-cs-doc__body"><div class="sf-cs-doc__name">Budget confirmation from Controlling</div><div class="sf-cs-doc__detail">{{ "Attached" if has_budget else "Optional — only where the spend is committed up front" }}</div></div>
+        </div>
+        {% endif %}
         <div class="sf-cs-doc">
             <span class="sf-cs-doc__icon {{ 'sf-cs-doc__icon--ok' if has_sfo else 'sf-cs-doc__icon--bad' }}">{% if has_sfo %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>{% else %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>{% endif %}</span>
             <div class="sf-cs-doc__body"><div class="sf-cs-doc__name">Deviation Note/SFO</div></div>
-            {% if not has_sfo and case.status == "ENQUIRED" %}<a href="/requests/{{ case.id }}/edit" class="sf-btn sf-btn--primary sf-btn--sm">Upload</a>{% endif %}
+            {% if not has_sfo and case.status == "ENQUIRED" %}<a href="/requests/{{ case.id }}?tab=activity" class="sf-btn sf-btn--primary sf-btn--sm">Upload</a>{% endif %}
         </div>
         <div class="sf-cs-doc">
             <span class="sf-cs-doc__icon {{ 'sf-cs-doc__icon--ok' if has_rfq else 'sf-cs-doc__icon--bad' }}">{% if has_rfq %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>{% else %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>{% endif %}</span>
@@ -100,11 +117,20 @@
         <dl class="sf-cs-kv"><dt>Status</dt><dd>{{ case.status | status_text }}</dd></dl>
         <dl class="sf-cs-kv"><dt>Buyer</dt><dd>{{ case.assigned_buyer or "Not yet assigned" }}</dd></dl>
         <dl class="sf-cs-kv"><dt>Submitted</dt><dd>{{ case.submitted_at | date }}</dd></dl>
-        <dl class="sf-cs-kv"><dt>{{ "Clock started" if docs_checked else "Working days remaining" }}</dt><dd>{{ case.final_corrected_docs_date | date if docs_checked else days_text }}</dd></dl>
+        {% if docs_checked %}
+        <dl class="sf-cs-kv"><dt>Clock started</dt><dd>{{ case.final_corrected_docs_date | date }}</dd></dl>
+        {% endif %}
+        {# Label and value both come from clock_for(), so a finished request is
+           never filed under "Working days remaining". #}
+        <dl class="sf-cs-kv"><dt>{{ clock.label }}</dt><dd>{{ clock.text }}</dd></dl>
+        {% if case.status == "APPROVED" %}
+        <dl class="sf-cs-kv"><dt>{{ "Contract issued" if case.sourcing_basis == "Frame contract" else "PO released" }}</dt><dd>{{ po_released_on | date if po_released_on else "Date not recorded" }}</dd></dl>
+        {% if case.po_number %}<dl class="sf-cs-kv"><dt>{{ case.sourcing_basis | closing_ref_label }}</dt><dd>{{ case.po_number }}</dd></dl>{% endif %}
+        {% endif %}
     </div>
     <div class="sf-card">
         <div class="sf-cs-card__title">Topic</div>
-        <dl class="sf-cs-kv"><dt>Value</dt><dd>{{ case.topic_value_inr | inr }}</dd></dl>
+        <dl class="sf-cs-kv"><dt>Value</dt><dd>{{ case | money }}</dd></dl>
         <dl class="sf-cs-kv"><dt>Type</dt><dd>{{ case.sourcing_type or "-" }}{{ " · " ~ case.expense_commodity if case.expense_commodity }}</dd></dl>
         <dl class="sf-cs-kv"><dt>Delivery</dt><dd>{{ case.delivery_location or "-" }}</dd></dl>
         <dl class="sf-cs-kv"><dt>Offers</dt><dd>{{ offer_count }} attached</dd></dl>
@@ -119,58 +145,111 @@
         {{ doclist.render(attachments) }}
     </div>
     {% if line_items %}
+    {# Collapsed by default. A cart with thirty lines pushed everything that
+       matters off the page, and the cart itself is attached right above for
+       anyone who wants to read it in full. #}
     <div class="sf-card">
-        <h3 class="sf-section-header" style="margin-top:0;">Line items read from your shopping cart</h3>
-        <div style="overflow-x:auto;">
-        <table class="sf-table">
-            <thead><tr><th>Item</th><th>Description</th><th>Qty</th><th>UoM</th><th>Unit price</th><th>Amount</th></tr></thead>
-            <tbody>
-            {% for it in line_items %}
-            <tr>
-                <td>{{ it.item_no or "-" }}</td>
-                <td>{{ it.description or "-" }}</td>
-                <td>{{ it.quantity if it.quantity is not none else "-" }}</td>
-                <td>{{ it.uom or "-" }}</td>
-                <td>{{ it.unit_price | inr }}</td>
-                <td>{{ it.amount | inr }}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        </div>
+        <details class="sf-lineitems">
+            <summary>
+                <span class="sf-lineitems__count">{{ line_items | length }}</span>
+                line item{{ "s" if line_items | length != 1 }} read from your shopping cart
+            </summary>
+            <div style="overflow-x:auto;margin-top:12px;">
+            <table class="sf-table">
+                <thead><tr><th>Item</th><th>Description</th><th>Qty</th><th>UoM</th><th>Unit price</th><th>Amount</th></tr></thead>
+                <tbody>
+                {% for it in line_items %}
+                <tr>
+                    <td>{{ it.item_no or "-" }}</td>
+                    <td>{{ it.description or "-" }}</td>
+                    <td>{{ it.quantity if it.quantity is not none else "-" }}</td>
+                    <td>{{ it.uom or "-" }}</td>
+                    <td>{{ money_in(it.unit_price, case.currency) }}</td>
+                    <td>{{ money_in(it.amount, case.currency) }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </details>
     </div>
     {% endif %}
 </div>
 
-<div class="sf-tab-panel {{ 'active' if active_tab == 'conversation' }}" data-tab-panel="conversation">
-    <div class="sf-card">
-        <div class="sf-cs-card__title">Conversation</div>
+<div class="sf-tab-panel {{ 'active' if active_tab == 'activity' }}" data-tab-panel="activity">
+    <div class="sf-card sf-thread">
+        <div class="sf-cs-card__title">Activity <span class="sf-cs-card__meta">Everything that has happened on this request, oldest first</span></div>
+
+        {% if reply_ok %}<div class="sf-alert sf-alert--success" style="margin-top:12px;">{{ reply_ok }}</div>{% endif %}
+        {% if reply_error %}<div class="sf-alert sf-alert--danger" style="margin-top:12px;">{{ reply_error }}</div>{% endif %}
+
         {% if not activity %}
-        <p class="sf-caption">No activity yet.</p>
+        <p class="sf-caption">Nothing recorded yet.</p>
         {% else %}
+        <ol class="sf-thread__list">
         {% for a in activity %}
-        <div class="sf-cs-msg">
-            <div class="sf-cs-msg__avatar">{{ a.actor | initials }}</div>
-            <div class="sf-cs-msg__body">
-                <div class="sf-cs-msg__head">
-                    <span class="sf-cs-msg__name">{{ "You" if a.actor == case.submitted_by_name or a.actor == case.requestor_name else a.actor }}</span>
-                    <span class="sf-cs-msg__role">{{ "Requester" if a.actor == case.submitted_by_name or a.actor == case.requestor_name else "Buyer" }}</span>
-                    <span class="sf-cs-msg__time">{{ a.created_at | timestamp }}</span>
+        {% set mine = a.actor == case.submitted_by_name or a.actor == case.requestor_name %}
+        {# A question and a reply are messages between two people; a document
+           check or a PO release is the system reporting a fact. They read
+           differently, so they are drawn differently rather than as twenty
+           identical chat bubbles. #}
+        {% set is_message = a.action in ("ENQUIRED", "REPLIED", "COMMENT") %}
+        <li class="sf-thread__item {{ 'is-message' if is_message }} {{ 'is-mine' if mine }} {{ 'is-ask' if a.action == 'ENQUIRED' }}">
+            <span class="sf-thread__mark">{% if is_message %}{{ a.actor | initials }}{% endif %}</span>
+            <div class="sf-thread__body">
+                <div class="sf-thread__head">
+                    <span class="sf-thread__who">{{ "You" if mine else a.actor }}</span>
+                    <span class="sf-thread__role">{{ "Requester" if mine else "Procurement" }}</span>
+                    <span class="sf-thread__what">{{ a.action | action_label }}</span>
+                    <span class="sf-thread__time">{{ a.created_at | timestamp }}</span>
                 </div>
-                <div class="sf-cs-msg__text">{{ a.detail or a.action | status_label }}</div>
+                {% if a.detail %}<div class="sf-thread__text">{{ a.detail }}</div>{% endif %}
             </div>
-        </div>
+        </li>
         {% endfor %}
+        </ol>
         {% endif %}
+
         {% if case.status == "ENQUIRED" %}
-        <div class="sf-cs-locked" style="margin-top:12px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>
-            To reply, use the <a href="/requests/{{ case.id }}/edit">Edit &amp; resubmit</a> form — it carries your reply and any new documents together.
-        </div>
+        {# Reply where the question was asked. The full form is still one click
+           away for the cases where a field really has to change. #}
+        <form class="sf-reply" method="post" action="/requests/{{ case.id }}/reply" enctype="multipart/form-data">
+            <div class="sf-reply__head">
+                <span class="sf-reply__avatar">{{ user.name | initials }}</span>
+                <label for="reply_message">Reply to {{ case.assigned_buyer or "procurement" }}</label>
+            </div>
+            <textarea id="reply_message" name="message" rows="3"
+                      placeholder="Answer the question, or say what you have attached…"></textarea>
+
+            {# One picker for everything. Each file is tagged from its name or
+               its first page as it is picked; the tag shows as a chip with a
+               menu behind it for the odd wrong guess. Without JS the picker
+               still posts and the server tags on arrival. #}
+            <div class="sf-reply__files" data-reply-files>
+                <label class="sf-reply__pick" for="reply_files">
+                    <input type="file" id="reply_files" name="reply_files" multiple aria-label="Attachments">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                    <span><b>Attach documents</b> — the type is worked out from each file</span>
+                </label>
+                <ul class="sf-reply__list" data-reply-list hidden></ul>
+                <template data-reply-types>
+                    <select name="reply_doc_type" aria-label="Document type">
+                        {% for d in doc_types %}<option value="{{ d }}">{{ d | doc_type_label }}</option>{% endfor %}
+                    </select>
+                </template>
+            </div>
+
+            <div class="sf-reply__foot">
+                <span class="sf-caption">Max {{ max_file_mb }} MB per file. Sending puts the request back with procurement.</span>
+                <div>
+                    <button type="submit" class="sf-btn sf-btn--primary">Send reply</button>
+                </div>
+            </div>
+        </form>
         {% else %}
-        <div class="sf-cs-locked" style="margin-top:12px;">
+        <div class="sf-cs-locked" style="margin-top:14px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="11" width="16" height="9" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
-            Nothing is needed from you right now. If the buyer has a question, it'll show up here and you'll get a mail.
+            Nothing is needed from you right now. If procurement has a question it will appear here, and you'll get a mail.
         </div>
         {% endif %}
     </div>
@@ -179,4 +258,5 @@
 {% endblock %}
 {% block extra_scripts %}
 <script src="/static/js/tabs.js"></script>
+<script src="{{ asset_url('/static/js/reply-box.js') }}"></script>
 {% endblock %}

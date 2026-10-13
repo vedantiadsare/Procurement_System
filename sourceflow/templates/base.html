@@ -4,6 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Samagra{% endblock %}</title>
+    {# The app has declared Inter as its face since the first commit but never
+       fetched it, so every page has been rendering in Segoe UI. Loaded here
+       with the same stack still behind it: offline, the demo looks exactly as
+       it did before rather than breaking. #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="{{ asset_url('/static/css/base.css') }}">
     <link rel="stylesheet" href="{{ asset_url('/static/css/header.css') }}">
     <link rel="stylesheet" href="{{ asset_url('/static/css/forms.css') }}">
@@ -35,10 +42,14 @@
             <span class="sf-shell-brand__name">Samagra</span>
             <span class="sf-shell-brand__dept">General Procurement</span>
         </div>
+        {% if not user.is_admin %}
         <form class="sf-shell-search" method="get" action="{{ '/queue' if user.role == 'buyer' else '/requests' }}">
             {{ ic.icon("search", 15) }}
             <input type="text" name="q" placeholder="Search requests, tickets, suppliers..." value="{{ request.query_params.get('q', '') }}">
         </form>
+        {% else %}
+        <div class="sf-shell-search" style="visibility:hidden;"></div>
+        {% endif %}
         <div class="sf-shell-actions">
             {{ np.render(notifications) }}
             <a class="sf-shell-icon-btn" href="mailto:procurement.intake.demo@outlook.com" title="Help &amp; support">{{ ic.icon("help-circle", 18) }}</a>
@@ -46,7 +57,7 @@
                 <span class="sf-avatar">{{ user.name | initials }}</span>
                 <div class="sf-shell-user__meta">
                     <span class="sf-shell-user__name">{{ user.name }}</span>
-                    <span class="sf-shell-user__role">{{ "Buyer (GP)" if user.role == "buyer" else "Requester" }}</span>
+                    <span class="sf-shell-user__role">{{ "Procurement head" if user.is_admin else ("Buyer (GP)" if user.role == "buyer" else "Requester") }}</span>
                 </div>
             </div>
             <form class="sf-logout-form" method="post" action="/logout">
@@ -62,7 +73,12 @@
         <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'home' else '' }}" href="/home">Home</a>
         <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'new_request' else '' }}" href="/requests/new">New Sourcing Request</a>
         <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'my_requests' else '' }}" href="/requests">My Requests</a>
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'supplier_rfq' else '' }}" href="/supplier-rfq">Supplier Quotes</a>
         <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'dashboard' else '' }}" href="/dashboard">Dashboard</a>
+        {% elif user.is_admin %}
+        {# The procurement head monitors; the dashboard is the whole job. No
+           queue, no cases of their own, no mailbox to work. #}
+        <a class="sf-shell-subnav__link active" href="/dashboard">Dashboard</a>
         {% else %}
         <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'home' else '' }}" href="/home">Home</a>
         <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'queue' else '' }}" href="/queue">Queue</a>
@@ -89,6 +105,7 @@
     {% block content %}{% endblock %}
 </main>
 <script src="{{ asset_url('/static/js/notif-panel.js') }}"></script>
+<script src="{{ asset_url('/static/js/row-links.js') }}"></script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>

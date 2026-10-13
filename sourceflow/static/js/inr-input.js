@@ -7,7 +7,17 @@
     var display = document.querySelector("[data-inr-display]");
     var hidden = document.querySelector("[data-fx-value]");
     var warning = document.querySelector("[data-topic-value-warning]");
+    var prefix = document.querySelector(".sf-inr-input__prefix");
+    var currencySelect = document.getElementById("f_currency");
     if (!display || !hidden) return;
+
+    function syncPrefix() {
+        if (!prefix) return;
+        var code = currencySelect ? currencySelect.value : "INR";
+        prefix.textContent = (!code || code === "INR") ? "₹" : code;
+    }
+    if (currencySelect) currencySelect.addEventListener("change", syncPrefix);
+    syncPrefix();
 
     var LIMIT = 4000000;
 

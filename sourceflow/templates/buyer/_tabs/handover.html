@@ -1,0 +1,130 @@
+{# The handover contract, as a person reads it. The JSON download is the same
+   object; this tab exists so a buyer can see what is about to be handed on
+   and, above all, what is being flagged as not clean. #}
+{% set h = handover %}
+{% if not h %}
+<div class="sf-card"><p class="sf-muted" style="margin:0;">Open this tab to run the check.</p></div>
+{% else %}
+
+<div class="sf-card sf-ho-status sf-ho-status--{{ 'ready' if h.procurement_ready.ready else 'notready' }}">
+    <div>
+        <div class="sf-ho-status__eyebrow">Ready to award?</div>
+        <div class="sf-ho-status__verdict">{{ "Yes — clean enough to award" if h.procurement_ready.ready else "Not yet" }}</div>
+        <ul class="sf-ho-status__why">
+            {% for b in h.procurement_ready.because %}<li>{{ b }}</li>{% endfor %}
+        </ul>
+    </div>
+    <div class="sf-ho-status__actions">
+        <a href="/queue/{{ case.id }}/handover.json" class="sf-btn sf-btn--primary">Export case file (JSON)</a>
+        <span class="sf-caption">The audit pack for this award · every figure links to its source · v{{ h.contract_version }}, built {{ h.generated_at | timestamp }}</span>
+    </div>
+</div>
+
+<div class="sf-grid sf-grid--2">
+    <div class="sf-card">
+        <h4 class="sf-section-header" style="margin-top:0;">1 · Case reference</h4>
+        <dl class="sf-ho-kv">
+            <dt>Ticket</dt><dd>{{ h.case_reference.ticket }}</dd>
+            {% if h.case_reference.shopping_cart %}<dt>Shopping cart</dt><dd>{{ h.case_reference.shopping_cart }}</dd>{% endif %}
+            {% if h.case_reference.external_id %}<dt>External id</dt><dd>{{ h.case_reference.external_id }}</dd>{% endif %}
+            <dt>Basis</dt><dd>{{ h.case_reference.sourcing_basis or "—" }}</dd>
+            <dt>Status</dt><dd>{{ h.case_reference.status | status_text }}</dd>
+        </dl>
+        <h4 class="sf-section-header">2 · Request summary</h4>
+        <dl class="sf-ho-kv">
+            <dt>Title</dt><dd>{{ h.request_summary.title }}</dd>
+            <dt>Description</dt><dd>{{ h.request_summary.description or "—" }}</dd>
+            <dt>Type</dt><dd>{{ h.request_summary.sourcing_type or "—" }}</dd>
+            <dt>Deliver to</dt><dd>{{ h.request_summary.delivery_location or "—" }}</dd>
+            <dt>Required by</dt><dd>{% if h.request_summary.required_by_effective %}{{ h.request_summary.required_by_effective | date }}{% if h.request_summary.required_by_source == "TAT commitment" %} <span class="sf-muted">(committed PO date)</span>{% endif %}{% else %}—{% endif %}</dd>
+        </dl>
+        <h4 class="sf-section-header">3 · Requester &amp; category</h4>
+        <dl class="sf-ho-kv">
+            <dt>Requester</dt><dd>{{ h.requester_and_category.requester.name }} · {{ h.requester_and_category.requester.email }}</dd>
+            <dt>Department</dt><dd>{{ h.requester_and_category.department or "—" }}</dd>
+            <dt>Cost centre</dt><dd>{{ h.requester_and_category.cost_center or "—" }}</dd>
+            <dt>Category</dt><dd>{{ h.requester_and_category.category or "—" }}</dd>
+        </dl>
+        <h4 class="sf-section-header">4 · Estimated value</h4>
+        <dl class="sf-ho-kv">
+            <dt>Native</dt><dd>{{ h.estimated_value.native.currency }} {{ "{:,.2f}".format(h.estimated_value.native.amount or 0) }} <span class="sf-muted">({{ h.estimated_value.tax_basis or "tax basis not recorded" }})</span></dd>
+            <dt>INR</dt><dd>{{ "{:,.0f}".format(h.estimated_value.inr or 0) }}</dd>
+            <dt>EUR</dt><dd>{{ "{:,.2f}".format(h.estimated_value.eur) if h.estimated_value.eur is not none else "no published rate" }}</dd>
+        </dl>
+    </div>
+
+    <div class="sf-card">
+        <h4 class="sf-section-header" style="margin-top:0;">5 · Identified suppliers</h4>
+        {% if h.identified_suppliers %}
+        <ul class="sf-ho-list">
+            {% for s in h.identified_suppliers %}<li><b>{{ s.name }}</b> <span class="sf-muted">— {{ s.from }}{% if s.document %}, {{ s.document }}{% endif %}</span></li>{% endfor %}
+        </ul>
+        {% else %}<p class="sf-muted">None identified yet — run the comparison.</p>{% endif %}
+
+        <h4 class="sf-section-header">6 · Document inventory</h4>
+        <ul class="sf-ho-list">
+            {% for e in h.document_inventory.expected %}
+            {% set got = h.document_inventory.received.get(e.type) %}
+            <li>{% if got %}<span class="sf-ho-ok">✓</span>{% else %}<span class="sf-ho-bad">✗</span>{% endif %}
+                <b>{{ e.label }}</b>
+                {% if got %}<span class="sf-muted">— {{ got | map(attribute='filename') | join(', ') }}</span>{% else %}<span class="sf-ho-bad">— missing</span>{% endif %}</li>
+            {% endfor %}
+            {% for t, files in h.document_inventory.received.items() if t not in (h.document_inventory.expected | map(attribute='type') | list) %}
+            <li><span class="sf-ho-ok">✓</span> <b>{{ t }}</b> <span class="sf-muted">— {{ files | map(attribute='filename') | join(', ') }}</span></li>
+            {% endfor %}
+        </ul>
+
+        <h4 class="sf-section-header">7 · Extracted quote information</h4>
+        {% if h.extracted_quote_information.quotes %}
+        <p class="sf-caption" style="margin:0 0 8px;">Compared on {{ h.extracted_quote_information.compared_on }} net, {{ h.extracted_quote_information.compared_at | timestamp }}.</p>
+        <table class="sf-table sf-ho-table">
+            <thead><tr><th>#</th><th>Supplier</th><th>Quoted</th><th>Basis</th><th>Normalised</th><th>Confidence</th></tr></thead>
+            <tbody>
+            {% for q in h.extracted_quote_information.quotes %}
+            <tr>
+                <td>{{ q.rank or "—" }}</td>
+                <td>{{ q.supplier or q.document }}</td>
+                <td>{{ q.native.currency or "?" }} {{ "{:,.2f}".format(q.native.total) if q.native.total is not none else "—" }}</td>
+                <td>{% if q.native.tax_included is true %}incl. tax{% elif q.native.tax_included is false %}net{% else %}<span class="sf-ho-bad">not stated</span>{% endif %}</td>
+                <td>{{ q.normalised.currency }} {{ "{:,.2f}".format(q.normalised.value) if q.normalised.value is not none else "—" }}</td>
+                <td>{{ q.confidence or "—" }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% if h.extracted_quote_information.lowest_net %}
+        <p class="sf-caption" style="margin:8px 0 0;">Lowest net: {{ h.extracted_quote_information.lowest_net }}{% if h.extracted_quote_information.spread_pct is not none %} — {{ "%.1f" | format(h.extracted_quote_information.spread_pct) }}% below the highest{% endif %}.</p>
+        {% endif %}
+        {% else %}<p class="sf-muted">No comparison on the case yet.</p>{% endif %}
+    </div>
+</div>
+
+<div class="sf-grid sf-grid--2">
+    <div class="sf-card">
+        <h4 class="sf-section-header" style="margin-top:0;">8 · Missing / ambiguous</h4>
+        {% if h.missing_or_ambiguous %}
+        <ul class="sf-ho-list">
+            {% for g in h.missing_or_ambiguous %}
+            <li><span class="sf-ho-sev sf-ho-sev--{{ g.severity }}">{{ g.severity }}</span> <b>{{ g.text }}</b>{% if g.detail %} <span class="sf-muted">— {{ g.detail }}</span>{% endif %}</li>
+            {% endfor %}
+        </ul>
+        {% else %}<p class="sf-muted">Nothing outstanding.</p>{% endif %}
+
+        <h4 class="sf-section-header">9 · Next action</h4>
+        <p style="margin:0 0 4px;font-weight:600;">{{ h.procurement_ready.next_action }}</p>
+        <ul class="sf-ho-list sf-muted">{% for r in h.procurement_ready.next_action_reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+    </div>
+    <div class="sf-card">
+        <h4 class="sf-section-header" style="margin-top:0;">10 · Source documents</h4>
+        <ul class="sf-ho-list">
+            {% for s in h.source_documents %}<li><span class="sf-ho-type">{{ s.type }}</span> <a href="{{ s.download }}">{{ s.filename }}</a></li>{% endfor %}
+        </ul>
+        <h4 class="sf-section-header">11 · Review before acting</h4>
+        {% if h.review_flags %}
+        <ul class="sf-ho-list">
+            {% for r in h.review_flags %}<li><code>{{ r.field }}</code> <span class="sf-muted">— {{ r.reason }}</span></li>{% endfor %}
+        </ul>
+        {% else %}<p class="sf-muted">No fields flagged for review.</p>{% endif %}
+    </div>
+</div>
+{% endif %}

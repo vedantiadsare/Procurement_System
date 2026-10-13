@@ -15,7 +15,11 @@
 
     var SINGLE_FIELDS = { SC: "sc_file", SFO: "sfo_file", RFQ: "rfq_file" };
     var MULTI_FIELDS = { OFFER: "offer_files", OTHER: "other_files" };
-    var TAG_LABELS = { SC: "Approved Cart", SFO: "Deviation Note/SFO", RFQ: "RFQ", OFFER: "Offer", OTHER: "Other" };
+    // A frame contract has no cart to carry budget approval, so Controlling's
+    // confirmation is tagged in its own right rather than lost under "Other".
+    var SINGLE_EXTRA = { BUDGET_APPROVAL: "budget_file" };
+    var TAG_LABELS = { SC: "Approved Cart", SFO: "Deviation Note/SFO", RFQ: "RFQ", OFFER: "Offer",
+                       BUDGET_APPROVAL: "Budget confirmation", OTHER: "Other" };
     var GUESS_RULES = [
         // (?:^|[^a-z0-9]) / (?:[^a-z0-9]|$) instead of \b: \b treats "_" as
         // a word character, so it doesn't count as a boundary - a filename
@@ -23,9 +27,13 @@
         // export convention) would never match \bsc\b even though "SC" is
         // clearly its own token there.
         [/shop|cart|(?:^|[^a-z0-9])sc(?:[^a-z0-9]|$)/i, "SC"],
-        [/sfo|selection/i, "SFO"],
-        [/rfq|quotation/i, "RFQ"],
-        [/offer|quote|proposal/i, "OFFER"],
+        [/sfo|deviation|selection/i, "SFO"],
+        // "quotation" belongs to OFFER: a supplier's quotation is an offer,
+        // while an RFQ is a *request* for one. Matching bare "quotation"
+        // here tagged every supplier quote as the RFQ.
+        [/rfq|enquiry|request[ _-]*for[ _-]*quot/i, "RFQ"],
+        [/quotation|quote|offer|proposal|angebot|offerta/i, "OFFER"],
+        [/budget|controlling|kostenstelle/i, "BUDGET_APPROVAL"],
     ];
 
     var files = []; // {file, tag, id}
@@ -63,11 +71,12 @@
     }
 
     function syncHiddenInputs() {
-        var buckets = { SC: [], SFO: [], RFQ: [], OFFER: [], OTHER: [] };
+        var buckets = { SC: [], SFO: [], RFQ: [], OFFER: [], BUDGET_APPROVAL: [], OTHER: [] };
         files.forEach(function (f) { buckets[f.tag].push(f.file); });
 
-        Object.keys(SINGLE_FIELDS).forEach(function (tag) {
-            var input = document.getElementById(SINGLE_FIELDS[tag]);
+        var singles = Object.assign({}, SINGLE_FIELDS, SINGLE_EXTRA);
+        Object.keys(singles).forEach(function (tag) {
+            var input = document.getElementById(singles[tag]);
             if (!input) return;
             var dt = new DataTransfer();
             var arr = buckets[tag];

@@ -1,7 +1,41 @@
+{# One stream for the buyer too, matching what the requester sees on their
+   Activity tab - plus the internal work notes, which are marked rather than
+   filed somewhere separate. Splitting "Activity" from "Conversation" meant a
+   question and the document check that answered it sat in different tabs. #}
+
+<h3 class="sf-section-header" style="margin-top:0;">Activity</h3>
+
+{% if not activity %}
+<p class="sf-caption">Nothing recorded yet.</p>
+{% else %}
+<div class="sf-card sf-thread">
+    <ol class="sf-thread__list">
+    {% for a in activity %}
+    {% set internal = a.visibility == "internal" %}
+    {% set mine = a.actor == case.assigned_buyer %}
+    {% set is_message = a.action in ("ENQUIRED", "REPLIED", "COMMENT", "REMARK") %}
+    <li class="sf-thread__item {{ 'is-message' if is_message }} {{ 'is-mine' if mine and not internal }} {{ 'is-ask' if a.action == 'REPLIED' }} {{ 'is-internal' if internal }}">
+        <span class="sf-thread__mark">{% if is_message %}{{ a.actor | initials }}{% endif %}</span>
+        <div class="sf-thread__body">
+            <div class="sf-thread__head">
+                <span class="sf-thread__who">{{ a.actor }}</span>
+                <span class="sf-thread__role">{{ "Requester" if a.actor == case.requestor_name else "Procurement" }}</span>
+                <span class="sf-thread__what">{{ a.action | action_label }}</span>
+                {% if internal %}<span class="sf-thread__private">Internal — not shown to the requester</span>{% endif %}
+                <span class="sf-thread__time">{{ a.created_at | timestamp }}</span>
+            </div>
+            {% if a.detail %}<div class="sf-thread__text">{{ a.detail }}</div>{% endif %}
+        </div>
+    </li>
+    {% endfor %}
+    </ol>
+</div>
+{% endif %}
+
 <div class="sf-grid sf-grid--2">
     <div>
         <details>
-            <summary style="cursor:pointer;font-weight:600;">Additional comments (visible to requester)</summary>
+            <summary style="cursor:pointer;font-weight:600;">Add a comment (the requester sees this)</summary>
             <form method="post" action="/queue/{{ case.id }}/comment" style="margin-top:0.75rem;">
                 <div class="sf-field">
                     <label for="addl_comment">Comment</label>
@@ -13,7 +47,7 @@
     </div>
     <div>
         <details>
-            <summary style="cursor:pointer;font-weight:600;">Work notes (internal only)</summary>
+            <summary style="cursor:pointer;font-weight:600;">Work note (internal only)</summary>
             <form method="post" action="/queue/{{ case.id }}/work-note" style="margin-top:0.75rem;">
                 <div class="sf-field">
                     <label for="work_note">Work note</label>
@@ -24,11 +58,3 @@
         </details>
     </div>
 </div>
-
-<h3 class="sf-section-header">Activity</h3>
-{% if not activity %}
-<p class="sf-caption">No activity yet.</p>
-{% else %}
-{% import "_macros/timeline.html" as tl %}
-{{ tl.render(activity) }}
-{% endif %}

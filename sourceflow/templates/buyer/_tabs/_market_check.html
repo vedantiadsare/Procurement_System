@@ -1,0 +1,125 @@
+{# Market price check: each catalog item searched online, beside every
+   supplier's unit price on one basis (INR incl. GST). Only rendered for
+   catalog commodities - see config.BENCHMARK_COMMODITIES. #}
+<div class="sf-card sf-nr-card sf-mkt" id="market-check">
+    <div class="sf-confirm-section-title">Market price check</div>
+
+    {% if market_check_error %}
+    <div class="sf-alert sf-alert--warning">{{ market_check_error }}</div>
+    {% endif %}
+
+    {% if market_check %}
+    <p class="sf-caption">
+        Checked {{ market_check.checked_at | timestamp }}{% if market_check.checked_by %} by {{ market_check.checked_by }}{% endif %}.
+        Every comparison is on one basis: the supplier's unit price <b>including GST</b> against online retail prices, which include GST.
+        Online prices are single-unit retail prices, so read them as a reference to negotiate with, not proof of overcharging.
+    </p>
+    {% if market_check.quote_errors %}
+    <div class="sf-alert sf-alert--warning">Some quotations couldn't be read, so their prices are missing below: {{ market_check.quote_errors | join("; ") }}</div>
+    {% endif %}
+
+    {% for it in market_check["items"] %}
+    {% set m = it.market or {} %}
+    <div class="sf-mkt__item">
+        <div class="sf-mkt__head">
+            <span class="sf-mkt__name">{{ it.description }}</span>
+            {% if it.quantity %}<span class="sf-mkt__qty">{{ it.quantity | int }} {{ it.uom or "" }}</span>{% endif %}
+        </div>
+        <p class="sf-mkt__searched">Searched {{ it.searched_as or it.query }} <span>(wording from the {{ it.query_basis }})</span>
+            {% if it.requirements %}<br>A listing counts only if its title states: <b>{{ it.requirements | join(", ") }}</b>{% endif %}</p>
+
+        {% if it.error %}
+        <p class="sf-mkt__verdict sf-mkt__verdict--none">{{ it.error }}</p>
+        {% elif m.kind == "same" %}
+        <p class="sf-mkt__verdict sf-mkt__verdict--same">
+            Same product on <b>{{ m.best.source if m.best else "sale online" }}</b> at <b>{{ m.low | inr }}</b>
+            {% if m.best and m.best.link %} · <a href="{{ m.best.link }}" target="_blank" rel="noopener">view listing</a>{% endif %}
+            {% if m.major and m.count > 1 %}<span> (cheapest major retailer)</span>{% endif %}
+            {% if m.lowest_any %}<span> · lowest anywhere {{ m.lowest_any.price | inr }} at {{ m.lowest_any.source }}</span>{% endif %}
+            {% if m.count > 1 %}<span> · {{ m.count }} sellers in all, up to {{ m.high | inr }}</span>{% endif %}
+            {% if m.ignored %}<span> · {{ m.ignored }} more ignored as priced too far from the rest to be the new product</span>{% endif %}
+        </p>
+        {% elif m.kind == "comparable" %}
+        <p class="sf-mkt__verdict sf-mkt__verdict--comp">
+            <b>Indicative comparison.</b>
+            {% if m.thin %}
+            No exact match, and only {{ m.count }} comparable listing{{ "s" if m.count != 1 }} ({{ m.min | inr }}–{{ m.max | inr }}): too few for a reliable price band, so no verdict is given. See the listings below.
+            {% elif m.typical %}
+            No exact match. Comparable products typically sell for <b>{{ m.low | inr }}–{{ m.high | inr }}</b>
+            <span>(middle half of {{ m.count }} listings; all of them run {{ m.min | inr }}–{{ m.max | inr }}).</span>
+            {% else %}
+            No exact match. Comparable products sell for <b>{{ m.low | inr }}–{{ m.high | inr }}</b> across {{ m.count }} listing{{ "s" if m.count != 1 }}.
+            {% endif %}
+            {% if not m.thin %}<span>Not the same model, so read this as a price band, not a target.</span>{% endif %}
+        </p>
+        {% else %}
+        <p class="sf-mkt__verdict sf-mkt__verdict--none">Nothing matching was found online.</p>
+        {% endif %}
+
+        <div class="sf-mkt__scroll">
+        <table class="sf-table sf-mkt__table">
+            <thead><tr><th>Quoted by</th><th>Product</th><th class="num">Unit price</th><th class="num">Incl. GST, INR</th><th class="num">Against online (incl. GST)</th></tr></thead>
+            <tbody>
+            {% for q in it.quotes %}
+            <tr>
+                <td>{{ q.supplier }}</td>
+                <td>{{ q.product or "—" }}</td>
+                <td class="num">{% if q.unit_price is not none %}{{ q.unit_price | amount(q.currency) }}{% else %}—{% endif %}</td>
+                <td class="num">{% if q.incl_inr is not none %}{{ q.incl_inr | inr }}{% else %}<span class="sf-mkt__muted">{{ q.note }}</span>{% endif %}</td>
+                <td class="num">
+                    {% if q.gap_pct is not none %}
+                    <span class="sf-mkt__gap sf-mkt__gap--{{ 'up' if q.gap_pct > 0 else 'down' }}">{{ "+" if q.gap_pct > 0 }}{{ q.gap_pct }}%</span>
+                    {% elif q.position %}
+                    <span class="sf-mkt__gap sf-mkt__gap--{{ 'up' if q.position == 'above' else 'down' if q.position == 'below' else 'flat' }}">{{ q.position }} band</span>
+                    {% else %}<span class="sf-mkt__muted">—</span>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            <tr class="sf-mkt__cart">
+                <td>Cart estimate</td>
+                <td>—</td>
+                <td class="num">{% if it.cart.unit_price is not none %}{{ it.cart.unit_price | amount(it.cart.currency) }}{% else %}—{% endif %}</td>
+                <td class="num">{% if it.cart.incl_inr is not none %}{{ it.cart.incl_inr | inr }}{% else %}<span class="sf-mkt__muted">{{ it.cart.note }}</span>{% endif %}</td>
+                <td class="num"><span class="sf-mkt__muted">—</span></td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+        {% if not it.quotes %}<p class="sf-caption">No supplier quotation names a unit price for this item.</p>{% endif %}
+
+        {% if it.listings %}
+        <details class="sf-mkt__listings">
+            <summary>Listings counted ({{ it.listings | length }}{% if it.raw %} of {{ it.raw | length }} found{% endif %})</summary>
+            <ul>
+            {% for l in it.listings | sort(attribute="price") %}
+                <li>
+                    {% if l.ignored %}<span class="sf-mkt__badge sf-mkt__badge--ignored" title="Priced too far from the other sellers of the same product to be the new item">ignored</span>
+                    {% else %}<span class="sf-mkt__badge sf-mkt__badge--{{ l.match }}">{{ "same" if l.match == "same" else "similar" }}</span>{% endif %}
+                    <span class="sf-mkt__ltitle">{% if l.link %}<a href="{{ l.link }}" target="_blank" rel="noopener">{{ l.title }}</a>{% else %}{{ l.title }}{% endif %}</span>
+                    <span class="sf-mkt__lsrc">{{ l.source }}</span>
+                    <span class="sf-mkt__lprice">{{ l.price | inr }}</span>
+                </li>
+            {% endfor %}
+            </ul>
+        </details>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% if market_check.skipped %}
+    <p class="sf-caption">{{ market_check.skipped }} further cart line{{ "s" if market_check.skipped != 1 }} not checked; the check covers the first six.</p>
+    {% endif %}
+    {% else %}
+    <p class="sf-caption">Searches Amazon, Flipkart, Croma and other Indian retailers for each cart item, and sets every supplier's unit price beside the online price, both including GST.</p>
+    {% endif %}
+
+    {# A reason the check can't run replaces the button, not the results:
+       a stored check stays readable after a key expires. #}
+    {% if market_check_blocked %}
+    <p class="sf-caption sf-mkt__blocked">{{ market_check_blocked }}</p>
+    {% else %}
+    <form method="post" action="/queue/{{ case.id }}/market-check" style="margin-top:10px;" data-analyze-offers-form>
+        <button type="submit" class="sf-btn sf-btn--secondary sf-btn--sm" data-busy-label="Checking prices…">{{ "Check again" if market_check else "Check online prices" }}</button>
+        <p class="sf-caption" data-analyze-offers-hint hidden>Reading the quotations and searching online. This can take a couple of minutes. Don't navigate away.</p>
+    </form>
+    {% endif %}
+</div>

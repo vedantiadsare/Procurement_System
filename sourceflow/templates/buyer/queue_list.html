@@ -22,11 +22,16 @@
 
 {% block content %}
 
+{# "All open" is the right landing tab almost always - but not when the page
+   has been filtered to closed cases (the home page's Completed tile links
+   here as /queue?status=APPROVED). Opening on a tab that hides every row the
+   server just selected shows an empty table over a link that promised one. #}
+{% set initial_tab = "completed" if counts.open == 0 and counts.completed > 0 else "all" %}
 <div class="sf-list-tabs" data-list-tabs>
-    <a href="#" class="sf-list-tabs__item active" data-tab-filter="all">All open <span class="sf-list-tabs__count">{{ counts.open }}</span></a>
+    <a href="#" class="sf-list-tabs__item {{ 'active' if initial_tab == 'all' }}" data-tab-filter="all">All open <span class="sf-list-tabs__count">{{ counts.open }}</span></a>
     <a href="#" class="sf-list-tabs__item" data-tab-filter="unclaimed">Unclaimed <span class="sf-list-tabs__count">{{ counts.unclaimed }}</span></a>
     <a href="#" class="sf-list-tabs__item" data-tab-filter="waiting">Waiting on requester <span class="sf-list-tabs__count">{{ counts.waiting }}</span></a>
-    <a href="#" class="sf-list-tabs__item" data-tab-filter="completed">Completed <span class="sf-list-tabs__count">{{ counts.completed }}</span></a>
+    <a href="#" class="sf-list-tabs__item {{ 'active' if initial_tab == 'completed' }}" data-tab-filter="completed">Closed <span class="sf-list-tabs__count">{{ counts.completed }}</span></a>
 </div>
 
 <details style="margin:16px 0;">
@@ -87,13 +92,13 @@
     <thead>
     <tr>
         <th>Topic</th><th>Came from</th><th>Requester</th><th>Value</th>
-        <th>Documents</th><th>Buyer</th><th>Clock</th><th></th>
+        <th>Status</th><th>Documents</th><th>Buyer</th><th>Clock</th><th></th>
     </tr>
     </thead>
     <tbody>
     {% for c in cases %}
-    <tr data-category="{{ c.category }}">
-        <td><div class="sf-list-topic">{{ c.topic_title }}</div><div class="sf-list-topic__sub">{{ c.ticket_no }} · {{ c.sc_number }}</div></td>
+    <tr data-category="{{ c.category }}" data-href="/queue/{{ c.id }}" tabindex="0">
+        <td><div class="sf-list-topic">{{ c.topic_title }}</div><div class="sf-list-topic__sub">{{ c.ticket_no }} · {{ "Frame contract" if c.sourcing_basis == "Frame contract" else c.sc_number }}</div></td>
         <td>
             <div class="sf-list-came">
                 {% if c.came_from == "Mailbox" %}{{ ic.icon("paperclip", 14) }}Mailbox{% else %}{{ ic.icon("layout", 14) }}Portal{% endif %}
@@ -101,7 +106,8 @@
             <span class="sf-list-came__date">{{ c.submitted_at | date }}</span>
         </td>
         <td><div class="sf-list-req">{{ c.requestor_name }}</div><span class="sf-list-req__sub">{{ c.requesting_dept }}</span></td>
-        <td>{{ c.topic_value_inr | inr }}</td>
+        <td>{{ c | money }}</td>
+        <td>{{ c.stage | stage_chip }}</td>
         <td>
             {% if c.docs_complete %}
             <span class="sf-list-chip" style="background:#E5F5EA;color:#15803D;border:1px solid #BEE3C8;">Complete</span>
@@ -111,12 +117,8 @@
         </td>
         <td>{% if c.assigned_buyer %}<span class="sf-list-buyer">{{ c.assigned_buyer }}</span>{% else %}<span class="sf-list-buyer sf-list-buyer--unclaimed">Unclaimed</span>{% endif %}</td>
         <td>
-            {% if c.defined_tat %}
-            <span class="sf-list-clock__main {{ 'sf-list-clock__main--danger' if 'overdue' in c.days_text else 'sf-list-clock__main--ok' }}">{{ c.days_text }}</span>
-            {% if c.expected_po_closure %}<span class="sf-list-clock__sub">due {{ c.expected_po_closure | date }}</span>{% endif %}
-            {% else %}
-            <span class="sf-list-clock__main sf-list-clock__main--muted">Not started</span>
-            {% endif %}
+            <span class="sf-list-clock__main sf-list-clock__main--{{ c.clock_tone }}">{{ c.days_text }}</span>
+            {% if c.clock_sub %}<span class="sf-list-clock__sub">{{ c.clock_sub }}</span>{% endif %}
         </td>
         <td><a href="/queue/{{ c.id }}" class="sf-btn {{ 'sf-btn--primary' if c.category in ('unclaimed', 'waiting') else 'sf-btn--secondary' }} sf-btn--sm">{{ "Pick up" if c.category == "unclaimed" else "Open" }}</a></td>
     </tr>
@@ -133,19 +135,28 @@
 (function () {
     var tabs = document.querySelectorAll("[data-tab-filter]");
     var rows = document.querySelectorAll("tbody tr[data-category]");
+
+    function apply(filter) {
+        rows.forEach(function (row) {
+            var cat = row.getAttribute("data-category");
+            var show = filter === "all" ? cat !== "completed" : cat === filter;
+            row.style.display = show ? "" : "none";
+        });
+    }
+
     tabs.forEach(function (tab) {
         tab.addEventListener("click", function (e) {
             e.preventDefault();
             tabs.forEach(function (t) { t.classList.remove("active"); });
             tab.classList.add("active");
-            var filter = tab.getAttribute("data-tab-filter");
-            rows.forEach(function (row) {
-                var cat = row.getAttribute("data-category");
-                var show = filter === "all" ? cat !== "completed" : cat === filter;
-                row.style.display = show ? "" : "none";
-            });
+            apply(tab.getAttribute("data-tab-filter"));
         });
     });
+
+    // "All open" starts active, so its filter has to run on load - otherwise
+    // the page opens listing completed cases under a tab that excludes them.
+    var start = document.querySelector("[data-tab-filter].active");
+    apply(start ? start.getAttribute("data-tab-filter") : "all");
 })();
 </script>
 {% endblock %}

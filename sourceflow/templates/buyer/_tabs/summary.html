@@ -6,37 +6,88 @@
             <h4 class="sf-section-header" style="margin-top:0;">Requester</h4>
             <div class="sf-field-block"><div class="sf-field-block__label">Name</div><div class="sf-field-block__value">{{ case.requestor_name }}</div></div>
             <div class="sf-field-block"><div class="sf-field-block__label">Email</div><div class="sf-field-block__value">{{ case.requestor_email }}</div></div>
+            {# An imported case carries a different set of facts to a portal
+               case - no contact, cost centre or employee code exist in the
+               dataset and never will, so showing a column of dashes for them
+               misreads as missing data rather than data that doesn't apply. #}
+            {% if case.source == "import" %}
+            <div class="sf-field-block"><div class="sf-field-block__label">Case reference</div><div class="sf-field-block__value">{{ case.external_case_id }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Source</div><div class="sf-field-block__value">Imported from dataset</div></div>
+            {% else %}
             <div class="sf-field-block"><div class="sf-field-block__label">Contact</div><div class="sf-field-block__value">{{ case.requestor_contact or "-" }}</div></div>
             <div class="sf-field-block"><div class="sf-field-block__label">Department</div><div class="sf-field-block__value">{{ case.requesting_dept }}</div></div>
             <div class="sf-field-block"><div class="sf-field-block__label">Cost center</div><div class="sf-field-block__value">{{ case.cost_center or "-" }}</div></div>
             <div class="sf-field-block"><div class="sf-field-block__label">Employee code</div><div class="sf-field-block__value">{{ case.employee_code or "-" }}</div></div>
+            {% endif %}
             {% if case.is_on_behalf %}
             <p class="sf-caption">Filed on their behalf by {{ case.submitted_by_name }} ({{ case.submitted_by_email }}).</p>
             {% endif %}
         </div>
         <div>
             <h4 class="sf-section-header" style="margin-top:0;">Topic</h4>
+            {% if case.source == "import" %}
+            <div class="sf-field-block"><div class="sf-field-block__label">Category</div><div class="sf-field-block__value">{{ case.category or "-" }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Quote deadline</div><div class="sf-field-block__value">{{ case.rfq_deadline | date }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Quote collection</div><div class="sf-field-block__value">{{ (case.external_status or "-") | replace("_", " ") }}</div></div>
+            {% else %}
             <div class="sf-field-block"><div class="sf-field-block__label">Sourcing type</div><div class="sf-field-block__value">{{ case.sourcing_type or "-" }}</div></div>
             <div class="sf-field-block"><div class="sf-field-block__label">Commodity</div><div class="sf-field-block__value">{{ case.expense_commodity or "-" }}</div></div>
             <div class="sf-field-block"><div class="sf-field-block__label">Delivery location</div><div class="sf-field-block__value">{{ case.delivery_location or "-" }}</div></div>
+            {% endif %}
             {% if case.sourcing_type == "Service" %}
             <div class="sf-field-block"><div class="sf-field-block__label">Service delivery</div><div class="sf-field-block__value">{{ case.delivery_from_date | date }} – {{ case.delivery_to_date | date }}</div></div>
             {% endif %}
             <div class="sf-field-block"><div class="sf-field-block__label">Description</div><div class="sf-field-block__value">{{ case.description or "-" }}</div></div>
+            {% if case.source != "import" %}
             <div class="sf-field-block"><div class="sf-field-block__label">MRM</div><div class="sf-field-block__value">{% if case.mrm_relevant == "No" %}Not relevant{% else %}{{ case.mrm_conducted or "-" }}{% endif %}</div></div>
-            {% if case.mrm_relevant != "No" and case.mrm_conducted == "No" %}
+            {% endif %}
+            {% if case.source != "import" and case.mrm_relevant != "No" and case.mrm_conducted == "No" %}
             <div class="sf-field-block"><div class="sf-field-block__label">Reason</div><div class="sf-field-block__value">{{ case.mrm_reason or "-" }}</div></div>
             {% endif %}
         </div>
         <div>
             <h4 class="sf-section-header" style="margin-top:0;">Commercial</h4>
-            <div class="sf-field-block"><div class="sf-field-block__label">Topic value</div><div class="sf-field-block__value">{{ case.topic_value_inr | inr }}</div></div>
-            {% if case.currency and case.currency != "INR" and case.topic_value_foreign %}
-            <p class="sf-caption">{{ case.currency }} {{ "%.2f" | format(case.topic_value_foreign) }} @ rate {{ case.fx_rate or 1.0 }}</p>
-            {% endif %}
+            {# The dataset's values are in EUR. Rendering them through the inr
+               filter printed a rupee sign on a euro amount - stating the wrong
+               currency outright, not merely formatting it oddly. #}
+            {% if case.source == "import" %}
+            <div class="sf-field-block"><div class="sf-field-block__label">Estimated value</div><div class="sf-field-block__value">{{ case.est_currency or "EUR" }} {{ "%0.f" | format(case.est_value or 0) }}</div></div>
+            <div class="sf-field-block"><div class="sf-field-block__label">Quote deadline</div><div class="sf-field-block__value">{{ case.rfq_deadline | date }}</div></div>
+            <p class="sf-caption">Estimated value is stated by the dataset in its own currency. Quotes are normalised to EUR before comparison.</p>
+            {% else %}
+            <div class="sf-field-block"><div class="sf-field-block__label">Topic value</div><div class="sf-field-block__value">{{ case | money }}</div></div>
             <div class="sf-field-block"><div class="sf-field-block__label">Currency of offers</div><div class="sf-field-block__value">{{ case.currency or "-" }}</div></div>
+            {# The rate that values a foreign-currency case in rupees lives
+               with the value it produces, not in the header: it is a fact
+               about the case, changed rarely, and every change is logged. #}
+            {% if case.currency and case.currency != "INR" %}
+            {% set rate_set = case.fx_rate and case.fx_rate != 1 %}
+            <div class="sf-field-block sf-fx">
+                <div class="sf-field-block__label">Exchange rate</div>
+                <div class="sf-field-block__value">
+                    {% if rate_set %}1 {{ case.currency }} = {{ case.fx_rate }} INR{% else %}Reference rate{% if fx_default %} · 1 {{ case.currency }} ≈ {{ fx_default }} INR{% endif %}{% endif %}
+                    {% if not rate_set %}<span class="sf-fx__note">not confirmed</span>{% endif %}
+                </div>
+                {% if may_act and case.status not in ("APPROVED", "REJECTED") %}
+                <details class="sf-fx__edit">
+                    <summary>{{ "Change" if rate_set else "Confirm or set" }}</summary>
+                    <form method="post" action="/queue/{{ case.id }}/fx-rate">
+                        <div class="sf-fx__row">
+                            <label for="fx_rate">1 {{ case.currency }} =</label>
+                            <input type="number" id="fx_rate" name="fx_rate" step="0.0001" min="0.0001" value="{{ case.fx_rate if rate_set else fx_default or '' }}" required>
+                            <span>INR</span>
+                        </div>
+                        <input type="text" id="fx_note" name="note" placeholder="Source, e.g. RBI reference rate, 17.09.2026">
+                        <p class="sf-caption">Re-values the case in rupees; if the clock has not started, the TAT band is recalculated.</p>
+                        <button type="submit" class="sf-btn sf-btn--primary sf-btn--sm">Apply</button>
+                    </form>
+                </details>
+                {% endif %}
+            </div>
+            {% endif %}
             <div class="sf-field-block"><div class="sf-field-block__label">Topic value is</div><div class="sf-field-block__value">{{ case.tax_basis or "-" }}</div></div>
             <div class="sf-field-block"><div class="sf-field-block__label">Current Contract Expiry</div><div class="sf-field-block__value">{{ case.fc_valid_till | date }}</div></div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -76,8 +127,18 @@
         {% endif %}
         <form method="post" action="/queue/{{ case.id }}/analyze-offers" style="margin-top:10px;" data-analyze-offers-form>
             <button type="submit" class="sf-btn sf-btn--secondary sf-btn--sm" {{ "disabled" if not offers }}>{{ "Re-analyze offers" if case.offer_analysis else "Analyze offers with AI" }}</button>
+            {# The rate sheet is the artefact a buyer actually works in, so it
+               sits next to the analysis it carries on its second tab. #}
+            {% if offers %}
+            <a href="/queue/{{ case.id }}/rate-sheet.xlsx" class="sf-btn sf-btn--secondary sf-btn--sm" style="margin-left:8px;">Export rate sheet</a>
+            {% endif %}
             <p class="sf-caption" data-analyze-offers-hint hidden>Reading offers and asking the AI model — this runs on this machine and can take up to a minute. Don't navigate away.</p>
         </form>
+        {% if offers %}
+        <p class="sf-caption" style="margin-top:6px;">Rate Comparison workbook — one row per cart line, one column block per bidder, with this analysis on a second tab.</p>
+        {% endif %}
         {% if not offers %}<p class="sf-caption">Attach at least one supplier offer first.</p>{% endif %}
     {% endif %}
 </div>
+
+{% if market_check_on %}{% include "buyer/_tabs/_market_check.html" %}{% endif %}

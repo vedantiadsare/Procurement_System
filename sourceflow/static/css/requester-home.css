@@ -145,21 +145,87 @@
 .sf-home-attn-card {
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    padding-left: 22px;              /* room for the urgency rail */
+    cursor: pointer;
+    transition: border-color .14s ease, box-shadow .14s ease, transform .14s ease;
+}
+/* The rail carries the one thing worth seeing before reading any of the
+   card: whether this is already late, merely waiting, or simply in hand.
+   It is a second encoding of what the chip and the caution line say, for
+   the moment when someone is scanning three cards, not reading one. */
+.sf-home-attn-card::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--sf-border-strong);
+}
+.sf-home-attn-card--urgent::before { background: var(--sf-danger); }
+.sf-home-attn-card--waiting::before { background: var(--sf-warning); }
+.sf-home-attn-card--calm::before { background: #2E7D7D; }
+.sf-home-attn-card--done::before { background: var(--sf-success); }
+
+.sf-home-attn-card:hover {
+    border-color: var(--sf-border-strong);
+    box-shadow: 0 6px 18px rgba(11, 31, 58, .10);
+    transform: translateY(-2px);
+}
+.sf-home-attn-card:focus-visible {
+    outline: 2px solid var(--sf-accent);
+    outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+    .sf-home-attn-card { transition: none; }
+    .sf-home-attn-card:hover { transform: none; }
+}
+
+/* Reference and state on one line: the ticket number is how the case is
+   named out loud, so it leads rather than sitting inside the heading behind
+   an em-dash. */
+.sf-home-attn-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 9px;
+}
+.sf-home-attn-card__ref {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--sf-text-faint);
+    font-variant-numeric: tabular-nums;
 }
 .sf-home-attn-card__when {
     font-size: 0.72rem;
     color: var(--sf-text-faint);
-    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
 }
 .sf-home-attn-card h3 {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    line-height: 1.35;
     margin: 0 0 6px;
+    text-wrap: balance;
 }
 .sf-home-attn-card p {
     font-size: 0.8rem;
     color: var(--sf-text-muted);
     margin: 0 0 10px;
 }
+/* Footer keeps the date and the action on one baseline, pinned to the bottom
+   so three cards of unequal text still line their buttons up. */
+.sf-home-attn-card__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--sf-border);
+}
+.sf-home-attn-card__foot .sf-btn { position: relative; z-index: 1; }
 .sf-home-attn-card__caution {
     font-size: 0.76rem;
     color: var(--sf-warning);
@@ -220,3 +286,14 @@
     border-top: 1px dashed var(--sf-border-strong);
     border-bottom: 1px dashed var(--sf-border-strong);
 }
+
+/* A recent-request card carries its value and PO date under the status line,
+   so the card answers "how much, and when" without opening the case. */
+.sf-home-card__meta {
+    font-size: 12.5px;
+    color: #6b7480;
+    margin-top: 6px;
+}
+
+.sf-home-attn-card__action { font-weight: 600; color: var(--sf-text); margin: 0 0 4px; font-size: 0.92rem; }
+.sf-home-attn-card__why { color: var(--sf-text-muted); font-size: 0.8rem; margin: 0 0 10px; }

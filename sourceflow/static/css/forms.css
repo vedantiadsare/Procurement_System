@@ -96,11 +96,12 @@
     color: var(--sf-primary);
 }
 
-[data-show-if] {
-    display: none;
-}
-[data-show-if].is-visible {
-    display: block;
+/* Hide when the rule doesn't match, and otherwise say nothing about display -
+   forcing `display: block` on the visible state overrode whatever layout the
+   element's own class gave it, which broke any flex row used as a conditional
+   (a checklist item's tick dropped onto its own line). */
+[data-show-if]:not(.is-visible) {
+    display: none !important;
 }
 
 .sf-form-actions {

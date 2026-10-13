@@ -1,114 +1,122 @@
-# SourceFlow — Requisition Intake Portal
+# Samagra — RFQ Intake & Quote Analysis System
 
-A procurement requisition intake portal for Volkswagen Group's General Procurement (GP)
-team, for sourcing topics below ₹40,00,000. Replaces the "email procurement your
-documents" workflow with a short header-level form, document upload, and a GP queue.
+**Team Dual Core · i.mobilothon 6.0 · Challenge: SourceFlow-AI / RFQ Intake and Quote Analysis (owner: Himanshu Tiwari)**
 
-## Stack
+Samagra gives business users, buyers and suppliers one platform for sub-€50K sourcing:
+requests and RFQs online, quotations compared by AI on one basis, a next action on every
+case, and live dashboards — replacing email and Excel.
 
-- Python 3.11+
-- FastAPI + Jinja2 server-rendered HTML (plain CSS/JS, no frontend build step)
-- SQLite (`sourceflow.db`) via the standard-library `sqlite3` — no ORM
-- pdfplumber, openpyxl, python-docx, numpy
-- Files are stored on local disk under `repository/`; only their paths are stored in SQLite
+The model reads and judges; the code counts, ranks and decides. A person makes every decision.
 
-## Setup
+---
 
-From the project root:
+## 1. Run it (5 minutes)
 
-```bash
+**Requirements:** Windows or Linux/macOS, Python 3.11+ (built on 3.14), internet access
+only if you use the VW LLMaaS model (see §3).
+
+```powershell
+# from the folder that contains this README
 pip install -r requirements.txt
-```
-
-## Run
-
-```bash
 cd sourceflow
-python -m uvicorn main:app --reload
+.\run.ps1                      # Windows
+# or:  python -m uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
-The app opens at `http://localhost:8000`. On first run it creates `sourceflow.db`,
-the `repository/` folder, and seeds example cases (including one overdue case and
-one still waiting on documents) so the queue looks real immediately.
+Open **http://127.0.0.1:8000**. The database ships with 39 synthetic cases, quotations,
+an answered supplier round and dashboards already populated — nothing to import.
 
-## Signing in
+## 2. Sign in (demo accounts)
 
-Accounts are created the first time you sign in: enter your name, work email and a
-password of your choice — that password becomes your login from then on (hashed with
-PBKDF2 before it touches SQLite, in the `users` table). This is a deliberate
-placeholder for real VW SSO later; `routers/auth_routes.py`, `security.py`, and
-`deps.py` are the files that would need to change.
+Password for every account: **`TestPass123!`**
 
-Your **email decides your role**, checked fresh on every login: any address on the
-buyer allowlist in `config.py` (`BUYER_EMAILS`) gets Buyer (GP) access to the Queue;
-everyone else is a Requester.
+| Role | Email | What you see |
+|---|---|---|
+| Requester (business user) | `vedanti.adsare@vwgds.in` | Home · New Sourcing Request · My Requests · Supplier Quotes · Dashboard |
+| Buyer (GP) | `sayali.parikh@vwgds.in` | Queue · case pages · Mailbox · Dashboard |
+| Buyer (GP) | `nilesh.koram@vwgds.in` / `vikas.suryawanshi@vwgds.in` | same, own commodities |
+| Procurement head | `himanshu.tiwari@vwgds.in` | Portfolio dashboard (dept / buyer / supplier / single sourcing / TAT) |
+| Supplier | no login — private link from the round page (**Copy link**) | Enquiry, documents, upload quotation / decline |
 
-To try the Buyer side locally, sign in as the seeded buyer —
-`procurement.intake.demo@outlook.com` — with any password (that first login creates
-the account). Any other email lands you in the Requester flow.
+Any other email creates a Requester account on first sign-in.
 
-## Using the portal
+## 3. AI model — two options
 
-- **Requester** — submit a new requisition (*New Sourcing Request*) or track your own
-  submissions (*My Requests*, auto-filtered to your logged-in email). When
-  filing, you can submit on your own behalf or on behalf of someone else (e.g. an
-  EA filing for their manager) — both identities are tracked separately for the
-  audit trail. Every submission gets an auto-generated ticket number
-  (`SF-2026-00001`, ...) that's the primary reference from then on.
-- **Buyer (GP)** — work the case queue (*Queue*), open a case, check the document
-  set (starts the TAT clock), enquire (send back to the requester), approve with a
-  PO number, or reject.
+The app runs without a model (rules, comparison arithmetic, TAT, dashboards all work);
+the eight model-backed steps (document typing when the filename is silent, cart items
+from scans, quotation reading, scope check, RFQ alignment, terms commentary, enquiry
+draft, *Ask this case*) need one of these. Set the variables in the terminal **before**
+`.\run.ps1`, or permanently via `[Environment]::SetEnvironmentVariable(..., "User")`.
 
-## Where things live
+**Option A — VW Group LLMaaS (what the demo uses)**
+
+```powershell
+$env:LLM_MODE             = "llmaas"
+$env:LLMAAS_BASE_URL      = "https://llmapi.ai.vwgroup.com"
+$env:LLMAAS_MODEL         = "gpt-4o"
+$env:LLMAAS_CLIENT_ID     = "<IDP client id>"
+$env:LLMAAS_CLIENT_SECRET = "<IDP client secret>"
+$env:LLMAAS_API_KEY       = "<team LLM API key>"
+```
+
+**Option B — local Ollama (offline)**
+
+```powershell
+$env:LLM_MODE     = "ollama"
+$env:OLLAMA_MODEL = "qwen2.5:7b"       # any chat model you have pulled
+```
+
+Check either with `python tools/llm_check.py` (prints the settings, gets a token, sends one
+tiny prompt). No credentials are included in this package.
+
+## 4. Walk-through (mirrors the demo video)
+
+1. **Requester** → *New Sourcing Request* → fill the header → drag the whole document
+   folder in (try `demo_documents/portal_upload/CASE-01_Office_chairs`; its `READ_ME_first.txt`
+   says what to type). Files are typed automatically, the cart is parsed, the case is
+   auto-assigned to the buyer who owns the commodity.
+2. **Buyer** → *Queue* → open the case → **Next action** says what to do and why →
+   **Check** starts the TAT clock (15 / 30 working days) → **Ask requester** for anything missing.
+3. **Requester** → *Dashboard* → *Waiting on you* → reply with a document.
+4. **Requester** → *Supplier Quotes* → **Float a new enquiry** → suppliers get private links.
+   Open **RFQ-20260918-3626** to see a round with two quotations already in: one complete,
+   one with *Missing: payment terms, validity* and a clarification email drafted.
+5. **Buyer** → **SF-2026-00005** → offer comparison (gross vs net, ranked on net) →
+   **Ready to award?** (audit pack + JSON) → **Approve** with a PO number.
+6. **Dashboards** — requester, buyer (TAT 15/30 gauges, click a tile to filter) and the
+   procurement head (log in as Himanshu). **Export** gives an Excel workbook with the charts.
+
+Optional: *Mailbox* (buyer) reads a procurement inbox via Microsoft Graph — needs a
+one-time `python scripts/mailbox_login.py`; skip it if you have no mailbox to point at.
+
+## 5. What is where
 
 ```
+docs/architecture_diagram.png     one-page architecture (also in the deck)
+docs/architecture.html            architecture with design rationale
+demo_documents/portal_upload/     ten ready-to-upload case packages with READ_ME files
 sourceflow/
-├── main.py                # FastAPI app, template/filter registration, session middleware
-├── config.py               # paths, dropdown lists, TAT bands, MAX_FILE_MB, buyer allowlist
-├── db.py                    # SQLite connection, schema, all queries, seed data
-├── security.py              # password hashing, token hashing, role-from-email
-├── deps.py                   # FastAPI dependencies (current user, role gating)
-├── validators.py             # new-request/edit-resubmit form validation
-├── drafts.py                  # on-disk staging for the new-request wizard's draft state
-├── parser.py                  # SC document line-item extraction, offer workbook reads
-├── tat.py                      # working-day (WORKDAY-style) TAT maths
-├── formatting.py               # ₹ formatting, DD.MM.YYYY dates, status chips
-├── notifications.py             # outbound email (simulated when SMTP isn't configured)
-├── routers/                      # auth, requester, buyer, attachment routes
-├── templates/                     # Jinja2 templates
-├── static/                         # CSS/JS, no build step
-├── repository/                      # uploaded case documents live here
-├── drafts_staging/                   # in-flight new-request uploads before confirm
-└── sourceflow.db                      # SQLite database
+  main.py, routers/               FastAPI app and routes per role
+  agents/                         Offer agent, Enquiry agent, Advisor (+ run log)
+  parser.py, extraction.py        document typing, cart parsing, email → fields
+  comparison.py, quotation_check.py   quote reading, verification, normalisation, alignment
+  handover.py                     the Section-8 handover contract + award gate
+  dashboard.py, dashboard_export.py   metrics and Excel export
+  llm.py                          one OpenAI-compatible client (LLMaaS / Ollama)
+  config.py                       departments, commodities → buyers, TAT bands, currencies
+  db.py                           SQLite schema and queries
+  templates/, static/             Jinja2 pages, CSS, vanilla JS, Chart.js
+  repository/, rfq_rounds/        case and round documents (synthetic)
+  sourceflow.db                   the demo database
+  tools/                          data tools (make_cases, backdate, reassign_buyers, llm_check)
 ```
 
-## Repository location
+## 6. Notes
 
-By default, case documents and the database live inside `sourceflow/`. To point the
-repository at a network drive instead, set `SOURCEFLOW_ROOT` before launching:
-
-```bash
-# PowerShell
-$env:SOURCEFLOW_ROOT = "Z:\GP\SourceFlow"
-python -m uvicorn main:app --reload
-```
-
-## TAT logic
-
-The clock does not start at submission — it starts when a buyer marks the document
-set complete. Until then a case shows "Clock not started".
-
-At that point, the buyer picks the number of working days GP is committing to for
-*that* case — the value-based band below is only a **pre-filled suggestion**, not a
-hard rule:
-
-| Topic value (INR)      | Suggested TAT   |
-|-------------------------|-----------------|
-| ≤ 3,50,000               | 15 working days |
-| ≤ 40,00,000              | 30 working days |
-| > 40,00,000              | Out of scope (still accepted; no suggestion, buyer sets it manually) |
-
-Expected PO closure = document-complete date + the buyer's chosen working days,
-skipping Saturdays and Sundays (Excel `WORKDAY()`-equivalent, via
-`numpy.busday_offset`). If the buyer overrides the suggestion, both numbers are
-recorded in that case's audit trail.
+- All data is synthetic, modelled on the organiser's scenario catalogue (gross vs net,
+  three currencies, single bidder, revised offer, partial parse). Nothing keys on record IDs.
+- Every model figure is verified against the source document before it is shown; ranking,
+  TAT, alerts and the next-action recommendation are deterministic code.
+- Approving, awarding and emailing a supplier are always a named person's click and are
+  written to the case's audit trail.
+- Exchange rates are configured reference rates (`SOURCEFLOW_INR_PER_EUR`), not a live feed.

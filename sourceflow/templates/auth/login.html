@@ -64,6 +64,26 @@
                 <button type="submit" class="sf-login-submit">Sign in</button>
             </form>
 
+            {% if demo_logins %}
+            {# Demo shortcuts: one click fills the form. Two tips live here
+               because they get asked every time: a second user needs a
+               second browser origin, and 127.0.0.1 is one. #}
+            <div class="sf-login-demo">
+                <div class="sf-login-demo__head">Demo accounts <span>one click fills the form</span></div>
+                <div class="sf-login-demo__grid">
+                    {% for d in demo_logins %}
+                    <button type="button" class="sf-login-demo__btn" data-demo-email="{{ d.email }}">
+                        <b>{{ d.name }}</b><span>{{ d.role }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+                <p class="sf-login-demo__tip">
+                    Want a buyer and a requester open at once? Use <code>localhost</code> for one and
+                    <code>127.0.0.1</code> for the other — the browser keeps them as separate sign-ins.
+                </p>
+            </div>
+            {% endif %}
+
             <p class="sf-login-helper">Accounts are created by your Samagra admin. There's no sign-up — if you need access, ask for an account to be added.</p>
 
             <p class="sf-login-legal">
@@ -85,6 +105,22 @@
         var showing = input.type === "text";
         input.type = showing ? "password" : "text";
         btn.textContent = showing ? "Show" : "Hide";
+    });
+})();
+(function () {
+    // Demo shortcuts: fill both fields and submit. The password comes from
+    // the server only when demo logins are switched on.
+    var pw = {{ demo_password | tojson }};
+    var form = document.querySelector("form[action='/login']");
+    var email = document.getElementById("login-email");
+    var pass = document.getElementById("login-password");
+    if (!pw || !form) return;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-demo-email]"), function (b) {
+        b.addEventListener("click", function () {
+            email.value = b.getAttribute("data-demo-email");
+            pass.value = pw;
+            form.submit();
+        });
     });
 })();
 </script>

@@ -45,7 +45,7 @@
             <div class="sf-nr-card__title">Before you submit</div>
         </div>
         <div class="sf-checklist" data-checklist>
-            <div class="sf-checklist__item" data-checklist-tag="SC">
+            <div class="sf-checklist__item" data-checklist-tag="SC" data-show-if="sourcing_basis=One-time sourcing">
                 <span class="sf-checklist__dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
                 <div><div class="sf-checklist__label">Approved Shopping Cart attached</div></div>
             </div>
@@ -84,4 +84,7 @@
 <script src="{{ asset_url('/static/js/date-mask.js') }}"></script>
 <script src="{{ asset_url('/static/js/inr-input.js') }}"></script>
 <script src="{{ asset_url('/static/js/tat-preview.js') }}"></script>
+{# Last: restoring values fires change events that the scripts above listen
+   for, so they have to be listening by the time it runs. #}
+<script src="{{ asset_url('/static/js/form-persist.js') }}"></script>
 {% endblock %}

@@ -100,6 +100,30 @@
         });
     });
 
+    function money(amount, currency) {
+        if (currency && currency !== "INR") {
+            return currency + " " + Math.round(amount).toLocaleString("en-US");
+        }
+        return inr(amount);
+    }
+
+    function queueValueText(cases) {
+        // One total per currency. Adding across currencies would produce a
+        // number that looks like money and isn't - the queue can hold an
+        // INR case raised through the portal and a EUR case built from a
+        // supplier's documents at the same time.
+        var totals = {};
+        cases.forEach(function (c) {
+            var code = c.ccy || "INR";
+            totals[code] = (totals[code] || 0) + (c.value || 0);
+        });
+        var codes = Object.keys(totals);
+        if (!codes.length) return inr(0);
+        return codes.sort().map(function (code) {
+            return money(totals[code], code);
+        }).join(" + ");
+    }
+
     function scoped() {
         if (!IS_BUYER || scopeVal === "all") return CASES;
         // "My cases" = mine, plus anything unassigned that I could pick up.
@@ -144,7 +168,7 @@
         document.getElementById("sOpen").textContent = open.length;
         document.getElementById("sSub").innerHTML =
             newThisWeek + " new this week<i>·</i>" +
-            inr(open.reduce(function (s, c) { return s + c.value; }, 0)) + " in the queue";
+            queueValueText(open) + " in the queue";
 
         // On-time rate from real closures only: a case that actually closed,
         // that had an expected PO date to be judged against. With nothing
@@ -474,7 +498,7 @@
                     '<td><span class="sf-dash-chip ' + STCLS[c.status] + '">' + esc(c.status) + "</span></td>" +
                     "<td>" + esc(r.issue) + "</td>" +
                     '<td class="sf-dash-age ' + (r.age > 30 ? "bad" : "") + '">' + r.age + " day" + (r.age === 1 ? "" : "s") + "</td>" +
-                    "<td>" + inr(c.value) + "</td>" +
+                    "<td>" + money(c.value, c.ccy) + "</td>" +
                     '<td><a class="sf-dash-rowbtn" href="' + CFG.caseUrlBase + c.case_id + '">' + r.action + "</a></td>" +
                     '<td class="sf-dash-more"><a href="' + CFG.caseUrlBase + c.case_id + '" title="Open case">···</a></td>' +
                     "</tr>";
@@ -546,7 +570,7 @@
                           "<td>" + esc(c.buyer || "Unassigned") + "</td>"
                         : "<td>" + esc(c.comm || "—") + "</td>") +
                     '<td><span class="sf-dash-chip ' + STCLS[c.status] + '">' + esc(c.status) + "</span></td>" +
-                    '<td class="num">' + inr(c.value) + "</td>" +
+                    '<td class="num">' + money(c.value, c.ccy) + "</td>" +
                     "<td>" + fmt(c.sub) + "</td>" +
                     '<td class="' + (overdue ? "sf-dash-recdue" : "") + '">' + fmt(c.po) +
                     (overdue ? " <b>overdue</b>" : "") + "</td>" +

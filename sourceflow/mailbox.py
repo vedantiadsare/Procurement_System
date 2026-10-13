@@ -24,6 +24,7 @@ Configure via environment variable, then run the login script once:
 """
 
 import base64
+import re
 import logging
 import os
 from datetime import datetime
@@ -39,7 +40,12 @@ logger = logging.getLogger("sourceflow.mailbox")
 
 GRAPH_CLIENT_ID = os.environ.get("SOURCEFLOW_GRAPH_CLIENT_ID")
 GRAPH_AUTHORITY = os.environ.get("SOURCEFLOW_GRAPH_AUTHORITY", "https://login.microsoftonline.com/consumers")
-GRAPH_SCOPES = ["Mail.Read"]
+# Reading the intake mailbox and sending supplier enquiries are the same
+# account and the same consent, so they are one scope list. Mail.Send was
+# added after the fact, which means an existing cached login was granted only
+# Mail.Read - MSAL will refuse to hand out a token for a scope nobody has
+# consented to, and scripts/mailbox_login.py has to be run once more.
+GRAPH_SCOPES = ["Mail.Read", "Mail.Send"]
 GRAPH_BASE = "https://graph.microsoft.com/v1.0"
 
 MAILBOX_CONFIGURED = bool(GRAPH_CLIENT_ID)
@@ -88,6 +94,38 @@ def get_access_token() -> str | None:
     return None
 
 
+_TAG_RE = re.compile(r"<[^>]+>")
+_BLANK_RUN_RE = re.compile(r"\n{3,}")
+_BREAK_RE = re.compile(r"<br\s*/?>|</p>|</div>|</tr>|</li>", re.IGNORECASE)
+_DROP_RE = re.compile(r"<(script|style)[^>]*>.*?</\1>", re.DOTALL | re.IGNORECASE)
+_ENTITIES = {"&nbsp;": " ", "&amp;": "&", "&lt;": "<", "&gt;": ">",
+             "&#39;": "'", "&quot;": '"', "&rsquo;": "'", "&ndash;": "-"}
+
+
+def _message_text(message: dict) -> str:
+    """The full message as plain text.
+
+    Graph's bodyPreview is cut at a couple of hundred characters, which both
+    reads as broken on screen ("4. Suggesti") and hides whatever the requester
+    wrote further down - and the extractor reads this text too, so a truncated
+    body costs us fields as well as legibility. The real body is used, with
+    HTML flattened when that is what arrived."""
+    body = message.get("body") or {}
+    content = body.get("content") or ""
+    if not content:
+        return message.get("bodyPreview") or ""
+
+    if (body.get("contentType") or "").lower() == "html":
+        content = _DROP_RE.sub(" ", content)
+        content = _BREAK_RE.sub("\n", content)
+        content = _TAG_RE.sub("", content)
+        for entity, char in _ENTITIES.items():
+            content = content.replace(entity, char)
+
+    lines = [line.rstrip() for line in content.splitlines()]
+    return _BLANK_RUN_RE.sub("\n\n", "\n".join(lines)).strip()[:8000]
+
+
 def _fetch_attachments(headers: dict, graph_message_id: str, inbound_id: int) -> int:
     resp = httpx.get(f"{GRAPH_BASE}/me/messages/{graph_message_id}/attachments", headers=headers, timeout=20)
     resp.raise_for_status()
@@ -97,9 +135,18 @@ def _fetch_attachments(headers: dict, graph_message_id: str, inbound_id: int) ->
     # overwrite the first on disk while the DB kept two rows pointing at the
     # same (now-corrupted) staged_path. Same collision-avoidance convention
     # as requester_routes.py's file-save loop.
+    skipped_inline = 0
     for att in resp.json().get("value", []):
         if att.get("@odata.type") != "#microsoft.graph.fileAttachment":
-            continue  # inline/item attachments aren't real files to file into a case - skip for v1
+            continue  # item attachments (a forwarded mail) aren't files to file into a case
+        # A corporate signature block arrives as half a dozen inline images -
+        # the VW logo, social icons, a divider - all of them real file
+        # attachments as far as Graph is concerned. Filing them as case
+        # documents buries the four that matter among ten that don't, so
+        # anything the message displays inline is left behind.
+        if att.get("isInline"):
+            skipped_inline += 1
+            continue
         content = base64.b64decode(att["contentBytes"])
 
         name = att["name"]
@@ -155,7 +202,7 @@ def check_mailbox() -> dict:
     params = {
         "$filter": "hasAttachments eq true",
         "$top": 25,
-        "$select": "id,subject,from,receivedDateTime,bodyPreview,hasAttachments",
+        "$select": "id,subject,from,receivedDateTime,bodyPreview,body,hasAttachments",
     }
 
     try:
@@ -179,7 +226,7 @@ def check_mailbox() -> dict:
                     from_name=sender.get("name"),
                     from_email=sender.get("address"),
                     subject=m.get("subject"),
-                    body_preview=m.get("bodyPreview"),
+                    body_preview=_message_text(m),
                     has_attachments=1,
                 )
                 _fetch_attachments(headers, m["id"], inbound_id)
@@ -193,3 +240,102 @@ def check_mailbox() -> dict:
         logger.exception("check_mailbox failed")
 
     return outcome
+
+
+# --- sending -----------------------------------------------------------------
+
+# Attachments go inline in the sendMail payload, base64-encoded, so the whole
+# mail is one request. Graph caps that request at 4 MB; anything larger needs
+# an upload session against a draft, which is a lot of machinery for a case
+# that should not arise - an RFQ pack is a PDF or two.
+GRAPH_INLINE_ATTACHMENT_LIMIT = 3 * 1024 * 1024
+
+
+def send_via_graph(to: str, subject: str, body: str, cc: list = None,
+                   attachments: list = None, reply_to: str = None) -> dict:
+    """Send through Microsoft Graph instead of SMTP.
+
+    This exists because SMTP is not reachable from the VW network: every
+    Gmail SMTP port is blocked outright, and of Outlook's only 587 is open.
+    Graph runs over HTTPS on 443, which is open, and uses the same delegated
+    login the mailbox intake already holds - so no second credential, no app
+    password, and mail leaves as the demo mailbox rather than as somebody's
+    personal account.
+
+    Returns the same dict shape as notifications.send_email so callers cannot
+    tell the two transports apart.
+    """
+    attachments = attachments or []
+    result = {"to": to, "cc": cc or [], "subject": subject, "body": body,
+              "sent": False, "attachments": [a["filename"] for a in attachments],
+              "transport": "graph"}
+
+    if not MAILBOX_CONFIGURED:
+        result["error"] = "Graph not configured (SOURCEFLOW_GRAPH_CLIENT_ID is not set)."
+        return result
+
+    token = get_access_token()
+    if not token:
+        result["error"] = ("No usable Graph login. Run scripts/mailbox_login.py - "
+                           "and note Mail.Send is a new scope, so a login made "
+                           "before it was added will not cover it.")
+        return result
+
+    total = sum(len(a["bytes"]) for a in attachments)
+    if total > GRAPH_INLINE_ATTACHMENT_LIMIT:
+        result["error"] = (f"Attachments total {total // 1024} KB; Graph accepts about "
+                           f"{GRAPH_INLINE_ATTACHMENT_LIMIT // 1024} KB inline. Send fewer "
+                           f"or smaller files.")
+        return result
+
+    message = {
+        "subject": subject,
+        "body": {"contentType": "Text", "content": body},
+        "toRecipients": [{"emailAddress": {"address": to}}],
+    }
+    if cc:
+        message["ccRecipients"] = [{"emailAddress": {"address": a}} for a in cc]
+    # Graph sends as the mailbox that logged in - a personal Microsoft account
+    # cannot claim to be someone else, and Microsoft would reject the attempt.
+    # Reply-To is the honest way to route a supplier's answer to the buyer who
+    # actually floated the enquiry.
+    if reply_to:
+        message["replyTo"] = [{"emailAddress": {"address": reply_to}}]
+    if attachments:
+        message["attachments"] = [{
+            "@odata.type": "#microsoft.graph.fileAttachment",
+            "name": a["filename"],
+            "contentBytes": base64.b64encode(a["bytes"]).decode("ascii"),
+        } for a in attachments]
+
+    try:
+        resp = httpx.post(
+            f"{GRAPH_BASE}/me/sendMail",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json={"message": message, "saveToSentItems": True},
+            timeout=45,
+        )
+        if resp.status_code in (200, 202):
+            result["sent"] = True
+            logger.info("Graph mail sent to=%s subject=%r", to, subject)
+        else:
+            # Graph puts the useful part in a nested error object; the status
+            # line alone says nothing about which permission is missing.
+            detail = resp.text
+            try:
+                detail = resp.json()["error"]["message"]
+            except Exception:                         # noqa: BLE001
+                pass
+            result["error"] = f"Graph returned {resp.status_code}: {detail}"
+            logger.error("Graph send failed: %s", result["error"])
+    except Exception as exc:                          # noqa: BLE001
+        result["error"] = f"{type(exc).__name__}: {exc}"
+        logger.exception("Graph send failed to=%s", to)
+
+    return result
+
+
+def can_send() -> bool:
+    """Whether Graph is a usable transport right now - configured, logged in,
+    and the cached consent still covers Mail.Send."""
+    return bool(MAILBOX_CONFIGURED and get_access_token())

@@ -16,7 +16,7 @@
             </div>
         </div>
         <p class="sf-hero-meta">
-            SC {{ case.sc_number }} · Requested by {{ case.requestor_name }} ({{ case.requestor_email }}) · {{ case.requesting_dept }} · {{ case.sourcing_type or "-" }}
+            {% if case.sourcing_basis == "Frame contract" %}Frame contract — no shopping cart{% else %}SC {{ case.sc_number }}{% endif %} · Requested by {{ case.requestor_name }} ({{ case.requestor_email }}) · {{ case.requesting_dept }} · {{ case.sourcing_type or "-" }}
             {% if case.is_on_behalf %} · filed by {{ case.submitted_by_name }} on their behalf{% endif %}
         </p>
     </div>
@@ -24,6 +24,12 @@
 {% endblock %}
 
 {% block content %}
+{% if denied %}
+<div class="sf-errors" style="margin-bottom:16px;">
+    <strong>That action belongs to {{ case.assigned_buyer }}.</strong>
+    <p style="margin:6px 0 0;">Nothing was changed. Use <em>Take over this case</em> if it should move to you — the handover is recorded in the activity trail.</p>
+</div>
+{% endif %}
 
 {% if flash %}
 <div class="sf-alert {{ 'sf-alert--success' if flash.sent else ('sf-alert--warning' if flash.get('error') else 'sf-alert--info') }}">
@@ -42,13 +48,48 @@
 </div>
 {% endif %}
 
+{% if advice and advice.code != "closed" %}
+{# The recommendation and its reasons, above everything else on the case. The
+   reasons are the facts the rule fired on, printed rather than paraphrased -
+   a buyer can check each one against the tabs below. #}
+<div class="sf-advice sf-advice--{{ advice.severity }}">
+    <div class="sf-advice__head">
+        <span class="sf-advice__eyebrow">Next action</span>
+        <span class="sf-advice__by">Worked out from the case's facts — no model involved</span>
+    </div>
+    <div class="sf-advice__action">{{ advice.action }}</div>
+    {% if advice.because %}
+    <ul class="sf-advice__why">
+        {% for b in advice.because %}<li>{{ b }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% if alerts %}
+    <details class="sf-advice__alerts" {{ "open" if alerts | selectattr("severity", "equalto", "critical") | list }}>
+        <summary>{{ alerts | length }} open point{{ "s" if alerts | length != 1 }} on this case</summary>
+        <ul>
+            {% for a in alerts %}
+            <li class="is-{{ a.severity }}"><b>{{ a.text }}</b>{% if a.detail %} <span>{{ a.detail }}</span>{% endif %}</li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+</div>
+{% endif %}
+
 <div class="sf-detail-layout">
     <div>
         <div class="sf-tabs">
             <a href="?tab=summary" class="sf-tab {{ 'active' if active_tab == 'summary' }}" data-tab-link="summary">Summary</a>
             <a href="?tab=documents" class="sf-tab {{ 'active' if active_tab == 'documents' }}" data-tab-link="documents">Documents</a>
             <a href="?tab=activity" class="sf-tab {{ 'active' if active_tab == 'activity' }}" data-tab-link="activity">Activity</a>
+            <a href="?tab=handover" class="sf-tab {{ 'active' if active_tab == 'handover' }}">Ready to award?</a>
         </div>
+
+        {% if active_tab == 'handover' %}
+        <div class="sf-tab-panel active" data-tab-panel="handover">
+            {% include "buyer/_tabs/handover.html" %}
+        </div>
+        {% endif %}
 
         <div class="sf-tab-panel {{ 'active' if active_tab == 'summary' }}" data-tab-panel="summary">
             {% include "buyer/_tabs/summary.html" %}
@@ -68,19 +109,42 @@
                 <div class="sf-field-block__value" style="font-size:1rem;font-weight:700;">{{ (case.defined_tat ~ " working days") if case.defined_tat else "-" }}</div>
                 {% if case.expected_po_closure %}<div class="sf-field-block__value">due {{ case.expected_po_closure | date }}</div>{% endif %}
             </div>
+            {# Label and value both come from clock_for(), so a closed case is
+               never filed under "Working days remaining". #}
             <div class="sf-field-block">
-                <div class="sf-field-block__label">Working days remaining</div>
-                <div class="sf-field-block__value" style="font-size:1rem;font-weight:700;color:{{ case.days_color if case.days_color else '' }}">{{ days_text }}</div>
+                <div class="sf-field-block__label">{{ clock.label }}</div>
+                <div class="sf-field-block__value" style="font-size:1rem;font-weight:700;color:{{ '#B42318' if clock.tone == 'danger' else ('var(--sf-text-muted)' if clock.tone == 'muted' else '') }}">{{ clock.text }}</div>
+                {% if clock.sub and case.status in ("APPROVED", "REJECTED") %}
+                <div class="sf-field-block__value sf-caption" style="margin-top:2px;">{{ clock.sub }}</div>
+                {% endif %}
             </div>
         </div>
         <div class="sf-field-block"><div class="sf-field-block__label">Assigned buyer</div><div class="sf-field-block__value">{{ case.assigned_buyer or "-" }}</div></div>
         <div class="sf-field-block"><div class="sf-field-block__label">Submitted</div><div class="sf-field-block__value">{{ case.submitted_at | date }}</div></div>
         {% if case.status == "APPROVED" %}
-        <div class="sf-field-block"><div class="sf-field-block__label">PO number</div><div class="sf-field-block__value">{{ case.po_number or "Not recorded (migrated case)" }}</div></div>
+        {# The date came from the audit trail - the cases table records the PO
+           number but never when it was released. #}
+        <div class="sf-field-block"><div class="sf-field-block__label">{{ "Contract issued" if case.sourcing_basis == "Frame contract" else "PO released" }}</div><div class="sf-field-block__value">{{ po_released_on | date if po_released_on else "Date not recorded" }}</div></div>
+        <div class="sf-field-block"><div class="sf-field-block__label">{{ case.sourcing_basis | closing_ref_label }}</div><div class="sf-field-block__value">{{ case.po_number or "Not recorded (migrated case)" }}</div></div>
         {% endif %}
         {% if case.status == "REJECTED" and case.remarks_for_user %}
         <div class="sf-field-block"><div class="sf-field-block__label">Reject reason</div><div class="sf-field-block__value">{{ case.remarks_for_user }}</div></div>
         {% endif %}
+
+        {# Ask this case. One question, this case's documents only; anything
+           the case doesn't contain gets a plain "isn't in this case's
+           documents". Sits in the rail under the clock so it's there on
+           every tab. #}
+        <div class="sf-ask" id="askCase">
+            <div class="sf-field-block__label">Ask this case</div>
+            <form class="sf-ask__form" id="askForm">
+                <input type="text" id="askQ" name="q" maxlength="400" autocomplete="off"
+                       placeholder="e.g. Does Sattva's quote include GST?">
+                <button type="submit" class="sf-btn sf-btn--primary sf-btn--sm" id="askBtn">Ask</button>
+            </form>
+            <p class="sf-caption sf-ask__hint">Answers only from this case's documents and facts — it says so when something isn't there.</p>
+            <div class="sf-ask__log" id="askLog"></div>
+        </div>
     </div>
 </div>
 
@@ -89,4 +153,46 @@
 <script src="/static/js/tabs.js"></script>
 <script src="/static/js/action-panels.js"></script>
 <script src="/static/js/offer-analysis.js"></script>
+<script>
+(function () {
+    var form = document.getElementById("askForm"), q = document.getElementById("askQ");
+    var btn = document.getElementById("askBtn"), log = document.getElementById("askLog");
+    if (!form) return;
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var question = q.value.trim();
+        if (!question) return;
+        var item = document.createElement("div");
+        item.className = "sf-ask__item";
+        item.innerHTML = '<div class="sf-ask__q">' + esc(question) + '</div>' +
+                         '<div class="sf-ask__a sf-ask__a--wait">Reading the case…</div>';
+        log.prepend(item);
+        q.value = ""; btn.disabled = true;
+        var body = new FormData(); body.append("q", question);
+        fetch(location.pathname.replace(/\/$/, "") + "/ask", { method: "POST", body: body, credentials: "same-origin" })
+            .then(function (r) {
+                // A 404 here means the server is older than this page - it
+                // has the panel but not the route. Say that, not nothing.
+                if (r.status === 404) throw new Error("The running server doesn't have this yet - restart it (run.ps1) and try again.");
+                return r.json();
+            })
+            .then(function (j) {
+                var a = item.querySelector(".sf-ask__a");
+                a.classList.remove("sf-ask__a--wait");
+                if (j.error) { a.classList.add("sf-ask__a--err"); a.textContent = j.error; return; }
+                if (!j.answer) { a.classList.add("sf-ask__a--err"); a.textContent = "No answer came back."; return; }
+                a.textContent = j.answer;
+                if (j.not_found) a.classList.add("sf-ask__a--none");
+                if (j.source) {
+                    var s = document.createElement("div");
+                    s.className = "sf-ask__src"; s.textContent = "Source: " + j.source;
+                    a.appendChild(s);
+                }
+            })
+            .catch(function (err) { var a = item.querySelector(".sf-ask__a"); a.classList.remove("sf-ask__a--wait"); a.classList.add("sf-ask__a--err"); a.textContent = (err && err.message) || "Couldn't reach the model. Try again."; })
+            .finally(function () { btn.disabled = false; q.focus(); });
+    });
+}());
+</script>
 {% endblock %}

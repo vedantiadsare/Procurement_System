@@ -3,7 +3,7 @@
 import sqlite3
 from datetime import date, datetime, timedelta
 
-from config import DB_PATH, TICKET_PREFIX
+from config import DB_PATH, TICKET_PREFIX, ticket_prefix
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS cases (
@@ -159,6 +159,79 @@ CREATE TABLE IF NOT EXISTS inbound_attachments (
     doc_type              TEXT,
     filed_attachment_id   INTEGER REFERENCES attachments(id)
 );
+
+-- Supplier RFQ rounds -------------------------------------------------------
+-- One row per "send this enquiry to these bidders". A round may hang off a
+-- case or stand alone: a buyer often floats an enquiry to find out what
+-- something costs before any cart exists.
+CREATE TABLE IF NOT EXISTS rfq_rounds (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    reference     TEXT NOT NULL UNIQUE,
+    case_id       INTEGER REFERENCES cases(id),
+    subject       TEXT NOT NULL,
+    message       TEXT,
+    created_by    TEXT NOT NULL,
+    created_at    TIMESTAMP NOT NULL,
+    closes_at     TIMESTAMP NOT NULL,
+    status        TEXT NOT NULL DEFAULT 'OPEN',
+    closed_at     TIMESTAMP
+);
+
+-- The documents the buyer sends out with the round: RFQ, drawings, specs.
+CREATE TABLE IF NOT EXISTS rfq_documents (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    round_id      INTEGER NOT NULL REFERENCES rfq_rounds(id),
+    doc_type      TEXT,
+    filename      TEXT NOT NULL,
+    file_path     TEXT NOT NULL,
+    file_ext      TEXT,
+    size_bytes    INTEGER,
+    uploaded_at   TIMESTAMP NOT NULL
+);
+
+-- One per supplier on the round. The token is that supplier's private door
+-- into the portal - it is the only credential they get, so it is generated
+-- with secrets.token_urlsafe and never derived from the email address.
+CREATE TABLE IF NOT EXISTS rfq_invitations (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    round_id       INTEGER NOT NULL REFERENCES rfq_rounds(id),
+    supplier_name  TEXT,
+    supplier_email TEXT NOT NULL,
+    token          TEXT NOT NULL UNIQUE,
+    sent_at        TIMESTAMP,
+    send_error     TEXT,
+    first_opened_at TIMESTAMP,
+    decision       TEXT NOT NULL DEFAULT 'PENDING',
+    responded_at   TIMESTAMP,
+    response_text  TEXT
+);
+
+-- Every agent run, whether a person clicked "Run now" or the system fired it.
+-- This is the audit trail for anything an agent did or proposed - the reason
+-- "we have agents" is a checkable claim rather than a slide.
+CREATE TABLE IF NOT EXISTS agent_runs (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent         TEXT NOT NULL,
+    trigger       TEXT NOT NULL,           -- manual | auto
+    actor         TEXT,                    -- who clicked, or 'system'
+    subject       TEXT,                    -- what it worked on: a ticket, an RFQ reference
+    status        TEXT NOT NULL,           -- ok | nothing | error
+    summary       TEXT,                    -- one line, shown in the list
+    detail        TEXT,                    -- the perceive / decide / act log
+    started_at    TIMESTAMP NOT NULL,
+    finished_at   TIMESTAMP
+);
+
+-- Whatever the supplier sends back - their quotation, a revised price list.
+CREATE TABLE IF NOT EXISTS rfq_response_files (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    invitation_id INTEGER NOT NULL REFERENCES rfq_invitations(id),
+    filename      TEXT NOT NULL,
+    file_path     TEXT NOT NULL,
+    file_ext      TEXT,
+    size_bytes    INTEGER,
+    uploaded_at   TIMESTAMP NOT NULL
+);
 """
 
 # Columns added after the initial release, applied idempotently to existing
@@ -180,9 +253,82 @@ _CASES_MIGRATED_COLUMNS = [
     ("mrm_relevant", "TEXT"),
     ("offer_analysis", "TEXT"),
     ("offer_analysis_at", "TIMESTAMP"),
+    # The same comparison as structured JSON - rows with totals, currency, tax
+    # basis, comparable value and confidence - so the Advisor and the handover
+    # read facts rather than re-parse the printed text.
+    ("offer_comparison", "TEXT"),
+    # What the case's catalog items sell for online, beside what each supplier
+    # quoted for them - see benchmark.py. JSON, rewritten on each check.
+    ("market_benchmark", "TEXT"),
+    ("market_benchmark_at", "TIMESTAMP"),
+    # The case brief: three sentences the model writes from the case's facts,
+    # stored with a fingerprint of those facts so it is rewritten only when
+    # something changed - never while someone waits for the page.
+    ("brief", "TEXT"),
+    ("brief_at", "TIMESTAMP"),
+    ("brief_key", "TEXT"),
+    ("source", "TEXT DEFAULT 'portal'"),      # 'portal' | 'import'
+    ("external_case_id", "TEXT"),             # organiser CaseID, e.g. SC-3006
+    ("category", "TEXT"),                     # organiser Category (not our commodity list)
+    ("est_value", "REAL"),                    # native estimated value
+    ("est_currency", "TEXT"),
+    ("rfq_deadline", "DATE"),
+    ("external_status", "TEXT"),              # organiser CaseStatus
+    # One-time sourcing is raised against an approved Shopping Cart; a frame
+    # contract sets rates for later call-offs and has no cart yet, so the
+    # required document set differs. Defaults to the stricter one-time value
+    # so existing cases keep the check they were created under.
+    ("sourcing_basis", "TEXT DEFAULT 'One-time sourcing'"),
+    # The case value converted to one comparable currency, so totals across a
+    # mixed queue add up to something real. The native amount stays in
+    # topic_value_inr/currency - that is what the documents say and what a
+    # buyer recognises; this is only for aggregating.
+    ("value_eur", "REAL"),
 ]
 _AUDIT_TRAIL_MIGRATED_COLUMNS = [
     ("visibility", "TEXT DEFAULT 'internal'"),
+]
+# Challenge-dataset intake. The organiser ships a workbook of simulated email
+# text rather than files, so a case can now arrive two ways: a requester
+# filling the form, or a bulk import. Everything downstream treats them the
+# same - these columns only record where a row came from and the fields the
+# organiser's schema carries that ours didn't.
+# Who floated the round, as an address. Mail leaves as the mailbox that
+# completed the Graph login, so this is what Reply-To is set to - a supplier
+# hitting Reply reaches the person who actually wants the quotation.
+_RFQ_ROUNDS_MIGRATED_COLUMNS = [
+    ("created_by_email", "TEXT"),
+    # Written by the Offer agent as quotations arrive through the portal.
+    ("offer_analysis", "TEXT"),
+    ("offer_analysis_at", "TIMESTAMP"),
+]
+
+# When the Offer agent asked this supplier to clarify something their
+# quotation left out. A re-submission after this stamp is a new quotation
+# and may be asked again; nothing before it is.
+_RFQ_INVITATIONS_MIGRATED_COLUMNS = [
+    ("clarified_at", "TIMESTAMP"),          # when the buyer SENT the question
+    ("clarified_about", "TEXT"),
+    # The Offer agent writes the question; a person sends it. The draft waits
+    # here with the buyer's name on the send button - the system never mails
+    # a supplier on its own.
+    ("clarification_draft", "TEXT"),
+    ("clarification_drafted_at", "TIMESTAMP"),
+    # The completeness/RFQ-alignment verdict for this supplier's latest
+    # submission - what fields the quotation states, and whether it covers
+    # what the enquiry asked for. Re-written every time the Offer agent reads
+    # the round, never computed at request time (it needs a model call).
+    ("check_json", "TEXT"),
+    ("check_at", "TIMESTAMP"),
+]
+
+_ATTACHMENTS_MIGRATED_COLUMNS = [
+    ("source", "TEXT DEFAULT 'upload'"),      # 'upload' | 'import'
+    ("external_doc_id", "TEXT"),              # organiser DocID, e.g. DOC-4002
+    ("external_supplier_id", "TEXT"),         # organiser SupplierID
+    ("supplier_name", "TEXT"),
+    ("raw_text", "TEXT"),                     # the messy text to parse
+    ("doc_parse_status", "TEXT"),             # Parsed | Needs_Review | Orphan
 ]
 _DRAFTS_MIGRATED_COLUMNS = [
     # The SC's own stated totals, so the confirm page can compare the topic
@@ -220,6 +366,9 @@ def _migrate(conn):
     _ensure_columns(conn, "cases", _CASES_MIGRATED_COLUMNS)
     _ensure_columns(conn, "audit_trail", _AUDIT_TRAIL_MIGRATED_COLUMNS)
     _ensure_columns(conn, "drafts", _DRAFTS_MIGRATED_COLUMNS)
+    _ensure_columns(conn, "attachments", _ATTACHMENTS_MIGRATED_COLUMNS)
+    _ensure_columns(conn, "rfq_rounds", _RFQ_ROUNDS_MIGRATED_COLUMNS)
+    _ensure_columns(conn, "rfq_invitations", _RFQ_INVITATIONS_MIGRATED_COLUMNS)
 
     conn.execute("UPDATE cases SET status = 'APPROVED' WHERE status = 'COMPLETED'")
     conn.execute("UPDATE audit_trail SET action = 'APPROVED' WHERE action = 'COMPLETED'")
@@ -263,6 +412,8 @@ def insert_case(data: dict) -> int:
         "cost_center", "employee_code", "user_id", "sourcing_type", "fx_rate",
         "topic_value_foreign", "delivery_from_date", "delivery_to_date",
         "mrm_relevant", "mrm_conducted", "mrm_reason", "po_number",
+        "source", "external_case_id", "category", "est_value", "est_currency",
+        "rfq_deadline", "external_status", "sourcing_basis", "value_eur",
     ]
     values = [data.get(f) for f in fields]
     placeholders = ", ".join("?" for _ in fields)
@@ -272,7 +423,11 @@ def insert_case(data: dict) -> int:
         cur = conn.execute(sql, values)
         case_id = cur.lastrowid
         year = str(data["submitted_at"])[:4]
-        ticket_no = f"{TICKET_PREFIX}-{year}-{case_id:05d}"
+        # Frame contracts get their own FC- series. The counter stays shared
+        # with one-time cases on purpose: the number after the prefix is still
+        # the case id, so a reference is never ambiguous about which row it
+        # points at, and two series can't drift into colliding.
+        ticket_no = f"{ticket_prefix(data.get('sourcing_basis'))}-{year}-{case_id:05d}"
         conn.execute("UPDATE cases SET ticket_no = ? WHERE id = ?", (ticket_no, case_id))
         conn.commit()
         return case_id
@@ -361,6 +516,27 @@ def list_distinct_buyers() -> list:
 
 
 # --- attachments ---------------------------------------------------------------
+
+def set_attachment_import_fields(case_id, filename, source=None, external_doc_id=None,
+                                  external_supplier_id=None, supplier_name=None,
+                                  raw_text=None, doc_parse_status=None):
+    """Fills in the import-only columns on an attachment that insert_attachment
+    has just created. Kept separate so insert_attachment's signature - used by
+    the upload path on every case - stays exactly as it was."""
+    conn = get_connection()
+    try:
+        conn.execute(
+            """UPDATE attachments
+                  SET source = ?, external_doc_id = ?, external_supplier_id = ?,
+                      supplier_name = ?, raw_text = ?, doc_parse_status = ?
+                WHERE case_id = ? AND filename = ?""",
+            (source, external_doc_id, external_supplier_id, supplier_name,
+             raw_text, doc_parse_status, case_id, filename),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
 
 def insert_attachment(case_id, doc_type, filename, file_path, file_ext, size_bytes, uploaded_at=None):
     uploaded_at = uploaded_at or datetime.now().isoformat(timespec="seconds")
@@ -485,6 +661,60 @@ def list_audit(case_id, visibility: str = None) -> list:
                 "SELECT * FROM audit_trail WHERE case_id = ? ORDER BY created_at", (case_id,)
             ).fetchall()
         return [_row_to_dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def list_audit_for_requester(case_id) -> list:
+    """Everything on the case a requester is allowed to see.
+
+    Defined as "not internal" rather than "equal to external" on purpose. The
+    old exact match silently hid the whole history of any case whose rows
+    carried some third value - which is exactly what happened to every
+    generated case, leaving their Conversation tab reading "No activity yet"
+    while the audit trail was full."""
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            "SELECT * FROM audit_trail WHERE case_id = ? "
+            "AND COALESCE(visibility, 'internal') <> 'internal' ORDER BY created_at",
+            (case_id,),
+        ).fetchall()
+        return [_row_to_dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def closed_dates() -> dict:
+    """{case_id: 'YYYY-MM-DD'} for every case that has actually been closed.
+
+    The cases table records the final status but not when it was reached, so
+    the audit trail is the only source for "when did this finish". Anything
+    that asks how long a case took, or how many closed in a month, has to
+    come through here rather than falling back on submitted_at - which is
+    when the case *started*, and for a case raised in August and approved in
+    September is a different month entirely."""
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            "SELECT case_id, MAX(created_at) AS closed_at FROM audit_trail "
+            "WHERE action IN ('APPROVED', 'REJECTED') GROUP BY case_id"
+        ).fetchall()
+        return {r["case_id"]: str(r["closed_at"])[:10] for r in rows}
+    finally:
+        conn.close()
+
+
+def closed_on(case_id) -> str:
+    """The date one case was closed, or None if it is still open."""
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            "SELECT MAX(created_at) AS closed_at FROM audit_trail "
+            "WHERE case_id = ? AND action IN ('APPROVED', 'REJECTED')",
+            (case_id,),
+        ).fetchone()
+        return str(row["closed_at"])[:10] if row and row["closed_at"] else None
     finally:
         conn.close()
 
@@ -1195,3 +1425,313 @@ def seed_dummy_data():
                 dict(item_no="20", description="Training material & certification", quantity=12, uom="EA",
                      unit_price=2750, amount=33000),
             ], source="parsed_sc")
+
+
+# --- Supplier RFQ rounds -------------------------------------------------------
+
+def insert_rfq_round(reference, subject, message, created_by, closes_at, case_id=None,
+                     created_by_email=None) -> int:
+    conn = get_connection()
+    try:
+        cur = conn.execute(
+            "INSERT INTO rfq_rounds (reference, case_id, subject, message, created_by, "
+            "created_by_email, created_at, closes_at, status) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'OPEN')",
+            (reference, case_id, subject, message, created_by, created_by_email,
+             datetime.now().isoformat(timespec="seconds"), closes_at),
+        )
+        conn.commit()
+        return cur.lastrowid
+    finally:
+        conn.close()
+
+
+def insert_rfq_document(round_id, doc_type, filename, file_path, file_ext, size_bytes) -> int:
+    conn = get_connection()
+    try:
+        cur = conn.execute(
+            "INSERT INTO rfq_documents (round_id, doc_type, filename, file_path, file_ext, "
+            "size_bytes, uploaded_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (round_id, doc_type, filename, file_path, file_ext, size_bytes,
+             datetime.now().isoformat(timespec="seconds")),
+        )
+        conn.commit()
+        return cur.lastrowid
+    finally:
+        conn.close()
+
+
+def insert_rfq_invitation(round_id, supplier_name, supplier_email, token) -> int:
+    conn = get_connection()
+    try:
+        cur = conn.execute(
+            "INSERT INTO rfq_invitations (round_id, supplier_name, supplier_email, token) "
+            "VALUES (?, ?, ?, ?)",
+            (round_id, supplier_name, supplier_email, token),
+        )
+        conn.commit()
+        return cur.lastrowid
+    finally:
+        conn.close()
+
+
+def mark_rfq_invitation_sent(invitation_id, error=None):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE rfq_invitations SET sent_at = ?, send_error = ? WHERE id = ?",
+            (datetime.now().isoformat(timespec="seconds") if not error else None,
+             error, invitation_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def list_rfq_rounds(created_by=None) -> list:
+    conn = get_connection()
+    try:
+        sql = ("SELECT r.*, "
+               "(SELECT COUNT(*) FROM rfq_invitations i WHERE i.round_id = r.id) AS invited, "
+               "(SELECT COUNT(*) FROM rfq_invitations i WHERE i.round_id = r.id "
+               " AND i.responded_at IS NOT NULL) AS responded, "
+               "(SELECT COUNT(*) FROM rfq_invitations i WHERE i.round_id = r.id "
+               " AND i.decision = 'DECLINED') AS declined "
+               "FROM rfq_rounds r")
+        params = []
+        if created_by:
+            sql += " WHERE r.created_by = ?"
+            params.append(created_by)
+        sql += " ORDER BY r.created_at DESC"
+        return [_row_to_dict(r) for r in conn.execute(sql, params).fetchall()]
+    finally:
+        conn.close()
+
+
+def get_rfq_round(round_id) -> dict:
+    conn = get_connection()
+    try:
+        return _row_to_dict(
+            conn.execute("SELECT * FROM rfq_rounds WHERE id = ?", (round_id,)).fetchone())
+    finally:
+        conn.close()
+
+
+def get_rfq_round_by_token(token) -> dict:
+    """The supplier's whole session is this one lookup: the token identifies
+    both the round and which bidder is looking at it."""
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            "SELECT r.*, i.id AS invitation_id, i.supplier_name, i.supplier_email, "
+            "i.decision, i.responded_at, i.response_text, i.first_opened_at "
+            "FROM rfq_invitations i JOIN rfq_rounds r ON r.id = i.round_id "
+            "WHERE i.token = ?", (token,)).fetchone()
+        return _row_to_dict(row)
+    finally:
+        conn.close()
+
+
+def list_rfq_documents(round_id) -> list:
+    conn = get_connection()
+    try:
+        return [_row_to_dict(r) for r in conn.execute(
+            "SELECT * FROM rfq_documents WHERE round_id = ? ORDER BY id", (round_id,)).fetchall()]
+    finally:
+        conn.close()
+
+
+def list_rfq_invitations(round_id) -> list:
+    conn = get_connection()
+    try:
+        return [_row_to_dict(r) for r in conn.execute(
+            "SELECT * FROM rfq_invitations WHERE round_id = ? ORDER BY supplier_email",
+            (round_id,)).fetchall()]
+    finally:
+        conn.close()
+
+
+def mark_rfq_opened(invitation_id):
+    """First open only - so the buyer can tell "never looked at it" from
+    "read it and went quiet", which are different conversations to have."""
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE rfq_invitations SET first_opened_at = ? "
+            "WHERE id = ? AND first_opened_at IS NULL",
+            (datetime.now().isoformat(timespec="seconds"), invitation_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def record_rfq_response(invitation_id, decision, response_text):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE rfq_invitations SET decision = ?, response_text = ?, responded_at = ? "
+            "WHERE id = ?",
+            (decision, response_text, datetime.now().isoformat(timespec="seconds"), invitation_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def insert_rfq_response_file(invitation_id, filename, file_path, file_ext, size_bytes) -> int:
+    conn = get_connection()
+    try:
+        cur = conn.execute(
+            "INSERT INTO rfq_response_files (invitation_id, filename, file_path, file_ext, "
+            "size_bytes, uploaded_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (invitation_id, filename, file_path, file_ext, size_bytes,
+             datetime.now().isoformat(timespec="seconds")),
+        )
+        conn.commit()
+        return cur.lastrowid
+    finally:
+        conn.close()
+
+
+def list_rfq_response_files(invitation_id) -> list:
+    conn = get_connection()
+    try:
+        return [_row_to_dict(r) for r in conn.execute(
+            "SELECT * FROM rfq_response_files WHERE invitation_id = ? ORDER BY id",
+            (invitation_id,)).fetchall()]
+    finally:
+        conn.close()
+
+
+def set_rfq_round_deadline(round_id, closes_at):
+    """Re-opens a round as a side effect: a buyer extending a closed round
+    means "take responses again", so leaving status CLOSED would keep every
+    supplier's door shut behind a date that now says it is open."""
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE rfq_rounds SET closes_at = ?, status = 'OPEN', closed_at = NULL WHERE id = ?",
+            (closes_at, round_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def close_rfq_round(round_id):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE rfq_rounds SET status = 'CLOSED', closed_at = ? WHERE id = ?",
+            (datetime.now().isoformat(timespec="seconds"), round_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def count_open_rfq_rounds(created_by=None) -> int:
+    conn = get_connection()
+    try:
+        sql = "SELECT COUNT(*) FROM rfq_rounds WHERE status = 'OPEN'"
+        params = []
+        if created_by:
+            sql += " AND created_by = ?"
+            params.append(created_by)
+        return conn.execute(sql, params).fetchone()[0]
+    finally:
+        conn.close()
+
+
+# --- agent runs ---------------------------------------------------------------
+
+def insert_agent_run(agent, trigger, actor, subject, status, summary, detail, started_at) -> int:
+    conn = get_connection()
+    try:
+        cur = conn.execute(
+            "INSERT INTO agent_runs (agent, trigger, actor, subject, status, summary, detail, "
+            "started_at, finished_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (agent, trigger, actor, subject, status, summary, detail, started_at,
+             datetime.now().isoformat(timespec="seconds")),
+        )
+        conn.commit()
+        return cur.lastrowid
+    finally:
+        conn.close()
+
+
+def list_agent_runs(agent=None, limit=50) -> list:
+    conn = get_connection()
+    try:
+        if agent:
+            rows = conn.execute(
+                "SELECT * FROM agent_runs WHERE agent = ? ORDER BY id DESC LIMIT ?",
+                (agent, limit)).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM agent_runs ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+        return [_row_to_dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def last_agent_run(agent) -> dict:
+    conn = get_connection()
+    try:
+        return _row_to_dict(conn.execute(
+            "SELECT * FROM agent_runs WHERE agent = ? ORDER BY id DESC LIMIT 1", (agent,)).fetchone())
+    finally:
+        conn.close()
+
+
+def set_rfq_round_analysis(round_id, text):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE rfq_rounds SET offer_analysis = ?, offer_analysis_at = ? WHERE id = ?",
+            (text, datetime.now().isoformat(timespec="seconds"), round_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+def mark_rfq_clarified(invitation_id, about: str):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE rfq_invitations SET clarified_at = ?, clarified_about = ? WHERE id = ?",
+            (datetime.now().isoformat(timespec="seconds"), about, invitation_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+def save_rfq_clarification_draft(invitation_id, about: str, draft: str):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE rfq_invitations SET clarified_about = ?, clarification_draft = ?, "
+            "clarification_drafted_at = ? WHERE id = ?",
+            (about, draft, datetime.now().isoformat(timespec="seconds"), invitation_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def set_rfq_invitation_check(invitation_id, check_json: str):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE rfq_invitations SET check_json = ?, check_at = ? WHERE id = ?",
+            (check_json, datetime.now().isoformat(timespec="seconds"), invitation_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_rfq_invitation(invitation_id) -> dict:
+    conn = get_connection()
+    try:
+        return _row_to_dict(conn.execute(
+            "SELECT * FROM rfq_invitations WHERE id = ?", (invitation_id,)).fetchone())
+    finally:
+        conn.close()

@@ -1,0 +1,653 @@
+/* Procurement dashboard (buyer).
+
+   Ported from the approved preview page, with two changes forced by living
+   inside the real app rather than a standalone file: the preview's own dark
+   header is dropped (Samagra's shell header already sits there), and every
+   rule is scoped under .sf-bd / .sf-bd-tabs. That scoping is not cosmetic -
+   the preview styles bare `table`, `.card`, `.btn` and `.chip`, all of which
+   exist elsewhere in Samagra and would be overwritten app-wide. */
+
+.sf-bd-body {
+    --dsb: #002733;
+    --dsb90: #1A3741;
+    --dsb60: #667D85;
+    --dsb40: #99A9AD;
+    --dsb20: #CCD4D6;
+    --dsb10: #E6E9EB;
+    --vg: #008C82;
+    --vg60: #66BAB4;
+    --vg20: #CCE8E6;
+    --vg10: #E6F4F3;
+    --red: #DA0C1F;
+    --amber: #FCCD22;
+    --green: #62A83E;
+    --bdink: #002733;
+    --bdink2: #4D6670;
+    --bdline: #D5DBDD;
+    --bdpage: #F4F6F7;
+    background: var(--bdpage);
+}
+
+.sf-bd {
+    color: var(--bdink);
+    font-variant-numeric: tabular-nums;
+}
+.sf-bd button,
+.sf-bd select { font: inherit; color: inherit; }
+.sf-bd :focus-visible,
+.sf-bd-tabs :focus-visible { outline: 2px solid var(--vg); outline-offset: 2px; }
+
+/* --- tab strip ----------------------------------------------------------- */
+
+.sf-bd-tabs {
+    background: #fff;
+    border-bottom: 1px solid var(--bdline);
+}
+.sf-bd-tabs__row {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+}
+.sf-bd-tabs button {
+    background: none;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    padding: 13px 14px 10px;
+    color: var(--bdink2);
+    cursor: pointer;
+    white-space: nowrap;
+    font: inherit;
+    font-size: 14px;
+}
+.sf-bd-tabs button:hover { color: var(--bdink); }
+.sf-bd-tabs button.on {
+    color: var(--bdink);
+    font-weight: 600;
+    border-bottom-color: var(--vg);
+}
+
+/* --- page head ----------------------------------------------------------- */
+
+/* --- the band ------------------------------------------------------------
+   Greeting, controls and tiles on the same teal the rest of the app opens
+   with. Bleeds to the page edges (the content column has 28px side padding
+   and 20px top), with the hero line-art faint at the right. */
+.sf-bd .bd-band {
+    position: relative;
+    margin: -20px -28px 22px;
+    padding: 24px 28px 24px;
+    background: linear-gradient(155deg, #008C82 0%, #00504A 100%);
+    color: #fff;
+}
+.sf-bd .bd-band::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='320' viewBox='0 0 1000 320'><g stroke='%23ffffff' fill='none' stroke-width='1.4' stroke-linecap='round'><line x1='480' y1='300' x2='700' y2='30' stroke-opacity='.22'/><line x1='600' y1='330' x2='960' y2='70' stroke-opacity='.18'/><line x1='760' y1='310' x2='990' y2='140' stroke-opacity='.20'/><line x1='540' y1='50' x2='860' y2='230' stroke-opacity='.16'/><line x1='660' y1='-20' x2='920' y2='270' stroke-opacity='.14'/></g><g fill='%23ffffff'><circle cx='700' cy='30' r='3.5' fill-opacity='.35'/><circle cx='860' cy='230' r='3.5' fill-opacity='.30'/><circle cx='960' cy='70' r='3' fill-opacity='.30'/><circle cx='600' cy='330' r='3' fill-opacity='.25'/><circle cx='990' cy='140' r='3' fill-opacity='.28'/></g></svg>");
+    background-repeat: no-repeat;
+    background-position: right top;
+    background-size: 720px auto;
+    pointer-events: none;
+}
+.sf-bd .bd-band > * { position: relative; }
+@media (max-width: 900px) { .sf-bd .bd-band { margin: -20px -16px 18px; padding: 18px 16px; } }
+
+.sf-bd .phead {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+.sf-bd .phead h1 { margin: 0; font-size: 24px; font-weight: 500; color: #fff; letter-spacing: -0.01em; }
+.sf-bd .phead p { margin: 2px 0 0; font-size: 13px; color: rgba(255, 255, 255, .78); }
+
+.sf-bd .tools { margin-left: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.sf-bd .tools label { font-size: 13px; color: rgba(255, 255, 255, .85); }
+.sf-bd #mwrap { display: flex; gap: 10px; align-items: center; }
+.sf-bd #mwrap[hidden] { display: none; }
+.sf-bd select {
+    height: 34px;
+    border: 1px solid var(--bdline);
+    border-radius: 3px;
+    background: #fff;
+    padding: 0 8px;
+    min-width: 170px;
+}
+/* --- month calendar ------------------------------------------------------ */
+
+.sf-bd .mpick { position: relative; display: inline-block; }
+.sf-bd .mpick__btn {
+    height: 34px;
+    min-width: 150px;
+    border: 1px solid var(--bdline);
+    border-radius: 3px;
+    background: #fff;
+    padding: 0 28px 0 10px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--bdink);
+    text-align: left;
+    cursor: pointer;
+}
+/* A caret, so it reads as a control and not a label. */
+.sf-bd .mpick__btn::after {
+    content: "";
+    position: absolute;
+    right: 11px; top: 15px;
+    border: 4px solid transparent;
+    border-top-color: var(--bdink2);
+}
+.sf-bd .mpick__btn:hover { border-color: var(--dsb); }
+.sf-bd .mpick__btn.on { border-color: var(--dsb); color: var(--dsb); font-weight: 600; }
+
+.sf-bd .mpick__pop {
+    position: absolute;
+    z-index: 40;
+    top: 38px;
+    right: 0;
+    width: 262px;
+    background: #fff;
+    border: 1px solid var(--bdline);
+    border-radius: 4px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .14);
+    padding: 10px;
+}
+.sf-bd .mpick__pop[hidden] { display: none; }
+.sf-bd .mpick__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.sf-bd .mpick__year { font-size: 13px; font-weight: 600; color: var(--bdink); }
+.sf-bd .mpick__nav {
+    width: 26px; height: 26px;
+    border: 1px solid var(--bdline);
+    border-radius: 3px;
+    background: #fff;
+    color: var(--bdink);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+}
+.sf-bd .mpick__nav:hover:not(:disabled) { border-color: var(--dsb); color: var(--dsb); }
+.sf-bd .mpick__nav:disabled { opacity: .3; cursor: default; }
+
+.sf-bd .mpick__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+.sf-bd .mpick__m {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 7px 0 5px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    background: var(--vg10, #F2F6F5);
+    font: inherit;
+    font-size: 12px;
+    color: var(--bdink);
+    cursor: pointer;
+}
+/* The count is the point of the grid: it says where the cases are before
+   anything is clicked. */
+.sf-bd .mpick__m i {
+    font-style: normal;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--dsb);
+    min-height: 13px;
+}
+.sf-bd .mpick__m:hover:not(:disabled) { border-color: var(--dsb); }
+.sf-bd .mpick__m.is-empty {
+    background: transparent;
+    color: #B9C0BF;
+    cursor: default;
+}
+.sf-bd .mpick__m.on {
+    background: var(--dsb);
+    color: #fff;
+    font-weight: 600;
+}
+.sf-bd .mpick__m.on i { color: #fff; }
+
+.sf-bd .mpick__all {
+    width: 100%;
+    margin-top: 8px;
+    height: 28px;
+    border: 1px solid var(--bdline);
+    border-radius: 3px;
+    background: #fff;
+    font: inherit;
+    font-size: 12px;
+    color: var(--bdink2);
+    cursor: pointer;
+}
+.sf-bd .mpick__all:hover { border-color: var(--dsb); color: var(--dsb); }
+.sf-bd .btn {
+    height: 34px;
+    border: 1px solid var(--dsb);
+    background: #fff;
+    color: var(--dsb);
+    border-radius: 3px;
+    padding: 0 14px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.sf-bd .btn:hover { background: var(--dsb); color: #fff; }
+
+/* --- KPI tiles ----------------------------------------------------------- */
+
+.sf-bd .kpis {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+@media (max-width: 1100px) {
+    .sf-bd .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.sf-bd .kpi {
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--bdline);
+    border-top: 3px solid var(--acc, var(--vg));
+    border-radius: 12px;
+    padding: 14px 16px 14px;
+    box-shadow: 0 1px 2px rgba(0, 39, 51, .05), 0 6px 18px rgba(0, 39, 51, .05);
+    overflow: hidden;
+    animation: kpi-in .45s cubic-bezier(.2, .7, .2, 1) both;
+    animation-delay: calc(var(--i, 0) * 55ms);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.sf-bd .kpi:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0, 39, 51, .06), 0 12px 28px rgba(0, 39, 51, .10); }
+.sf-bd .kpi span { display: block; font-size: 12px; color: var(--bdink2); }
+.sf-bd .kpi strong {
+    display: block; font-size: 34px; font-weight: 700; line-height: 1.15; margin-top: 4px;
+    letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--dsb);
+}
+/* A soft disc of the tile's own colour behind the bottom-right corner, and
+   its icon in a tinted square top-right - the two things that make six
+   white boxes read as six different measures at a glance. */
+.sf-bd .kpi::after { content: ""; position: absolute; right: -34px; bottom: -46px; width: 120px; height: 120px; border-radius: 50%; background: var(--acc, var(--vg)); opacity: .06; pointer-events: none; }
+.sf-bd .kpi small { display: block; font-size: 12px; color: var(--bdink2); margin-top: 2px; }
+/* The half-year shape sits top-right, faint, behind nothing important. */
+.sf-bd .kpi .spark { position: absolute; right: 14px; bottom: 12px; width: 84px; height: 24px; opacity: .9; }
+.sf-bd .kpi small { padding-right: 96px; }
+.sf-bd .kpi:not(:has(.spark)) small { padding-right: 0; }
+.sf-bd .kpi .d { font-style: normal; font-weight: 600; margin-left: 4px; white-space: nowrap; }
+.sf-bd .kpi .d.up { color: #1F8A4C; }
+.sf-bd .kpi .d.down { color: #B42318; }
+.sf-bd .kpi .d.d0 { color: var(--bdink2); font-weight: 500; }
+@keyframes kpi-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sf-bd .kpi, .sf-bd .ins { animation: none; }
+}
+
+/* --- what stands out ------------------------------------------------------- */
+
+/* Findings, not figures: each card is one sentence with a verb in it, and a
+   click takes you to the view that shows it. The left rule carries the
+   tone; the card stays white so four of them read as a strip, not a wall. */
+.sf-bd .insights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.sf-bd .ins {
+    all: unset;
+    box-sizing: border-box;
+    display: block;
+    cursor: pointer;
+    background: #fff;
+    border: 1px solid var(--bdline);
+    border-left: 4px solid var(--vg);
+    border-radius: 6px;
+    padding: 12px 14px 11px;
+    box-shadow: 0 1px 2px rgba(0, 39, 51, .05);
+    animation: kpi-in .45s cubic-bezier(.2, .7, .2, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.sf-bd .ins:hover, .sf-bd .ins:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 39, 51, .06), 0 12px 28px rgba(0, 39, 51, .10);
+    outline: none;
+}
+.sf-bd .ins:focus-visible { outline: 2px solid var(--vg); outline-offset: 2px; }
+.sf-bd .ins--bad  { border-left-color: #DA0C1F; }
+.sf-bd .ins--warn { border-left-color: #E8A33D; }
+.sf-bd .ins--good { border-left-color: #62A83E; }
+.sf-bd .ins--info { border-left-color: #6B8EC4; }
+.sf-bd .ins b { display: block; font-size: 14px; font-weight: 600; color: var(--dsb); letter-spacing: -0.01em; }
+.sf-bd .ins span { display: block; font-size: 12px; color: var(--bdink2); margin-top: 3px; line-height: 1.45; }
+
+/* --- layout -------------------------------------------------------------- */
+
+.sf-bd .page { display: none; }
+.sf-bd .page.on { display: block; }
+.sf-bd .grid { display: grid; gap: 16px; margin-bottom: 16px; }
+.sf-bd .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sf-bd .g12 { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+@media (max-width: 1000px) {
+    .sf-bd .g2, .sf-bd .g12 { grid-template-columns: minmax(0, 1fr); }
+}
+
+.sf-bd .card {
+    background: #fff;
+    border: 1px solid var(--bdline);
+    border-radius: 4px;
+    min-width: 0;
+}
+.sf-bd .card.mb { margin-bottom: 16px; }
+.sf-bd .ch-h { display: flex; align-items: baseline; gap: 12px; padding: 14px 18px 0; flex-wrap: wrap; }
+.sf-bd .ch-h h2 { margin: 0; font-size: 14px; font-weight: 600; }
+.sf-bd .ch-h p { margin: 0; font-size: 12px; color: var(--bdink2); }
+.sf-bd .ch-h .r { margin-left: auto; font-size: 12px; color: var(--bdink2); }
+.sf-bd .cb { padding: 12px 18px 16px; }
+.sf-bd .cb.tb { padding: 10px 0 0; }
+.sf-bd .cv { position: relative; }
+.sf-bd .hint { font-size: 12px; color: var(--bdink2); margin-top: 8px; }
+
+.sf-bd .lg {
+    display: flex; flex-wrap: wrap; gap: 6px 16px;
+    font-size: 12px; color: var(--bdink2); margin-top: 10px;
+}
+.sf-bd .lg span { display: flex; align-items: center; gap: 6px; }
+.sf-bd .sw { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+
+/* --- tables -------------------------------------------------------------- */
+
+.sf-bd .tablewrap { overflow-x: auto; }
+.sf-bd table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sf-bd th {
+    text-align: left; font-weight: 600; font-size: 12px; color: var(--bdink2);
+    background: var(--dsb10); padding: 8px 10px;
+    border-bottom: 1px solid var(--bdline); white-space: nowrap;
+}
+.sf-bd td { padding: 8px 10px; border-bottom: 1px solid var(--dsb10); white-space: nowrap; }
+.sf-bd tbody tr:hover td { background: var(--vg10); }
+.sf-bd .num { text-align: right; }
+.sf-bd .sc { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; }
+.sf-bd td a { color: var(--vg); font-weight: 600; text-decoration: none; }
+.sf-bd td a:hover { text-decoration: underline; }
+.sf-bd .st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+.sf-bd .st i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.sf-bd .muted { color: var(--bdink2); }
+.sf-bd .late { color: var(--red); font-weight: 600; }
+
+/* Topic is the one column allowed to give ground when the table is narrow -
+   everything else is an identifier, a date or a figure. */
+.sf-bd td.topic { white-space: normal; min-width: 180px; }
+
+.sf-bd .chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 0 18px; min-height: 0; }
+.sf-bd .chips:not(:empty) { padding: 10px 18px 0; }
+.sf-bd .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--vg10); border: 1px solid var(--vg60); color: var(--dsb);
+    border-radius: 3px; padding: 2px 4px 2px 8px; font-size: 12px;
+}
+.sf-bd .chip button { border: 0; background: none; cursor: pointer; color: var(--bdink2); font-size: 14px; line-height: 1; padding: 0 4px; }
+.sf-bd .more { border: 0; background: none; color: var(--vg); cursor: pointer; font-weight: 600; padding: 10px 18px; font-size: 13px; }
+.sf-bd .more[hidden] { display: none; }
+.sf-bd .err { padding: 30px; text-align: center; color: var(--bdink2); font-size: 13px; }
+
+/* A chart card with nothing to draw says so rather than leaving a blank box. */
+.sf-bd .cv .nodata {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--bdink2); font-size: 12.5px; text-align: center;
+}
+
+
+/* --- open / closed / all switch on the drill-down ------------------------ */
+
+.sf-bd .ch-h h2 .count { font-weight: 400; color: var(--bdink2); margin-left: 4px; }
+
+.sf-bd .ch-h h2 .scope {
+    display: inline-flex;
+    margin-left: 12px;
+    border: 1px solid var(--bdline);
+    border-radius: 3px;
+    overflow: hidden;
+    vertical-align: middle;
+}
+.sf-bd .ch-h h2 .scope button {
+    background: #fff;
+    border: 0;
+    border-right: 1px solid var(--bdline);
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--bdink2);
+    cursor: pointer;
+}
+.sf-bd .ch-h h2 .scope button:last-child { border-right: 0; }
+.sf-bd .ch-h h2 .scope button:hover { background: var(--vg10); }
+.sf-bd .ch-h h2 .scope button.on {
+    background: var(--dsb);
+    color: #fff;
+    font-weight: 600;
+}
+
+
+/* --- greeting ------------------------------------------------------------ */
+
+.sf-bd .phead .greet {
+    margin: 0 0 2px;
+    font-size: 13px;
+    color: var(--bdink2);
+    letter-spacing: .01em;
+}
+.sf-bd .phead .greet strong { color: var(--dsb); font-weight: 600; }
+.sf-bd #bwrap[hidden] { display: none; }
+.sf-bd #bwrap { display: inline-flex; gap: 10px; align-items: center; }
+
+/* --- the whole row opens the case ---------------------------------------- */
+
+.sf-bd tr[data-href] { cursor: pointer; }
+.sf-bd tr[data-href]:focus-visible {
+    outline: 2px solid var(--vg);
+    outline-offset: -2px;
+}
+
+
+/* --- month summary ------------------------------------------------------- */
+
+.sf-bd #csTable td.month { white-space: nowrap; }
+.sf-bd #csTable td.pos { color: var(--vg); }
+.sf-bd #csTable td.neg { color: var(--bdink2); }
+.sf-bd #csTable tbody tr:last-child td { background: var(--vg10); }
+
+/* A percentage carries more at a glance when it is also a colour. Reserved
+   status hues only - the same green/amber/red the TAT tiles use. */
+.sf-bd .pill {
+    display: inline-block;
+    min-width: 58px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+}
+.sf-bd .pill--ok    { background: #E4F2DC; color: #34691C; }
+.sf-bd .pill--warn  { background: #FFF4CC; color: #7A5B00; }
+.sf-bd .pill--bad   { background: #FBE0E2; color: #A50A17; }
+.sf-bd .pill--muted { background: var(--dsb10); color: var(--bdink2); font-weight: 400; }
+
+/* --- dimension on the doughnuts ----------------------------------------- */
+/* The lift is a CSS drop-shadow on the canvas, not a canvas shadow drawn per
+   arc: it cannot touch canvas state, so it cannot black out the fills the way
+   the earlier per-slice gradient did. Every slice keeps its exact angle and
+   area - the ring just sits above the card instead of being printed on it. */
+.sf-bd #ovTat,
+.sf-bd #ovDept,
+.sf-bd #dpPie,
+.sf-bd #tTat,
+.sf-bd #byTat {
+    filter: drop-shadow(0 6px 12px rgba(0, 39, 51, .22));
+}
+
+
+/* --- on the band: everything in the header reads white --------------------- */
+.sf-bd .bd-band .phead .greet { color: rgba(255, 255, 255, .8); }
+.sf-bd .bd-band .phead .greet strong { color: #fff; }
+.sf-bd .bd-band .btn { border-color: rgba(255, 255, 255, .85); background: rgba(255, 255, 255, .12); color: #fff; }
+.sf-bd .bd-band .btn:hover { background: #fff; color: var(--dsb); }
+.sf-bd .bd-band select, .sf-bd .bd-band .mpick__btn { border-color: transparent; box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }
+.sf-bd .bd-band .kpis { margin-bottom: 0; }
+/* Tiles on teal: a touch more lift, a stronger shadow, no tint gradient. */
+.sf-bd .bd-band .kpi {
+    background: #fff;
+    border-color: rgba(255, 255, 255, .5);
+    border-top: 3px solid var(--acc, var(--vg));
+    box-shadow: 0 2px 4px rgba(0, 30, 30, .12), 0 10px 26px rgba(0, 30, 30, .18);
+}
+.sf-bd .bd-band .kpi:hover { box-shadow: 0 4px 8px rgba(0, 30, 30, .14), 0 16px 36px rgba(0, 30, 30, .24); }
+
+/* --- chart cards: a soft teal wash behind each title -------------------- */
+.sf-bd .card {
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 39, 51, .04), 0 4px 14px rgba(0, 39, 51, .04);
+    overflow: hidden;
+}
+.sf-bd .ch-h {
+    background: linear-gradient(180deg, #EEF6F5 0%, #fff 100%);
+    border-bottom: 1px solid #E3EEEC;
+    padding: 12px 18px 10px;
+    margin-bottom: 8px;
+}
+.sf-bd .ch-h h2 { color: var(--dsb); }
+.sf-bd .ch-h h2::before {
+    content: "";
+    display: inline-block;
+    width: 3px; height: 12px;
+    border-radius: 2px;
+    background: var(--vg);
+    margin-right: 8px;
+    vertical-align: -1px;
+}
+
+/* --- on the band: controls keep dark text, and the calendar floats above -- */
+.sf-bd .bd-band select,
+.sf-bd .bd-band .mpick__btn { color: var(--bdink); }
+.sf-bd .bd-band .phead { z-index: 2; }
+/* Darker, and clearly on top of the tiles: a deep header, white grid, and a
+   shadow heavy enough to separate it from a white card underneath. */
+.sf-bd .bd-band .mpick__pop {
+    z-index: 60;
+    top: 40px;
+    border: 0;
+    border-radius: 8px;
+    padding: 0 0 10px;
+    box-shadow: 0 18px 44px rgba(0, 20, 24, .38), 0 2px 6px rgba(0, 20, 24, .2);
+    overflow: hidden;
+}
+.sf-bd .bd-band .mpick__head {
+    background: var(--dsb);
+    color: #fff;
+    margin: 0 0 10px;
+    padding: 10px 10px;
+}
+.sf-bd .bd-band .mpick__year { color: #fff; }
+.sf-bd .bd-band .mpick__nav { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .25); color: #fff; }
+.sf-bd .bd-band .mpick__nav:hover:not(:disabled) { background: #fff; color: var(--dsb); }
+.sf-bd .bd-band .mpick__grid, .sf-bd .bd-band .mpick__all { margin-left: 10px; margin-right: 10px; }
+.sf-bd .bd-band .mpick__grid { width: calc(100% - 20px); }
+.sf-bd .bd-band .mpick__all { width: calc(100% - 20px); }
+/* Match the requester's tiles: title, number in the brand navy, caption. */
+.sf-bd .bd-band .kpi span { font-size: 12px; color: var(--bdink2); }
+.sf-bd .bd-band .kpi strong { font-size: 34px; font-weight: 700; color: var(--dsb); margin: 4px 0 2px; }
+.sf-bd .bd-band .kpi small { font-size: 11.5px; color: var(--bdink2); }
+
+
+/* --- tiles are filters ---------------------------------------------------- */
+
+.sf-bd .kpi--go { cursor: pointer; }
+.sf-bd .kpi--go:focus-visible { outline: 2px solid var(--vg); outline-offset: 2px; }
+.sf-bd .kpi--go.on { box-shadow: 0 0 0 2px var(--acc, var(--vg)), 0 12px 28px rgba(0, 39, 51, .10); }
+.sf-bd .card.flash { animation: bd-flash 1.4s ease-out 1; }
+@keyframes bd-flash { 0% { box-shadow: 0 0 0 0 rgba(0, 140, 130, .55); } 100% { box-shadow: 0 0 0 14px rgba(0, 140, 130, 0); } }
+.sf-bd .card { scroll-margin-top: 84px; }
+.sf-bd td.sc small { display: block; font-size: 11px; margin-top: 1px; }
+
+
+/* --- segmented health bars ---------------------------------------------- */
+
+.sf-bd .hbars { display: flex; flex-direction: column; gap: 3px; padding: 4px 0 2px; }
+/* One line per row: the name and its count share the label, the bar is
+   slim, and ten departments fit where four used to. */
+.sf-bd .hbar { display: grid; grid-template-columns: 250px minmax(0, 1fr) 56px; align-items: center; column-gap: 10px; padding: 3px 6px; border-radius: 6px; }
+.sf-bd .hbar:hover, .sf-bd .hbar.on { background: var(--vg10); }
+.sf-bd .hbar__label { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--bdink); background: transparent; border: 0; text-align: left; cursor: pointer; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sf-bd .hbar__label small { display: inline; font-size: 11px; font-weight: 400; color: var(--bdink2); margin-left: 6px; }
+.sf-bd .hbar__label:hover { color: var(--vg); }
+.sf-bd .hbar__bar { display: flex; gap: 2px; height: 16px; border-radius: 4px; overflow: hidden; background: rgba(0, 39, 51, .05); }
+.sf-bd .hbar__seg { flex: 0 0 auto; min-width: 5px; border: 0; padding: 0; margin: 0; cursor: pointer; font: inherit; font-size: 11px; font-weight: 700; color: #fff; transition: filter .12s ease; }
+.sf-bd .hbar__seg:hover { filter: brightness(1.12); }
+.sf-bd .hbar__seg.on { box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 4px var(--bdink); }
+.sf-bd .hbar__seg--late { background: linear-gradient(180deg, #E15252, #d03b3b); }
+.sf-bd .hbar__seg--risk { background: linear-gradient(180deg, #D97B12, #C26D00); }
+.sf-bd .hbar__seg--ok { background: linear-gradient(180deg, #22B46E, #0E9F5A); }
+.sf-bd .hbar__seg--none { background: linear-gradient(180deg, #8C9BA8, #6E8290); }
+.sf-bd .hbar__score { text-align: right; }
+.sf-bd .hbar__score .pill { font-size: 11px; padding: 2px 7px; }
+.sf-bd .nodata--static { position: static; padding: 24px 0; }
+
+
+/* --- gauges --------------------------------------------------------------- */
+
+.sf-bd .gauges { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.sf-bd .gauge { font: inherit; text-align: center; padding: 10px 6px 8px; border-radius: 8px; background: #F7F9FA; border: 1px solid var(--bdline); cursor: pointer; color: var(--bdink); }
+.sf-bd .gauge:hover { border-color: var(--vg); }
+.sf-bd .gauge.on { border-color: var(--vg); box-shadow: 0 0 0 2px var(--vg10); }
+.sf-bd .gauge__cv { position: relative; height: 110px; }
+.sf-bd .gauge b { display: block; font-size: 13.5px; margin-top: 2px; }
+.sf-bd .gauge span { display: block; font-size: 12px; color: var(--bdink2); margin-top: 2px; }
+.sf-bd .gauge small { display: block; font-size: 11px; color: var(--bdink2); margin-top: 2px; opacity: .8; }
+
+
+/* --- scorecard heatmap ------------------------------------------------ */
+
+.sf-bd .heat { overflow-x: auto; padding: 4px 0 2px; }
+.sf-bd .heat table { width: 100%; border-collapse: separate; border-spacing: 3px; font-size: 12.5px; }
+.sf-bd .heat thead th { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bdink2); text-align: center; padding: 4px 6px; border: 0; background: none; white-space: nowrap; }
+.sf-bd .heat thead th .sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.sf-bd .heat tbody th { text-align: left; padding: 0 8px 0 4px; border: 0; background: none; white-space: nowrap; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+.sf-bd .heat tbody th button { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--bdink); background: none; border: 0; padding: 0; cursor: pointer; }
+.sf-bd .heat tbody th button:hover { color: var(--vg); }
+.sf-bd .heat tr.on th button { color: var(--vg); }
+.sf-bd .heat td { height: 34px; min-width: 72px; text-align: center; border-radius: 6px; font-weight: 700; cursor: pointer; border: 0; padding: 0 6px; white-space: nowrap; transition: transform .12s ease; background: rgba(0, 39, 51, .035); color: var(--bdink); }
+.sf-bd .heat td:hover:not(.z) { transform: scale(1.06); outline: 2px solid var(--bdink); }
+.sf-bd .heat td.z { color: #B7C3CC; font-weight: 500; cursor: default; }
+.sf-bd .heat td.on { outline: 2px solid var(--vg); }
+.sf-bd .heat td.num { background: none; cursor: default; font-weight: 500; }
+.sf-bd .heat td.total { font-weight: 700; }
+.sf-bd .heat td.num:hover { transform: none; outline: 0; }
+
+
+/* --- packed bubbles ------------------------------------------------------ */
+
+.sf-bd .bubbles { height: 300px; }
+.sf-bd .bubbles svg { width: 100%; height: 100%; display: block; }
+.sf-bd .bub { cursor: pointer; }
+.sf-bd .bub circle { stroke: #fff; stroke-width: 2; transition: filter .12s ease; }
+.sf-bd .bub:hover circle { filter: brightness(1.1); }
+.sf-bd .bub.on circle { stroke: var(--dsb); stroke-width: 3; }
+.sf-bd .bub--ok circle { fill: #3987e5; }
+.sf-bd .bub--risk circle { fill: #C26D00; }
+.sf-bd .bub--late circle { fill: #d03b3b; }
+.sf-bd .bub text { fill: #fff; text-anchor: middle; dominant-baseline: middle; pointer-events: none; font-family: "VW Text", "Segoe UI", system-ui, Arial, sans-serif; }
+.sf-bd .bub__name { font-size: 11.5px; font-weight: 700; }
+.sf-bd .bub__sub { font-size: 10.5px; opacity: .9; }

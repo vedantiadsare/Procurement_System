@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}My requests · Samagra{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ asset_url('/static/css/dashboard-requester.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="sf-rd">
+
+  {# Same teal band as the buyer's dashboard and the home page: header,
+     period control and the five tiles on it, white cards on teal. #}
+  <div class="rd-band">
+  <div class="rd-head">
+    <div>
+      <h1>My requests</h1>
+      <p class="rd-head__sub">
+        As of {{ data.today | date }}
+        {%- if data.counts.waiting_on_you %} · <strong>{{ data.counts.waiting_on_you }}</strong> of your {{ data.counts.open }} open request{{ "s" if data.counts.open != 1 }} need{{ "s" if data.counts.waiting_on_you == 1 }} something from you
+        {%- elif data.counts.open %} · nothing needs you on your {{ data.counts.open }} open request{{ "s" if data.counts.open != 1 }}
+        {%- else %} · nothing open right now{% endif %}
+      </p>
+    </div>
+    <div class="rd-head__tools">
+      {# A plain GET form: the period is in the URL, so the view is shareable
+         and the back button behaves. #}
+      <form method="get" action="/dashboard">
+        <label class="sf-sr-only" for="period">Period</label>
+        <select id="period" name="period" onchange="this.form.submit()">
+          {% for key, label in data.periods.items() %}
+          <option value="{{ key }}" {{ "selected" if data.period == key }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </form>
+      <a href="/requests/new" class="rd-btn rd-btn--solid">Raise a new request</a>
+    </div>
+  </div>
+
+  <div class="rd-kpis">
+    <div class="rd-kpi rd-kpi--neutral">
+      <span class="rd-kpi__t">Open requests</span>
+      <strong>{{ data.counts.open }}</strong>
+      <span class="rd-kpi__s">in progress</span>
+    </div>
+    <div class="rd-kpi rd-kpi--warn">
+      <span class="rd-kpi__t">Waiting on you</span>
+      <strong>{{ data.counts.waiting_on_you }}</strong>
+      <span class="rd-kpi__s">action needed</span>
+    </div>
+    <div class="rd-kpi rd-kpi--teal">
+      <span class="rd-kpi__t">With procurement</span>
+      <strong>{{ data.counts.with_procurement }}</strong>
+      <span class="rd-kpi__s">nothing needed from you</span>
+    </div>
+    <div class="rd-kpi rd-kpi--good">
+      <span class="rd-kpi__t">Completed{{ " this year" if data.period == "year" }}</span>
+      <strong>{{ data.counts.completed }}</strong>
+      <span class="rd-kpi__s">PO released</span>
+    </div>
+  </div>
+  </div>
+
+  {% if data.needs_you %}
+  <section class="rd-attn">
+    {% for c in data.needs_you %}
+    <div class="rd-attn__item">
+      <div class="rd-attn__text">
+        <h2>{{ c.topic_title }}</h2>
+        <p>{{ c.remarks_for_user or "Procurement has a question — open the request to see what's needed." }}</p>
+        <span class="rd-attn__ref">{% if c.sourcing_basis == "Frame contract" or not c.sc_number %}<b>{{ c.ticket_no }}</b>{% else %}SC <b>{{ c.sc_number }}</b>{% endif %}</span>
+      </div>
+      <div class="rd-attn__actions">
+        <a class="rd-btn rd-btn--solid" href="/requests/{{ c.id }}?tab=activity">Open and reply</a>
+        {% if c.assigned_buyer %}
+        {% set addr = data.buyer_emails.get(c.assigned_buyer) %}
+        {% if addr %}
+        <a class="rd-btn" href="mailto:{{ addr }}?subject={{ '[' ~ c.ticket_no ~ '] ' ~ c.topic_title }}">Message {{ c.assigned_buyer.split(" ")[0] }}</a>
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <div class="rd-grid">
+    <section class="rd-card rd-where">
+      <div class="rd-card__h">
+        <h2>Where my requests are</h2>
+        <span>{{ data.period_label }}</span>
+      </div>
+      {% if data.rows %}
+      <div class="rd-donut">
+        <canvas id="rdDonut" width="260" height="260"></canvas>
+        <div class="rd-donut__hole">
+          <strong>{{ data.rows | length }}</strong>
+          <span>request{{ "s" if data.rows | length != 1 }}</span>
+        </div>
+      </div>
+      <ul class="rd-legend">
+        {% for s in data.donut %}
+        <li><i style="background:{{ s.color }}"></i>{{ s.label }}<b>{{ s.value }}</b></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="rd-empty">No requests in this period.</p>
+      {% endif %}
+    </section>
+
+    <section class="rd-card rd-list">
+      <div class="rd-card__h">
+        <h2>My requests ({{ data.rows | length }})</h2>
+        <span>Click a row to open its timeline</span>
+      </div>
+      {% if data.rows %}
+      <div class="rd-tablewrap">
+      <table class="rd-table">
+        <thead>
+          <tr><th>Request</th><th>Commodity</th><th>Progress</th><th>Stage</th><th>Buyer</th><th>Expected</th></tr>
+        </thead>
+        <tbody>
+        {% for c in data.rows %}
+        <tr data-href="/requests/{{ c.id }}" tabindex="0">
+          <td>
+            <div class="rd-topic">{{ c.topic_title }}</div>
+            <div class="rd-topic__sub">{% if c.sourcing_basis == "Frame contract" %}Frame contract · {% elif c.sc_number %}SC {{ c.sc_number }} · {% endif %}raised {{ c.submitted_at | date }}</div>
+          </td>
+          <td class="rd-comm">{{ c.expense_commodity or "—" }}</td>
+          <td>
+            {# Four segments, four things the app can prove happened. The amber
+               one is the step that cannot move until this requester replies. #}
+            <div class="rd-steps" title="{{ c.progress.steps | join(' → ') }}" aria-label="{{ c.progress.done }} of 4 steps done">
+              {% for i in range(4) %}
+              <i class="{% if c.progress.stopped and i == 3 %}is-stopped{% elif c.progress.stuck is not none and i == c.progress.stuck %}is-stuck{% elif i < c.progress.done %}is-done{% endif %}"></i>
+              {% endfor %}
+            </div>
+          </td>
+          <td>
+            {% if c.status == "ENQUIRED" %}<span class="rd-chip rd-chip--warn">Needs you</span>
+            {% elif c.status == "APPROVED" %}<span class="rd-chip rd-chip--good">Completed</span>
+            {% elif c.status == "REJECTED" %}<span class="rd-chip rd-chip--bad">Not approved</span>
+            {% else %}<span class="rd-chip rd-chip--teal">With procurement</span>{% endif %}
+          </td>
+          <td class="rd-buyer">{{ c.assigned_buyer.split(" ")[0] if c.assigned_buyer else "Unassigned" }}</td>
+          <td class="rd-when">
+            {% if c.closed_on %}Done {{ c.closed_on | date }}
+            {% elif c.expected_po_closure %}
+              {# A due date that has already passed is the one thing on this row
+                 worth reading twice, so it does not sit in the same grey as
+                 every other date. #}
+              <span class="{{ 'rd-late' if c.overdue }}">{{ c.expected_po_closure | date }}</span>
+              {% if c.overdue %}<span class="rd-late__tag">past due</span>{% endif %}
+            {% else %}<span class="rd-muted">not started</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      {% else %}
+      <p class="rd-empty">Nothing raised in this period. <a href="/requests/new">Raise a request</a>.</p>
+      {% endif %}
+    </section>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if data.rows %}
+<script id="rdDonutData" type="application/json">{{ data.donut | tojson }}</script>
+<script src="/static/js/vendor/chart.umd.min.js"></script>
+{% endif %}
+<script src="{{ asset_url('/static/js/dashboard-requester.js') }}"></script>
+{% endblock %}

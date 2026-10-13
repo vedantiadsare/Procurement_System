@@ -26,6 +26,15 @@
 </div>
 
 {% if item.status == "UNREVIEWED" %}
+<div class="sf-card">
+    <h3 class="sf-section-header" style="margin-top:0;">This is a new request</h3>
+    <p class="sf-caption">
+        Read the email and its attachments and build a new sourcing case from them.
+        Nothing is created until you have checked what was read.
+    </p>
+    <a href="/mailbox/{{ item.id }}/build" class="sf-btn sf-btn--primary">Build a case from this email</a>
+</div>
+
 <form method="post" action="/mailbox/{{ item.id }}/file">
     <div class="sf-card">
         <h3 class="sf-section-header" style="margin-top:0;">Attachments — tag each one you want to file</h3>
@@ -38,10 +47,14 @@
                 <td style="display:flex;align-items:center;gap:8px;">{{ ic.icon("file-text", 15) }}{{ a.filename }}</td>
                 <td>{{ ((a.size_bytes or 0) / 1024) | round }} KB</td>
                 <td>
+                    {# Pre-selected from the same classifier the build screen
+                       uses, so this is a confirmation rather than five
+                       dropdowns to set by hand. #}
+                    {% set suggested = suggestions.get(a.id) if suggestions else None %}
                     <select name="doc_type_{{ a.id }}">
-                        <option value="">Don't file</option>
+                        <option value="" {% if not suggested %}selected{% endif %}>Don't file</option>
                         {% for dt in doc_types %}
-                        <option value="{{ dt }}">{{ dt }}</option>
+                        <option value="{{ dt }}" {% if suggested == dt %}selected{% endif %}>{{ dt }}</option>
                         {% endfor %}
                     </select>
                 </td>
@@ -52,8 +65,13 @@
     </div>
 
     <div class="sf-card">
-        <h3 class="sf-section-header" style="margin-top:0;">File into which case?</h3>
-        <p class="sf-caption">Search by ticket number, SC number, or topic. New-case filing isn't supported here yet — the case must already exist.</p>
+        <h3 class="sf-section-header" style="margin-top:0;">Or file into a case that already exists</h3>
+        <p class="sf-caption">
+            Use this when the documents belong to a case already in the queue — a
+            revised quotation, a missing SFO, a reply to an enquiry. For a brand
+            new requirement, use <a href="/mailbox/{{ item.id }}/build">Build a case
+            from this email</a> above instead.
+        </p>
         <div class="sf-field sf-field--search">
             <input type="text" id="case-search" placeholder="Search cases..." autocomplete="off">
         </div>

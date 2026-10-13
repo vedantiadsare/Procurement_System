@@ -78,10 +78,32 @@ def asset_url(path: str) -> str:
 templates = Jinja2Templates(directory="templates", context_processors=[_inject_notifications])
 templates.env.globals["asset_url"] = asset_url
 templates.env.filters["inr"] = formatting.format_inr
+# Takes the whole case, not just the number, so the currency comes from
+# the case rather than being assumed to be rupees.
+templates.env.filters["money"] = formatting.format_money
+
+
+def _amount(value, currency="INR"):
+    """A bare figure in its own currency - a supplier's EUR unit price must
+    not be printed with a rupee sign."""
+    if value is None:
+        return "-"
+    code = str(currency or "INR").upper()
+    if code == "INR":
+        return formatting.format_inr(value)
+    return f"{code} {float(value):,.2f}"
+
+
+templates.env.filters["amount"] = _amount
+templates.env.globals["money_in"] = formatting.money_in
 templates.env.filters["date"] = formatting.format_date
 templates.env.filters["timestamp"] = formatting.format_timestamp
 templates.env.filters["status_label"] = formatting.status_label
+templates.env.filters["action_label"] = formatting.action_label
+templates.env.filters["doc_type_label"] = formatting.doc_type_label
+templates.env.filters["closing_ref_label"] = formatting.closing_ref_label
 templates.env.filters["status_text"] = lambda status: formatting.STATUS_DISPLAY.get(status, formatting.status_label(status))
 templates.env.filters["initials"] = formatting.initials
 templates.env.filters["days_color"] = formatting.days_remaining_color
 templates.env.filters["status_chip"] = lambda status: Markup(formatting.status_chip_html(status))
+templates.env.filters["stage_chip"] = lambda stage: Markup(formatting.stage_chip_html(stage))

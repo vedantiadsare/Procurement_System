@@ -10,13 +10,21 @@ import hashlib
 import hmac
 import os
 
-from config import BUYER_EMAILS
+from config import ADMIN_EMAILS, BUYER_EMAILS
 
 PBKDF2_ITERATIONS = 200_000
 
 
+def is_admin(email: str) -> bool:
+    return email.strip().lower() in {e.lower() for e in ADMIN_EMAILS}
+
+
 def role_for_email(email: str) -> str:
-    return "buyer" if email.strip().lower() in {e.lower() for e in BUYER_EMAILS} else "requester"
+    # An admin is a buyer with more to see, not a third role - see
+    # config.ADMIN_EMAILS.
+    if is_admin(email) or email.strip().lower() in {e.lower() for e in BUYER_EMAILS}:
+        return "buyer"
+    return "requester"
 
 
 def hash_password(password: str, salt: bytes = None):

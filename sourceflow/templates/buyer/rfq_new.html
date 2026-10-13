@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% import "_macros/icons.html" as ic %}
+{% block title %}Float an enquiry · Samagra{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb"><a href="/supplier-rfq">Supplier enquiries</a> / New</div>
+        <h1 class="sf-hero-title">Float an enquiry to suppliers</h1>
+        <p class="sf-hero-meta">
+            Each supplier gets your note, the attached documents, and a private page
+            to quote back through. Nobody sees anyone else's response.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if errors %}
+<div class="sf-errors">
+    <strong>Fix these before sending:</strong>
+    <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" action="/supplier-rfq/new" enctype="multipart/form-data" class="sf-rfqn" id="rfqForm">
+<div class="sf-rfqn__main">
+
+    {# 1 · The enquiry ------------------------------------------------------ #}
+    <section class="sf-card sf-rfqn-step">
+        <header class="sf-rfqn-step__head">
+            <span class="sf-rfqn-step__n">1</span>
+            <div><h2>The enquiry</h2><p>What you are asking suppliers to quote for.</p></div>
+        </header>
+
+        <div class="sf-field">
+            <label for="subject">Subject <span class="sf-required">*</span></label>
+            <input type="text" id="subject" name="subject" value="{{ values.subject }}" required
+                   placeholder="e.g. Supply of 600 branded t-shirts">
+            <p class="sf-caption">Suppliers see this as the subject line of the mail.</p>
+        </div>
+
+        <div class="sf-field">
+            <div class="sf-rfqn-labelrow">
+                <label for="message">Your note to suppliers</label>
+                {% if cases or case %}
+                <button type="button" class="sf-btn sf-btn--secondary sf-btn--sm" id="draftBtn" title="Draft the note from a linked case's RFQ and deviation note">Draft from a case</button>
+                {% endif %}
+            </div>
+            <textarea id="message" name="message" rows="9"
+                      placeholder="Scope, quantities, delivery location, what the quotation must cover, commercial terms…">{{ values.message }}</textarea>
+            <p class="sf-caption" id="draftNote">Plain text — this goes into the body of the mail exactly as typed.</p>
+        </div>
+
+        {# Linking is opt-in: a new enquiry stands on its own unless the
+           requester deliberately ties it to one of their open cases. #}
+        {% if cases or case %}
+        <div class="sf-rfqn-link {{ 'is-open' if case }}" id="caseLink">
+            <button type="button" class="sf-rfqn-link__toggle" id="caseToggle" aria-expanded="{{ 'true' if case else 'false' }}">
+                {{ ic.icon("paperclip", 14) }} <span>Link to one of my cases</span> <em>optional</em>
+            </button>
+            <div class="sf-rfqn-link__body">
+                <select id="case_id" name="case_id">
+                    <option value="">— not linked to a case —</option>
+                    {% for c in cases %}
+                    <option value="{{ c.id }}" {{ "selected" if case and case.id == c.id }}>{{ c.ticket_no }} — {{ c.topic_title }}</option>
+                    {% endfor %}
+                </select>
+                <p class="sf-caption">Only cases still waiting on quotes are listed. Linking lets Samagra draft the note from the case's RFQ and deviation note, and shows the enquiry on the case.</p>
+            </div>
+        </div>
+        {% endif %}
+    </section>
+
+    {# 2 · Documents -------------------------------------------------------- #}
+    <section class="sf-card sf-rfqn-step">
+        <header class="sf-rfqn-step__head">
+            <span class="sf-rfqn-step__n">2</span>
+            <div><h2>Documents</h2><p>RFQ, drawings, specifications — attached to every mail and downloadable from each supplier's page.</p></div>
+        </header>
+        <label class="sf-rfqn-drop" id="dropZone" for="rfq_files">
+            <input type="file" id="rfq_files" name="rfq_files" multiple>
+            <span class="sf-rfqn-drop__icon">{{ ic.icon("paperclip", 22) }}</span>
+            <span class="sf-rfqn-drop__text"><b>Choose files</b> or drop them here</span>
+            <span class="sf-rfqn-drop__hint">Max {{ max_file_mb }} MB each · {{ allowed_extensions | join(", ") }}</span>
+        </label>
+        <ul class="sf-rfqn-files" id="fileList" hidden></ul>
+    </section>
+
+    {# 3 · Suppliers -------------------------------------------------------- #}
+    <section class="sf-card sf-rfqn-step">
+        <header class="sf-rfqn-step__head">
+            <span class="sf-rfqn-step__n">3</span>
+            <div><h2>Suppliers</h2><p>Who receives the enquiry. Each one gets their own private link.</p></div>
+        </header>
+        <div class="sf-field">
+            <div class="sf-rfqn-labelrow">
+                <label for="recipients">Email addresses <span class="sf-required">*</span></label>
+                <span class="sf-rfqn-count" id="recipCount">No suppliers yet</span>
+            </div>
+            <textarea id="recipients" name="recipients" rows="6"
+                      placeholder="Acme Traders &lt;sales@acme.com&gt;&#10;bids@globex.com&#10;Initech Pvt Ltd &lt;tenders@initech.com&gt;">{{ values.recipients }}</textarea>
+            <div class="sf-rfqn-chips" id="recipChips"></div>
+            <p class="sf-caption">
+                One per line, or separated by commas — paste straight out of Outlook or Excel.
+                <code>Name &lt;address&gt;</code> and a bare address both work; the same address twice counts once.
+            </p>
+        </div>
+    </section>
+
+    {# 4 · Deadline --------------------------------------------------------- #}
+    <section class="sf-card sf-rfqn-step">
+        <header class="sf-rfqn-step__head">
+            <span class="sf-rfqn-step__n">4</span>
+            <div><h2>Respond by</h2><p>Each supplier's page stops accepting responses at the end of this day. You can extend it later, and everyone gets told if you do.</p></div>
+        </header>
+        <div class="sf-rfqn-when">
+            <input type="date" id="closes_on" name="closes_on" value="{{ values.closes_on }}" required>
+            <div class="sf-rfqn-quick" id="quickDays">
+                <button type="button" data-days="7">1 week</button>
+                <button type="button" data-days="14">2 weeks</button>
+                <button type="button" data-days="21">3 weeks</button>
+            </div>
+            <span class="sf-rfqn-when__note" id="whenNote"></span>
+        </div>
+    </section>
+
+    <div class="sf-rfqn-actions">
+        <button type="submit" class="sf-btn sf-btn--primary sf-btn--lg" id="sendBtn">Send enquiry</button>
+        <a href="/supplier-rfq" class="sf-btn sf-btn--secondary">Cancel</a>
+        <span class="sf-caption">Sending mails every address on the list immediately.</span>
+    </div>
+</div>
+
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var subj = $("subject"), box = $("message"), note = $("draftNote");
+    var sel = $("case_id"), toggle = $("caseToggle"), link = $("caseLink");
+    var recip = $("recipients"), chips = $("recipChips"), recipCount = $("recipCount");
+    var files = $("rfq_files"), fileList = $("fileList"), drop = $("dropZone");
+    var when = $("closes_on"), whenNote = $("whenNote");
+    var EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+    function fsize(n) { return n < 1024 ? n + " B" : n < 1048576 ? Math.round(n / 1024) + " KB" : (n / 1048576).toFixed(1) + " MB"; }
+    function plural(n, w) { return n + " " + w + (n === 1 ? "" : "s"); }
+
+    // --- suppliers: parsed the way the server parses, so the count never lies
+    function parseRecipients() {
+        var seen = {}, out = [], bad = [];
+        recip.value.split(/[\n,;]+/).forEach(function (raw) {
+            var t = raw.trim(); if (!t) return;
+            var m = t.match(EMAIL);
+            if (!m) { bad.push(t); return; }
+            var addr = m[0].toLowerCase(); if (seen[addr]) return; seen[addr] = 1;
+            var name = t.replace(m[0], "").replace(/[<>"']/g, "").trim();
+            out.push({ addr: addr, name: name });
+        });
+        return { ok: out, bad: bad };
+    }
+    function renderRecipients() {
+        var r = parseRecipients();
+        chips.innerHTML = r.ok.map(function (x) { return '<span class="sf-rfqn-chip" title="' + esc(x.addr) + '">' + esc(x.name || x.addr) + '</span>'; }).join("")
+            + r.bad.map(function (x) { return '<span class="sf-rfqn-chip is-bad" title="Not an email address">' + esc(x) + '</span>'; }).join("");
+        recipCount.textContent = r.ok.length
+            ? plural(r.ok.length, "supplier") + (r.bad.length ? " · " + plural(r.bad.length, "line") + " not recognised" : "")
+            : (r.bad.length ? "Nothing recognised as an address yet" : "No suppliers yet");
+        recipCount.classList.toggle("is-bad", !!r.bad.length);
+        return r;
+    }
+
+    // --- files -------------------------------------------------------------
+    function renderFiles() {
+        var list = Array.prototype.slice.call(files.files || []);
+        fileList.hidden = !list.length;
+        fileList.innerHTML = list.map(function (f) {
+            return "<li>" + esc(f.name) + " <small>" + fsize(f.size) + "</small></li>";
+        }).join("");
+        drop.classList.toggle("has-files", !!list.length);
+    }
+    ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("is-over"); }); });
+    ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("is-over"); }); });
+    drop.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files.length) { files.files = e.dataTransfer.files; renderFiles(); } });
+
+    // --- deadline ----------------------------------------------------------
+    function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+    function renderWhen() {
+        var v = when.value, d = v ? new Date(v + "T00:00:00") : null;
+        var today = new Date(); today.setHours(0, 0, 0, 0);
+        var days = d ? Math.round((d - today) / 86400000) : null;
+        whenNote.textContent = !d ? "" : days < 0 ? "That day has already passed" : days === 0 ? "Closes tonight" : "Suppliers get " + plural(days, "day");
+        whenNote.classList.toggle("is-bad", !!d && days <= 0);
+        Array.prototype.forEach.call(document.querySelectorAll("#quickDays button"), function (b) { b.classList.toggle("is-on", days === Number(b.getAttribute("data-days"))); });
+    }
+    $("quickDays").addEventListener("click", function (e) {
+        var b = e.target.closest("button[data-days]"); if (!b) return;
+        var d = new Date(); d.setDate(d.getDate() + Number(b.getAttribute("data-days")));
+        when.value = iso(d); renderWhen(); refresh();
+    });
+
+    // --- case link (opt-in) ------------------------------------------------
+    if (toggle) {
+        toggle.addEventListener("click", function () {
+            var open = !link.classList.contains("is-open");
+            link.classList.toggle("is-open", open);
+            toggle.setAttribute("aria-expanded", open ? "true" : "false");
+            if (!open) sel.value = ""; else sel.focus();
+        });
+    }
+
+    function refresh() { renderRecipients(); }
+    ["input", "change"].forEach(function (ev) {
+        recip.addEventListener(ev, refresh);
+        when.addEventListener(ev, renderWhen);
+    });
+    files.addEventListener("change", renderFiles);
+    renderFiles(); renderWhen(); refresh();
+
+    // --- draft from a linked case ------------------------------------------
+    var btn = $("draftBtn");
+    if (btn) btn.addEventListener("click", function () {
+        if (!sel.value) {
+            link.classList.add("is-open"); toggle.setAttribute("aria-expanded", "true");
+            note.textContent = "Pick a case to draft from — the note is written from its documents.";
+            sel.focus();
+            return;
+        }
+        // Never silently overwrite something the requester typed.
+        if (box.value.trim() && !confirm("Replace what's in the note with the draft?")) return;
+
+        btn.disabled = true;
+        var was = btn.textContent;
+        btn.textContent = "Reading the case…";
+        note.textContent = "Reading the RFQ and deviation note. This takes a moment.";
+
+        var body = new FormData();
+        body.append("case_id", sel.value);
+        fetch("/supplier-rfq/draft", { method: "POST", body: body, credentials: "same-origin" })
+            .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+            .then(function (res) {
+                if (!res.ok || !res.j.ok) { note.textContent = "Couldn't draft: " + (res.j.error || "unknown error"); return; }
+                box.value = res.j.draft;
+                if (!subj.value.trim()) subj.value = res.j.subject || "";
+                note.textContent = res.j.summary + ". Read it through and edit before sending — anything marked [to confirm] wasn't in the documents.";
+                box.focus();
+            })
+            .catch(function () { note.textContent = "Couldn't draft just now. Try again."; })
+            .finally(function () { btn.disabled = false; btn.textContent = was; });
+    });
+}());
+</script>
+{% endblock %}

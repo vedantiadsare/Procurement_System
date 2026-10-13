@@ -1,6 +1,7 @@
 """FastAPI entry point: app wiring, template/filter registration, session
 middleware, startup hook. Route logic lives in routers/."""
 
+import re
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -71,6 +72,10 @@ async def root(request: Request):
 @app.get("/home", response_class=HTMLResponse)
 async def home(request: Request, user=Depends(require_login)):
     from datetime import datetime
+    if user.get("is_admin"):
+        # The head has no home page - the dashboard is where they land and
+        # the only page in their nav.
+        return RedirectResponse(url="/dashboard", status_code=303)
     if user["role"] == "buyer":
         from routers.buyer_routes import buyer_home_context
         context = buyer_home_context(user)
@@ -84,27 +89,75 @@ async def home(request: Request, user=Depends(require_login)):
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request, user=Depends(require_login)):
-    """One URL, two scopes - same reason /home branches by role rather than
-    living in either router: a requester sees only their own requests, a
-    buyer sees every case pivoted by department/status/buyer."""
+async def dashboard(request: Request, user=Depends(require_login), period: str = "year"):
+    """One URL, two pages - same reason /home branches by role rather than
+    living in either router.
+
+    The two roles get genuinely different pages, not one page with rows
+    hidden. A buyer pivots every case by department, commodity and buyer and
+    watches the queue's TAT health; a requester only ever asks "which of mine
+    is stuck, and on whom" - which the buyer's pivots answer badly."""
+    from datetime import datetime
+    import config
     import dashboard as dashboard_data
-    if user["role"] == "buyer":
-        data = dashboard_data.buyer_dashboard()
-        template = "dashboard.html"
-    else:
-        data = dashboard_data.requester_dashboard(user["email"])
-        template = "dashboard_requester.html"
-    return templates.TemplateResponse(
-        request, template,
-        {"user": user, "nav_page": "dashboard", "data": data},
-    )
+
+    if user["role"] != "buyer":
+        return templates.TemplateResponse(request, "requester/dashboard.html", {
+            "user": user,
+            "nav_page": "dashboard",
+            "data": dashboard_data.requester_overview(user, period),
+        })
+
+    if user.get("is_admin"):
+        # The head's page is the one they drew: one screen, a filter rail,
+        # single sourcing by department and supplier. Same case feed as the
+        # buyer's, different page.
+        return templates.TemplateResponse(request, "buyer/dashboard_admin.html", {
+            "user": user, "nav_page": "dashboard", "data": dashboard_data.buyer_dashboard(),
+            "scope": "head", "my_commodities": [],
+        })
+
+    # now_hour drives the greeting. /home passes it too; the dashboard needs
+    # its own copy or the template raises on an undefined comparison.
+    context = {"user": user, "nav_page": "dashboard", "now_hour": datetime.now().hour}
+    # The TAT rule is stated on the page rather than hard-coded into the
+    # template, so changing a band in config.py can't leave the dashboard
+    # quoting a threshold the app no longer applies.
+    context.update({
+        "data": dashboard_data.buyer_dashboard(),
+        "tat_small": config.TAT_SMALL_DAYS,
+        "tat_medium": f"{config.TAT_MEDIUM_DAYS} working days",
+        "tat_small_label": f"₹{config.TAT_BAND_SMALL_MAX / 100000:.2f}".rstrip("0").rstrip(".") + " lakh",
+    })
+    return templates.TemplateResponse(request, "buyer/dashboard.html", context)
 
 
-from routers import auth_routes, requester_routes, buyer_routes, attachments_routes, mailbox_routes  # noqa: E402
+@app.post("/dashboard/export.xlsx")
+async def dashboard_export(request: Request, user=Depends(require_login)):
+    """The dashboard as a workbook: the list, the summary, and every chart on
+    screen as data plus a native Excel chart plus the picture. The browser
+    already holds all of it, so it sends it rather than the server
+    recomputing a view it cannot see."""
+    if user["role"] != "buyer":
+        raise HTTPException(status_code=403, detail="Buyer (GP) access only.")
+    import dashboard_export
+    from fastapi.responses import Response
+    payload = await request.json()
+    name = re.sub(r"[^A-Za-z0-9._-]", "-", str(payload.get("filename") or "dashboard.xlsx"))
+    if not name.endswith(".xlsx"):
+        name += ".xlsx"
+    body = dashboard_export.build(payload)
+    return Response(body, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"'})
+
+
+from routers import (auth_routes, requester_routes, buyer_routes, attachments_routes,  # noqa: E402
+                     mailbox_routes, supplier_routes, agents_routes)
 
 app.include_router(auth_routes.router)
 app.include_router(requester_routes.router)
 app.include_router(buyer_routes.router)
 app.include_router(attachments_routes.router)
 app.include_router(mailbox_routes.router)
+app.include_router(supplier_routes.router)
+app.include_router(agents_routes.router)

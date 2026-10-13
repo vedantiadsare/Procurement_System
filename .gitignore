@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+sourceflow/sourceflow.db.backup-*
+sourceflow/sourceflow.db.bak-*
+sourceflow/sourceflow.db.before-*
+sourceflow/drafts_staging/
+sourceflow/mailbox_token_cache.bin
+.env
+sourceflow/public_url.txt
+*.zip

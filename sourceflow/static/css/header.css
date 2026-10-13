@@ -2,12 +2,24 @@
    search, notifications/help/user) and a thin light subnav strip below it -
    no hero banner, no greeting. */
 
+/* The bar carries a hint of the brand teal at its right edge rather than
+   being flat near-black - it is the first thing on every page and was the
+   one surface with no relationship to the rest of the palette. */
 .sf-shell-header {
-    background: var(--sf-shell-bg);
+    background: linear-gradient(100deg, var(--sf-shell-bg) 0%, #003A44 62%, #004C50 100%);
     height: var(--sf-shell-header-h);
     display: flex;
     align-items: center;
     padding: 0 20px;
+    position: relative;
+    z-index: 30;
+}
+.sf-shell-header::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--sf-teal) 0%, rgba(0, 140, 130, 0) 70%);
 }
 
 .sf-shell-header__row {
@@ -128,10 +140,13 @@ form.sf-logout-form {
 .sf-shell-subnav {
     background: var(--sf-surface);
     border-bottom: 1px solid var(--sf-border);
+    box-shadow: var(--sf-shadow-sm);
     height: var(--sf-shell-nav-h);
     display: flex;
     align-items: center;
     padding: 0 20px;
+    position: relative;
+    z-index: 20;
 }
 .sf-shell-subnav__row {
     width: 100%;
@@ -149,14 +164,16 @@ form.sf-logout-form {
     font-weight: 600;
     color: var(--sf-text-muted);
     border-bottom: 2px solid transparent;
+    transition: color .12s ease, border-color .12s ease;
 }
 .sf-shell-subnav__link:hover {
     color: var(--sf-text);
+    border-bottom-color: var(--sf-border-strong);
     text-decoration: none;
 }
 .sf-shell-subnav__link.active {
-    color: var(--sf-text);
-    border-bottom-color: var(--sf-accent);
+    color: var(--sf-teal-deep);
+    border-bottom-color: var(--sf-teal);
 }
 
 /* Notifications dropdown */

@@ -29,6 +29,7 @@ def get_current_user(request: Request):
         "name": user_row["name"],
         "email": user_row["email"],
         "role": security.role_for_email(user_row["email"]),
+        "is_admin": security.is_admin(user_row["email"]),
     }
 
 

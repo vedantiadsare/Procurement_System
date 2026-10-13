@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% import "_macros/icons.html" as ic %}
+{% block title %}Supplier enquiries · Samagra{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">Supplier enquiries</h1>
+            </div>
+            <div class="sf-hero-actions">
+                <a href="/supplier-rfq/new" class="sf-hero-btn sf-hero-btn--solid">Float a new enquiry</a>
+            </div>
+        </div>
+        <p class="sf-hero-meta">
+            {% if stats.open %}{{ stats.open }} open enquir{{ "y" if stats.open == 1 else "ies" }} · {{ stats.awaiting }} supplier{{ "s" if stats.awaiting != 1 }} still to answer
+            {% elif rounds %}Nothing open right now — {{ stats.closed }} closed enquir{{ "y" if stats.closed == 1 else "ies" }} on record
+            {% else %}Send your RFQ to bidders and collect their quotations back in one place{% endif %}
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if flash %}<div class="sf-alert sf-alert--info">{{ flash }}</div>{% endif %}
+
+{% if not rounds %}
+<div class="sf-rfq-empty">
+    <div class="sf-card sf-rfq-empty__card">
+        <h2>No enquiries yet</h2>
+        <p>Floating an enquiry mails your RFQ and supporting documents to a list of suppliers, and gives each one a private page to send their quotation back through. As the quotations land, they are read and put side by side for you.</p>
+        <a href="/supplier-rfq/new" class="sf-btn sf-btn--primary">Float a new enquiry</a>
+    </div>
+    {% include "buyer/_rfq_howto.html" %}
+</div>
+{% else %}
+
+<div class="sf-kpi-row sf-rfq-kpis">
+    <div class="sf-kpi sf-rfq-kpi sf-rfq-kpi--open"><div class="sf-kpi__value">{{ stats.open }}</div><div class="sf-kpi__label">Open enquiries</div></div>
+    <div class="sf-kpi sf-rfq-kpi sf-rfq-kpi--wait"><div class="sf-kpi__value">{{ stats.awaiting }}</div><div class="sf-kpi__label">Suppliers still to answer</div></div>
+    <div class="sf-kpi sf-rfq-kpi sf-rfq-kpi--quoted"><div class="sf-kpi__value">{{ stats.quoted }}</div><div class="sf-kpi__label">Quotations received</div></div>
+    <div class="sf-kpi sf-rfq-kpi sf-rfq-kpi--closed"><div class="sf-kpi__value">{{ stats.closed }}</div><div class="sf-kpi__label">Closed enquiries</div></div>
+</div>
+
+<div class="sf-list-tabs" data-list-tabs>
+    <a href="#" class="sf-list-tabs__item active" data-tab-filter="all">All <span class="sf-list-tabs__count">{{ rounds | length }}</span></a>
+    <a href="#" class="sf-list-tabs__item" data-tab-filter="open">Open <span class="sf-list-tabs__count">{{ stats.open }}</span></a>
+    <a href="#" class="sf-list-tabs__item" data-tab-filter="closed">Closed <span class="sf-list-tabs__count">{{ stats.closed }}</span></a>
+</div>
+
+<div class="sf-rfq-layout">
+<div class="sf-rfq-cards">
+    {% for r in rounds %}
+    <div class="sf-card sf-rfq-card sf-rfq-card--{{ r.tone }}" data-category="{{ 'open' if r.is_open else 'closed' }}" data-href="/supplier-rfq/{{ r.id }}" tabindex="0">
+        <div class="sf-rfq-card__top">
+            <span class="sf-rfq-card__ref">{{ r.reference }}</span>
+            {% if r.is_open %}
+            <span class="sf-list-chip" style="background:#E5F5EA;color:#15803D;border:1px solid #BEE3C8;">Open</span>
+            {% else %}
+            <span class="sf-list-chip" style="background:#EEF0F3;color:#42474F;border:1px solid #DBDEE3;">Closed</span>
+            {% endif %}
+        </div>
+        <h3 class="sf-rfq-card__title">{{ r.subject }}</h3>
+        <p class="sf-rfq-card__meta">
+            Sent {{ r.created_at | date }}{% if r.case %} · for <a href="/requests/{{ r.case.id }}">{{ r.case.ticket_no }}</a>{% endif %}
+        </p>
+
+        {# Who has answered, as one bar: quoted, declined, still silent. #}
+        <div class="sf-rfq-progress" title="{{ r.quoted }} quoted · {{ r.declined }} declined · {{ r.awaiting }} awaiting">
+            {% if r.invited %}
+            {% if r.quoted %}<i class="is-quoted" style="width:{{ r.quoted * 100 / r.invited }}%"></i>{% endif %}
+            {% if r.declined %}<i class="is-declined" style="width:{{ r.declined * 100 / r.invited }}%"></i>{% endif %}
+            {% if r.awaiting %}<i class="is-awaiting" style="width:{{ r.awaiting * 100 / r.invited }}%"></i>{% endif %}
+            {% endif %}
+        </div>
+        <div class="sf-rfq-card__counts">
+            <span><b>{{ r.quoted }}</b> quoted</span>
+            <span><b>{{ r.declined }}</b> declined</span>
+            <span><b>{{ r.awaiting }}</b> awaiting</span>
+            <span class="sf-rfq-card__invited">of {{ r.invited }} invited</span>
+        </div>
+
+        <div class="sf-rfq-card__foot">
+            <span class="sf-rfq-card__deadline">
+                {{ ic.icon("clock", 14) }}
+                {% if not r.is_open %}Closed {{ (r.closed_at or r.closes_at) | date }}
+                {% elif r.days_left is not none and r.days_left < 0 %}Deadline passed {{ r.closes_at | date }}
+                {% elif r.days_left == 0 %}Closes <b>today</b>
+                {% elif r.days_left == 1 %}Closes <b>tomorrow</b> · {{ r.closes_at | date }}
+                {% else %}<b>{{ r.days_left }} days</b> left · closes {{ r.closes_at | date }}{% endif %}
+            </span>
+            <span class="sf-rfq-card__actions">
+                {% if r.responded %}<a href="/supplier-rfq/{{ r.id }}#compare" class="sf-btn sf-btn--secondary sf-btn--sm">Compare quotes</a>{% endif %}
+                <a href="/supplier-rfq/{{ r.id }}" class="sf-btn sf-btn--primary sf-btn--sm">Open</a>
+            </span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<aside class="sf-rfq-rail">
+    {% include "buyer/_rfq_howto.html" %}
+</aside>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    var tabs = document.querySelectorAll("[data-tab-filter]");
+    var cards = document.querySelectorAll(".sf-rfq-card[data-category]");
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function (e) {
+            e.preventDefault();
+            tabs.forEach(function (t) { t.classList.remove("active"); });
+            tab.classList.add("active");
+            var filter = tab.getAttribute("data-tab-filter");
+            cards.forEach(function (c) {
+                c.style.display = (filter === "all" || c.getAttribute("data-category") === filter) ? "" : "none";
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}

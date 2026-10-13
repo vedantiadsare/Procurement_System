@@ -46,7 +46,11 @@
                     <div class="sf-home-tilecol">
                         <a class="sf-home-tile" href="/queue?status=APPROVED">
                             <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"></path><path d="m8 12 3 3 5-6"></path></svg>
-                            <span class="sf-home-tile__title">Completed</span>
+                            {# Says exactly what it counts: approvals that reached a PO
+                               this month. The tabs next door say "Closed", which also
+                               includes cases stopped without one - two different numbers
+                               that both used to be called "Completed". #}
+                            <span class="sf-home-tile__title">PO released</span>
                             <span class="sf-home-tile__sub">{{ completed_this_month }} this month</span>
                         </a>
                     </div>
@@ -67,13 +71,23 @@
 {% else %}
 <div class="sf-home-attn__row">
     {% for c in needs_you %}
-    <div class="sf-card sf-home-attn-card">
-        <div class="sf-home-attn-card__when">{{ c.submitted_at | date }}</div>
-        {{ c.status | status_chip }}
-        <h3>{{ c.ticket_no }} — {{ c.topic_title }}</h3>
-        <p>{{ c.remarks_for_user or ("Requested by " ~ c.requestor_name) }}</p>
-        <div class="sf-home-attn-card__caution {{ 'is-optional' if 'overdue' not in c.days_text }}" style="{{ '' if 'overdue' in c.days_text else 'color:var(--sf-text-muted);background:var(--sf-surface-alt);border-color:var(--sf-border);' }}">{{ c.days_text }}</div>
-        <div class="sf-home-attn-card__actions"><a href="/queue/{{ c.id }}" class="sf-btn sf-btn--primary">Open case</a></div>
+    {% set late = "overdue" in c.days_text %}
+    <div class="sf-card sf-home-attn-card sf-home-attn-card--{{ 'urgent' if late else ('waiting' if c.status == 'ENQUIRED' else 'calm') }}"
+         data-href="/queue/{{ c.id }}" tabindex="0">
+        <div class="sf-home-attn-card__top">
+            <span class="sf-home-attn-card__ref">{{ c.ticket_no }}</span>
+            {{ c.status | status_chip }}
+        </div>
+        <h3>{{ c.topic_title }}</h3>
+        {# The Advisor's next action, with its first reason. The clock stays
+           as the small line under it - context, not the instruction. #}
+        <p class="sf-home-attn-card__action">{{ c.advice.action }}</p>
+        {% if c.advice.because %}<p class="sf-home-attn-card__why">{{ c.advice.because[0] }}</p>{% endif %}
+        <div class="sf-home-attn-card__caution{{ ' is-optional' if not late }}" style="{{ 'color:var(--sf-danger);background:var(--sf-danger-bg);border-color:#F2C4C0;' if late else 'color:var(--sf-text-muted);background:var(--sf-surface-alt);border-color:var(--sf-border);' }}">{{ c.days_text }}</div>
+        <div class="sf-home-attn-card__foot">
+            <span class="sf-home-attn-card__when">Submitted {{ c.submitted_at | date }}</span>
+            <a href="/queue/{{ c.id }}" class="sf-btn sf-btn--primary sf-btn--sm">Open case</a>
+        </div>
     </div>
     {% endfor %}
 </div>

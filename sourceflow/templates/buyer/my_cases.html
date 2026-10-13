@@ -19,11 +19,14 @@
 
 {% block content %}
 
+{# Land on Completed when there is nothing open - otherwise a buyer who has
+   finished everything opens this page to an empty table. #}
+{% set initial_tab = "completed" if open_count == 0 and counts.completed > 0 else "all" %}
 <div class="sf-list-tabs" data-list-tabs>
-    <a href="#" class="sf-list-tabs__item active" data-tab-filter="all">Open <span class="sf-list-tabs__count">{{ open_count }}</span></a>
+    <a href="#" class="sf-list-tabs__item {{ 'active' if initial_tab == 'all' }}" data-tab-filter="all">Open <span class="sf-list-tabs__count">{{ open_count }}</span></a>
     <a href="#" class="sf-list-tabs__item" data-tab-filter="decision">Needs my decision <span class="sf-list-tabs__count">{{ counts.decision }}</span></a>
     <a href="#" class="sf-list-tabs__item" data-tab-filter="waiting">Waiting on requester <span class="sf-list-tabs__count">{{ counts.waiting }}</span></a>
-    <a href="#" class="sf-list-tabs__item" data-tab-filter="completed">Completed <span class="sf-list-tabs__count">{{ counts.completed }}</span></a>
+    <a href="#" class="sf-list-tabs__item {{ 'active' if initial_tab == 'completed' }}" data-tab-filter="completed">Closed <span class="sf-list-tabs__count">{{ counts.completed }}</span></a>
 </div>
 
 <form method="get" action="/queue/mine" class="sf-filters" style="margin:16px 0;">
@@ -41,18 +44,14 @@
     <thead><tr><th>Topic</th><th>Requester</th><th>Value</th><th>Status</th><th>Clock</th><th></th></tr></thead>
     <tbody>
     {% for c in cases %}
-    <tr data-category="{{ c.category }}">
-        <td><div class="sf-list-topic">{{ c.topic_title }}</div><div class="sf-list-topic__sub">{{ c.ticket_no }} · {{ c.sc_number }}</div></td>
+    <tr data-category="{{ c.category }}" data-href="/queue/{{ c.id }}" tabindex="0">
+        <td><div class="sf-list-topic">{{ c.topic_title }}</div><div class="sf-list-topic__sub">{{ c.ticket_no }} · {{ "Frame contract" if c.sourcing_basis == "Frame contract" else c.sc_number }}</div></td>
         <td><div class="sf-list-req">{{ c.requestor_name }}</div><span class="sf-list-req__sub">{{ c.requesting_dept }}</span></td>
-        <td>{{ c.topic_value_inr | inr }}</td>
+        <td>{{ c | money }}</td>
         <td>{{ c.status | status_chip }}</td>
         <td>
-            {% if c.defined_tat %}
-            <span class="sf-list-clock__main {{ 'sf-list-clock__main--danger' if 'overdue' in c.days_text else 'sf-list-clock__main--ok' }}">{{ c.days_text }}</span>
-            {% if c.expected_po_closure %}<span class="sf-list-clock__sub">due {{ c.expected_po_closure | date }}</span>{% endif %}
-            {% else %}
-            <span class="sf-list-clock__main sf-list-clock__main--muted">Not started</span>
-            {% endif %}
+            <span class="sf-list-clock__main sf-list-clock__main--{{ c.clock_tone }}">{{ c.days_text }}</span>
+            {% if c.clock_sub %}<span class="sf-list-clock__sub">{{ c.clock_sub }}</span>{% endif %}
         </td>
         <td><a href="/queue/{{ c.id }}" class="sf-btn sf-btn--secondary sf-btn--sm">Open</a></td>
     </tr>
@@ -68,19 +67,29 @@
 (function () {
     var tabs = document.querySelectorAll("[data-tab-filter]");
     var rows = document.querySelectorAll("tbody tr[data-category]");
+
+    function apply(filter) {
+        rows.forEach(function (row) {
+            var cat = row.getAttribute("data-category");
+            var show = filter === "all" ? cat !== "completed" : cat === filter;
+            row.style.display = show ? "" : "none";
+        });
+    }
+
     tabs.forEach(function (tab) {
         tab.addEventListener("click", function (e) {
             e.preventDefault();
             tabs.forEach(function (t) { t.classList.remove("active"); });
             tab.classList.add("active");
-            var filter = tab.getAttribute("data-tab-filter");
-            rows.forEach(function (row) {
-                var cat = row.getAttribute("data-category");
-                var show = filter === "all" ? cat !== "completed" : cat === filter;
-                row.style.display = show ? "" : "none";
-            });
+            apply(tab.getAttribute("data-tab-filter"));
         });
     });
+
+    // The Open tab starts active, so its filter has to be applied on load -
+    // without this the page opened showing every row, completed cases
+    // included, under a tab whose own count excluded them.
+    var start = document.querySelector("[data-tab-filter].active");
+    apply(start ? start.getAttribute("data-tab-filter") : "all");
 })();
 </script>
 {% endblock %}

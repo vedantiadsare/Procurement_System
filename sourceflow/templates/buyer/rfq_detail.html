@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% block title %}{{ round.reference }} · Samagra{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb"><a href="/supplier-rfq">Supplier enquiries</a> / {{ round.reference }}</div>
+        <div class="sf-hero-row">
+            <div class="sf-hero-title-group">
+                <h1 class="sf-hero-title">{{ round.subject }}</h1>
+                <span class="sf-status-onteal">{{ "Open" if is_open else "Closed" }}</span>
+            </div>
+        </div>
+        <p class="sf-hero-meta">
+            {{ round.reference }} · sent {{ round.created_at | date }} by {{ round.created_by }}
+            {%- if case %} · for <a href="/queue/{{ case.id }}" style="color:#fff;text-decoration:underline;">{{ case.ticket_no }}</a>{% endif %}
+            · responses by {{ round.closes_at | date }}
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if flash %}<div class="sf-alert sf-alert--info">{{ flash }}</div>{% endif %}
+{% if not llm_configured %}
+<div class="sf-alert sf-alert--info">The quotation checks (missing fields, match against the enquiry) need the AI model, which isn't configured or isn't running. You can still email any supplier below.</div>
+{% endif %}
+
+<div class="sf-kpi-row">
+    <div class="sf-kpi"><div class="sf-kpi__value">{{ invitations | length }}</div><div class="sf-kpi__label">Invited</div></div>
+    <div class="sf-kpi"><div class="sf-kpi__value">{{ opened }}</div><div class="sf-kpi__label">Opened the link</div></div>
+    <div class="sf-kpi"><div class="sf-kpi__value">{{ responded }}</div><div class="sf-kpi__label">Responded</div></div>
+    <div class="sf-kpi"><div class="sf-kpi__value">{{ declined }}</div><div class="sf-kpi__label">Declined</div></div>
+</div>
+
+{% if round.message %}
+<div class="sf-card">
+    <h2 class="sf-section-header" style="margin-top:0;">What was sent</h2>
+    <p style="white-space:pre-line;margin:0 0 12px;">{{ round.message }}</p>
+    {% if documents %}
+    <ul style="margin:0;padding-left:18px;font-size:0.84rem;">
+        {% for d in documents %}<li>{{ d.filename }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="sf-card">
+    <h2 class="sf-section-header" style="margin-top:0;">Deadline</h2>
+    {% if is_open %}
+    <p class="sf-caption" style="margin:0 0 12px;">
+        Supplier links accept responses until the end of <strong>{{ round.closes_at | date }}</strong>.
+    </p>
+    {% else %}
+    <p class="sf-caption" style="margin:0 0 12px;">
+        This round is closed — the links no longer accept responses. Setting a new
+        date below re-opens every supplier's page and mails them the new deadline.
+    </p>
+    {% endif %}
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;">
+        <form method="post" action="/supplier-rfq/{{ round.id }}/extend" style="display:flex;gap:8px;align-items:flex-end;">
+            <div class="sf-field" style="margin:0;">
+                <label for="closes_on">{{ "Extend to" if is_open else "Re-open until" }}</label>
+                <input type="date" id="closes_on" name="closes_on" min="{{ today }}" required>
+            </div>
+            <button type="submit" class="sf-btn sf-btn--primary">
+                {{ "Extend and notify" if is_open else "Re-open and notify" }}
+            </button>
+        </form>
+        {% if is_open %}
+        <form method="post" action="/supplier-rfq/{{ round.id }}/close">
+            <button type="submit" class="sf-btn sf-btn--secondary">Close now</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if responded %}
+<div class="sf-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+        <div>
+            <h2 class="sf-section-header" style="margin:0 0 4px;">Quotation comparison</h2>
+            {% if round.offer_analysis_at %}
+            <p class="sf-caption" style="margin:0;">
+                Last compared {{ round.offer_analysis_at | timestamp }} ·
+                totals read by the model, normalised and ranked in code
+            </p>
+            {% else %}
+            <p class="sf-caption" style="margin:0;">
+                {{ responded }} response(s) in — not compared yet.
+            </p>
+            {% endif %}
+        </div>
+        <form method="post" action="/agents/offer/run">
+            <input type="hidden" name="round_id" value="{{ round.id }}">
+            <input type="hidden" name="back" value="/supplier-rfq/{{ round.id }}">
+            <button type="submit" class="sf-btn sf-btn--secondary sf-btn--sm">
+                {{ "Re-run comparison" if round.offer_analysis else "Compare now" }}
+            </button>
+        </form>
+    </div>
+    {% if round.offer_analysis %}
+    <pre style="white-space:pre-wrap;font-family:inherit;font-size:0.84rem;margin:12px 0 0;line-height:1.5;">{{ round.offer_analysis }}</pre>
+    {% endif %}
+</div>
+{% endif %}
+
+<h2 class="sf-section-header">Suppliers</h2>
+<div class="sf-sups">
+{% for i in invitations %}
+{% set state = "quoted" if i.decision == "ACCEPTED" else "declined" if i.decision == "DECLINED" else "pending" %}
+<div class="sf-card sf-sup sf-sup--{{ state }}">
+
+    {# Who, where they stand, and the mail trail - one line. #}
+    <div class="sf-sup__head">
+        <div class="sf-sup__who">
+            <b>{{ i.supplier_name or i.supplier_email }}</b>
+            {% if i.supplier_name %}<span>{{ i.supplier_email }}</span>{% endif %}
+        </div>
+        <div class="sf-sup__state">
+            {% if state == "quoted" %}
+            <span class="sf-list-chip" style="background:#E5F5EA;color:#15803D;border:1px solid #BEE3C8;">Quoted</span>
+            {% elif state == "declined" %}
+            <span class="sf-list-chip" style="background:#FCF5D8;color:#8A6D0B;border:1px solid #EEDD9F;">Declined</span>
+            {% else %}
+            <span class="sf-list-chip" style="background:#EEF0F3;color:#42474F;border:1px solid #DBDEE3;">No response yet</span>
+            {% endif %}
+            {% if i.responded_at %}<span class="sf-sup__when">{{ i.responded_at | timestamp }}</span>{% endif %}
+        </div>
+        <div class="sf-sup__mail">
+            {% if i.send_error %}
+            {# Named rather than hidden: a bidder who never got the mail looks
+               exactly like one who is ignoring you, and they need different
+               chasing. #}
+            <span class="sf-sup__dot is-bad"></span>Not delivered <small title="{{ i.send_error }}">— {{ i.send_error | truncate(60) }}</small>
+            {% elif i.sent_at %}
+            <span class="sf-sup__dot is-ok"></span>Sent {{ i.sent_at | timestamp }}
+            {% else %}
+            <span class="sf-sup__dot"></span>Not sent
+            {% endif %}
+            <span class="sf-sup__sep">·</span>
+            {% if i.first_opened_at %}Opened {{ i.first_opened_at | timestamp }}{% else %}Not opened yet{% endif %}
+            {# The link is shown as well as mailed. Mail fails for reasons
+               nobody in procurement controls, and when it does the round
+               should not be dead: copy it and send it however you can. #}
+            <button type="button" class="sf-btn sf-btn--ghost sf-btn--sm sf-copy" data-copy="{{ i.link }}" title="{{ i.link }}">Copy link</button>
+        </div>
+    </div>
+
+    {% if i.response_text or i.check or i.versions %}
+    <div class="sf-sup__body">
+        <div class="sf-sup__quote">
+            {% if i.response_text %}<p class="sf-sup__text">{{ i.response_text }}</p>{% endif %}
+            {% if i.check %}
+            {# The Offer agent's verdict on the latest submission: which fields
+               it states, and whether it answers the enquiry. Fields are decided
+               in code from what the model could verify in the document; the
+               enquiry match is the one thing the model is asked outright. #}
+            <div class="sf-qcheck">
+                {% if i.check.unreadable %}
+                <span class="sf-muted">Couldn't read this quotation to check it.</span>
+                {% else %}
+                <div class="sf-qcheck__chips">
+                    {% if i.check.complete %}
+                    <span class="sf-list-chip" style="background:#E5F5EA;color:#15803D;border:1px solid #BEE3C8;">All fields stated</span>
+                    {% else %}
+                    <span class="sf-list-chip" style="background:#FBEAEA;color:#B42318;border:1px solid #F2C4C0;">Missing: {{ i.check.missing_fields | join(", ") }}</span>
+                    {% endif %}
+                    {% if i.check.covers is true %}
+                    <span class="sf-list-chip" style="background:#E5F5EA;color:#15803D;border:1px solid #BEE3C8;">Matches the enquiry</span>
+                    {% elif i.check.covers is false %}
+                    <span class="sf-list-chip" style="background:#FCF5D8;color:#8A6D0B;border:1px solid #EEDD9F;">Gaps against the enquiry</span>
+                    {% else %}
+                    <span class="sf-list-chip" style="background:#EEF0F3;color:#42474F;border:1px solid #DBDEE3;">Enquiry match not checked</span>
+                    {% endif %}
+                    <span class="sf-sup__checked">Checked {{ i.check.checked_at | timestamp }}</span>
+                </div>
+                {% if i.check.discrepancies %}
+                <ul class="sf-qcheck__gaps">
+                    {% for d in i.check.discrepancies %}<li>{{ d }}</li>{% endfor %}
+                </ul>
+                {% endif %}
+                {% endif %}
+            </div>
+            {% endif %}
+            {% if i.clarified_at and i.clarified_at >= (i.responded_at or "") %}
+            <div class="sf-sup__asked">Asked for {{ i.clarified_about }} on {{ i.clarified_at | date }} — awaiting reply</div>
+            {% endif %}
+        </div>
+
+        <div class="sf-sup__files">
+            {% if i.versions %}
+            <div class="sf-sup__files-title">{{ "Quotation" if i.versions | length == 1 else "Quotation · " ~ (i.versions | length) ~ " versions" }}</div>
+            {# Newest first. The latest is what the comparison reads and sits
+               in teal; earlier ones stay for the record, greyed. #}
+            {% for v in i.versions | reverse %}
+            <div class="sf-rfq-ver {{ 'is-current' if v.current else 'is-old' }}">
+                <div class="sf-rfq-ver__head"><span class="sf-rfq-ver__tag">v{{ v.version }}</span><span class="sf-rfq-ver__at">{{ v.at | timestamp }}</span></div>
+                {% for f in v.files %}
+                <a class="sf-rfq-ver__file" href="/supplier-rfq/{{ round.id }}/file/{{ f.id }}">{{ f.filename }}</a>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="sf-sup__files-title">Quotation</div>
+            <span class="sf-muted">No files yet</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="sf-sup__foot">
+        {% if i.clarification_draft and i.clarification_drafted_at >= (i.responded_at or "") and not (i.clarified_at and i.clarified_at >= (i.responded_at or "")) %}
+        {# The Offer agent found something the quotation leaves out and wrote
+           the question. It stops here: a person reads it, edits if they
+           like, and sends. The system never mails a supplier on its own. #}
+        <details class="sf-clarify">
+            <summary class="is-warn">A question about {{ i.clarified_about }} is drafted for you — review and send</summary>
+            <form method="post" action="/supplier-rfq/{{ round.id }}/clarify/{{ i.id }}">
+                <textarea name="body" rows="9">{{ i.clarification_draft }}</textarea>
+                <div class="sf-clarify__send">
+                    <button type="submit" class="sf-btn sf-btn--primary sf-btn--sm">Send as {{ user.name.split(" ")[0] }}</button>
+                    <span class="sf-caption">Drafted {{ i.clarification_drafted_at | timestamp }} · goes from the procurement mailbox, replies come to you</span>
+                </div>
+            </form>
+        </details>
+        {% endif %}
+        {# A message to this one supplier, whatever the reason and whatever
+           state they're in - not yet quoted, quoted, already asked once.
+           Opens pre-filled when the check above found something to ask
+           for; otherwise blank. Sent by a person, with their name on it. #}
+        <details class="sf-clarify sf-clarify--any" {{ "open" if i.suggested_email }}>
+            <summary>{% if i.suggested_email %}Ask {{ i.supplier_name or i.supplier_email }} for what's missing — draft ready{% else %}Email {{ i.supplier_name or i.supplier_email }}{% endif %}</summary>
+            <form method="post" action="/supplier-rfq/{{ round.id }}/clarify/{{ i.id }}">
+                <input type="hidden" name="about" value="{{ (i.check.missing_fields | join(', ')) if i.suggested_email and i.check and i.check.missing_fields else ('the enquiry match' if i.suggested_email else 'a question') }}">
+                <textarea name="body" rows="{{ 9 if i.suggested_email else 5 }}" placeholder="Write your message to {{ i.supplier_name or 'this supplier' }}…">{{ i.suggested_email }}</textarea>
+                <div class="sf-clarify__send">
+                    <button type="submit" class="sf-btn {{ 'sf-btn--primary' if i.suggested_email else 'sf-btn--secondary' }} sf-btn--sm">Send as {{ user.name.split(" ")[0] }}</button>
+                    <span class="sf-caption">Only to {{ i.supplier_email }} · from the procurement mailbox, replies come to you</span>
+                </div>
+            </form>
+        </details>
+    </div>
+</div>
+{% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    document.addEventListener("click", function (e) {
+        var btn = e.target.closest(".sf-copy");
+        if (!btn) return;
+        var link = btn.getAttribute("data-copy");
+        var done = function () {
+            var was = btn.textContent;
+            btn.textContent = "Copied";
+            setTimeout(function () { btn.textContent = was; }, 1400);
+        };
+        // navigator.clipboard needs a secure context, which http://localhost
+        // counts as but a plain-http LAN address does not - hence the
+        // execCommand fallback, so this still works off a demo machine.
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(link).then(done, function () {});
+            return;
+        }
+        var box = document.createElement("textarea");
+        box.value = link;
+        box.style.position = "fixed";
+        box.style.opacity = "0";
+        document.body.appendChild(box);
+        box.select();
+        try { document.execCommand("copy"); done(); } catch (err) { /* nothing to do */ }
+        document.body.removeChild(box);
+    });
+}());
+</script>
+{% endblock %}

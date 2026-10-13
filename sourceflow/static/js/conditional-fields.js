@@ -22,11 +22,13 @@
     function apply() {
         watchers.forEach(function (el) {
             var rule = el.getAttribute("data-show-if");
-            var eqIdx = rule.indexOf("=");
+            var negate = rule.indexOf("!=") !== -1;
+            var eqIdx = rule.indexOf(negate ? "!=" : "=");
             var fieldName = rule.slice(0, eqIdx);
-            var accepted = rule.slice(eqIdx + 1).split(",");
+            var accepted = rule.slice(eqIdx + (negate ? 2 : 1)).split(",");
             var value = currentValue(fieldName);
-            el.classList.toggle("is-visible", accepted.indexOf(value) !== -1);
+            var hit = accepted.indexOf(value) !== -1;
+            el.classList.toggle("is-visible", negate ? !hit : hit);
         });
     }
 

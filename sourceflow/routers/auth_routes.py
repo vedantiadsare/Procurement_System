@@ -20,6 +20,12 @@ from templating import templates
 
 router = APIRouter()
 
+
+def _demo_logins() -> dict:
+    from config import DEMO_LOGINS, DEMO_LOGINS_ENABLED, DEMO_LOGIN_PASSWORD
+    return {"demo_logins": DEMO_LOGINS if DEMO_LOGINS_ENABLED else [],
+            "demo_password": DEMO_LOGIN_PASSWORD if DEMO_LOGINS_ENABLED else ""}
+
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 RESET_TOKEN_TTL_MINUTES = 30
 
@@ -50,7 +56,7 @@ async def login_page(request: Request, sf_remember: str | None = Cookie(default=
         user = _try_remembered_device(request, sf_remember)
     if user is not None:
         return RedirectResponse(url=_landing_url(user["role"]), status_code=303)
-    return templates.TemplateResponse(request, "auth/login.html", {"user": None, "errors": []})
+    return templates.TemplateResponse(request, "auth/login.html", {"user": None, "errors": [], **_demo_logins()})
 
 
 @router.post("/login", response_class=HTMLResponse)
@@ -83,7 +89,7 @@ async def login_submit(
         return templates.TemplateResponse(
             request,
             "auth/login.html",
-            {"user": None, "errors": errors, "email": email},
+            {"user": None, "errors": errors, "email": email, **_demo_logins()},
             status_code=400,
         )
 

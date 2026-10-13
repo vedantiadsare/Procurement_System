@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Purchase Dashboard · Samagra{% endblock %}
+{% block body_class %}sf-ad-body{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ asset_url('/static/css/dashboard-admin.css') }}">
+{% endblock %}
+
+{# The procurement head's dashboard. One filter rail at the top narrows
+   everything; five tabs below it each answer one question - the whole
+   portfolio, departments, the people, the suppliers, the clock - with their
+   own charts and their own filterable list. Every figure comes from the
+   case list in #dashData, sliced in the browser; nothing is invented. #}
+{% block content %}
+<div class="sf-ad" data-palette="#3987e5,#d95926,#199e70,#c98500,#d55181,#9085e9">
+
+  <div class="ad-head">
+    <div>
+      <p class="ad-eyebrow">Procurement performance</p>
+      <h1>Purchase Dashboard</h1>
+      <p class="ad-sub">Turnaround, workload, single sourcing and case progress across General Procurement.</p>
+    </div>
+    <div class="ad-head__actions">
+      <span class="ad-asof" id="adAsOf"></span>
+      <button type="button" class="ad-btn" id="adExport">Download Excel</button>
+    </div>
+  </div>
+
+  <div class="ad-rail" id="adRail">
+    <label><span>Department</span><select data-f="dept"></select></label>
+    <label><span>Requester</span><select data-f="requester"></select></label>
+    <label><span>Buyer</span><select data-f="buyer"></select></label>
+    <label><span>Commodity</span><select data-f="comm"></select></label>
+    <label><span>Supplier</span><select data-f="supplier"></select></label>
+    <label class="ad-rail__toggle"><input type="checkbox" id="adOnlySingle"><span>Single sourcing only</span></label>
+    <button type="button" class="ad-btn ad-btn--ghost" id="adReset">Reset</button>
+    <span class="ad-rail__count" id="adRailCount"></span>
+  </div>
+
+  <nav class="ad-tabs" id="adTabs" role="tablist">
+    <button type="button" role="tab" data-t="overview" class="on">Overview</button>
+    <button type="button" role="tab" data-t="dept">Departments</button>
+    <button type="button" role="tab" data-t="people">Buyers &amp; requesters</button>
+    <button type="button" role="tab" data-t="suppliers">Suppliers &amp; single sourcing</button>
+    <button type="button" role="tab" data-t="tat">TAT &amp; timeline</button>
+  </nav>
+
+  {# ---------------------------------------------------------------- #}
+  <section class="ad-page on" id="t-overview">
+    <div class="ad-hero" id="ovHero"></div>
+    <div class="ad-tiles" id="ovTiles"></div>
+    <div class="ad-insights" id="ovInsights" hidden></div>
+    <div class="ad-grid ad-grid--21">
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2>Raised and closed</h2><p>Cases per week, last 12 weeks</p></div><span class="ad-note" id="ovFlowNote"></span></div>
+        <div class="ad-cv ad-cv--lg"><canvas id="ovFlow"></canvas></div>
+      </div>
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2>TAT health</h2><p>Open cases against their committed date</p></div></div>
+        <div class="ad-tat"><div class="ad-tat__donut"><canvas id="ovDonut"></canvas></div><ul class="ad-legend" id="ovLegend"></ul></div>
+      </div>
+    </div>
+    <div class="ad-grid ad-grid--12">
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2>Open value</h2><p>By commodity, ₹ lakh — top six and the rest</p></div></div>
+        <div class="ad-cv"><canvas id="ovPolar"></canvas></div>
+      </div>
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2 id="ovWorkTitle">Department workload</h2><p>Open cases; the red part is overdue</p></div>
+          <div class="ad-seg" data-seg="ovPivot"><button type="button" data-k="dept" class="on">Department</button><button type="button" data-k="buyer">Buyer</button><button type="button" data-k="requester">Requester</button><button type="button" data-k="comm">Commodity</button></div></div>
+        <div class="ad-bars" id="ovBars"></div>
+      </div>
+    </div>
+    <div class="ad-card ad-list" data-list="overview"></div>
+  </section>
+
+  {# ---------------------------------------------------------------- #}
+  <section class="ad-page" id="t-dept">
+    <div class="ad-tiles ad-tiles--4" id="dpTiles"></div>
+    <div class="ad-grid ad-grid--21">
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2>Where each department stands</h2><p>Open cases by TAT state, worst first. Click a segment for those cases, or the department for all of them.</p></div></div>
+        <div class="ad-hbars" id="dpUnits"></div>
+        <ul class="ad-legend ad-legend--row" id="dpStackLegend"></ul>
+      </div>
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2>Open value by department</h2><p>₹ lakh — top six and the rest</p></div></div>
+        <div class="ad-cv"><canvas id="dpPolar"></canvas></div>
+      </div>
+    </div>
+    <div class="ad-card">
+      <div class="ad-card__h"><div><h2>Department × status</h2><p>Every case, by where it is — darker is more</p></div></div>
+      <div class="ad-heat" id="dpHeat"></div>
+    </div>
+    <div class="ad-card ad-list" data-list="dept"></div>
+  </section>
+
+  {# ---------------------------------------------------------------- #}
+  <section class="ad-page" id="t-people">
+    <div class="ad-people-head">
+      <div class="ad-seg ad-seg--lg" data-seg="ppWho"><button type="button" data-k="buyer" class="on">Buyers</button><button type="button" data-k="requester">Requesters</button></div>
+      <p class="ad-note" id="ppNote"></p>
+    </div>
+    <div class="ad-cards" id="ppCards"></div>
+    <div class="ad-grid ad-grid--21">
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2 id="ppLoadTitle">Open and closed per buyer</h2><p>Open now, and closed in the last 30 days</p></div></div>
+        <div class="ad-cv ad-cv--lg"><canvas id="ppLoad"></canvas></div>
+      </div>
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2>Profile</h2><p id="ppRadarSub">The three busiest, on five measures</p></div></div>
+        <div class="ad-cv ad-cv--lg"><canvas id="ppRadar"></canvas></div>
+        <ul class="ad-legend ad-legend--row" id="ppRadarLegend"></ul>
+      </div>
+    </div>
+    <div class="ad-card">
+      <div class="ad-card__h"><div><h2 id="ppTatTitle">TAT health per buyer</h2><p>Open cases by TAT state, worst first. Click a segment for those cases, or the name for all of them.</p></div></div>
+      <div class="ad-hbars" id="ppUnits"></div>
+      <ul class="ad-legend ad-legend--row" id="ppTatLegend"></ul>
+    </div>
+    <div class="ad-card ad-list" data-list="people"></div>
+  </section>
+
+  {# ---------------------------------------------------------------- #}
+  <section class="ad-page" id="t-suppliers">
+    <div class="ad-tiles ad-tiles--4" id="spTiles"></div>
+    <div class="ad-grid ad-grid--21">
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2>Supplier map</h2><p>Across: cases quoted on · Up: value quoted, ₹ lakh · Size: times they were the only bidder</p></div></div>
+        <div class="ad-cv ad-cv--lg"><canvas id="spBubble"></canvas></div>
+        <ul class="ad-legend ad-legend--row" id="spBubbleLegend"></ul>
+      </div>
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2>Single sourcing</h2><p id="spShareSub"></p></div>
+          <div class="ad-seg" data-seg="spPivot"><button type="button" data-k="dept" class="on">By department</button><button type="button" data-k="supplier">By supplier</button></div></div>
+        <div class="ad-bars" id="spShare"></div>
+        <p class="ad-hint" id="spShareHint"></p>
+      </div>
+    </div>
+    <div class="ad-card">
+      <div class="ad-card__h"><div><h2>Who single-sources from whom</h2><p>Single-sourced cases, department × supplier</p></div></div>
+      <div class="ad-heat" id="spHeat"></div>
+    </div>
+    <div class="ad-card ad-list" data-list="suppliers"></div>
+  </section>
+
+  {# ---------------------------------------------------------------- #}
+  <section class="ad-page" id="t-tat">
+    <div class="ad-tiles ad-tiles--4" id="ttTiles"></div>
+    <div class="ad-card">
+      <div class="ad-card__h"><div><h2>Closed within TAT</h2><p>POs released on or before the committed date, out of every PO released — overall, and for each commitment separately</p></div><span class="ad-note" id="ttGaugeNote"></span></div>
+      <div class="ad-gauges" id="ttGauges"></div>
+    </div>
+    <div class="ad-grid ad-grid--12">
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2>Month by month</h2><p>Share of that month's POs released within TAT, and how many that rests on</p></div></div>
+        <div class="ad-cv ad-cv--lg"><canvas id="ttTrend"></canvas></div>
+      </div>
+      <div class="ad-card">
+        <div class="ad-card__h"><div><h2>How long cases have been open</h2><p>Calendar days since raised — click a bar to drill</p></div></div>
+        <div class="ad-cv ad-cv--lg"><canvas id="ttAge"></canvas></div>
+      </div>
+    </div>
+    <div class="ad-card">
+      <div class="ad-card__h"><div><h2>Month balance</h2><p>How many were open at the start of each month, how many came in, how many closed, and how many were open at the end</p></div><span class="ad-note" id="ttMonthNote"></span></div>
+      <div class="ad-grid ad-grid--21 ad-grid--tight">
+        <div class="ad-cv"><canvas id="ttMonth"></canvas></div>
+        <div class="ad-tablewrap"><table class="ad-mini" id="ttMonthTable"></table></div>
+      </div>
+    </div>
+    <div class="ad-card ad-list" data-list="tat"></div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script id="dashData" type="application/json">{{ data.cases | tojson }}</script>
+<script>
+  window.SAMAGRA_DASH = { today: {{ data.today | tojson }}, userName: {{ user.name | tojson }}, caseUrlBase: "/queue/" };
+</script>
+<script src="/static/js/vendor/chart.umd.min.js"></script>
+<script src="/static/js/vendor/xlsx.full.min.js"></script>
+<script src="{{ asset_url('/static/js/dash-metrics.js') }}"></script>
+<script src="{{ asset_url('/static/js/dash-export.js') }}"></script>
+<script src="{{ asset_url('/static/js/dashboard-admin.js') }}"></script>
+{% endblock %}

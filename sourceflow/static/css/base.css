@@ -1,17 +1,32 @@
+/* One palette, not three. The app had grown a navy for buttons, a generic
+   blue for links and a teal for hero bands - unrelated hues that made every
+   page look assembled rather than designed. Everything now descends from the
+   teal the heroes were already using, with the deep teal-navy as its dark
+   end; the semantic four (danger/warning/success/info) stay separate because
+   they mean something, and never double as brand colour. */
 :root {
-    --sf-primary: #0B1F3A;
-    --sf-primary-hover: #142B4D;
-    --sf-shell-bg: #14181B;
-    --sf-accent: #1D4ED8;
-    --sf-accent-hover: #1739A8;
-    --sf-bg: #F2F3F5;
+    --sf-teal: #008C82;
+    --sf-teal-deep: #00504A;
+    --sf-teal-ink: #00726B;      /* the teal that passes AA on white */
+    --sf-teal-wash: #EAF4F3;
+
+    --sf-primary: var(--sf-teal-deep);
+    --sf-primary-hover: #003B37;
+    --sf-shell-bg: #002733;
+    --sf-accent: var(--sf-teal-ink);
+    --sf-accent-hover: var(--sf-teal-deep);
+
+    /* Neutrals biased a touch toward the accent rather than a flat cold grey:
+       the difference is small per surface and obvious across a whole page. */
+    --sf-bg: #F1F4F4;
     --sf-surface: #FFFFFF;
-    --sf-surface-alt: #F7F8FA;
-    --sf-border: #E1E4E9;
-    --sf-border-strong: #C7CCD4;
-    --sf-text: #171B21;
-    --sf-text-muted: #5B6472;
-    --sf-text-faint: #8A909B;
+    --sf-surface-alt: #F6F8F8;
+    --sf-border: #E0E5E6;
+    --sf-border-strong: #C3CBCC;
+    --sf-text: #14201F;
+    --sf-text-muted: #56636A;
+    --sf-text-faint: #87929A;
+
     --sf-danger: #B42318;
     --sf-danger-bg: #FBEAEA;
     --sf-warning: #B45309;
@@ -20,10 +35,17 @@
     --sf-success-bg: #E5F5EA;
     --sf-info: #1D4ED8;
     --sf-info-bg: #E8F0FE;
-    --sf-radius: 4px;
-    --sf-radius-lg: 6px;
+
+    --sf-radius: 5px;
+    --sf-radius-lg: 8px;
+    /* An elevation scale, so "raised" is a decision with three settings
+       rather than a shadow invented per component. */
+    --sf-shadow-sm: 0 1px 2px rgba(0, 39, 51, .05);
+    --sf-shadow: 0 1px 2px rgba(0, 39, 51, .05), 0 4px 14px rgba(0, 39, 51, .05);
+    --sf-shadow-lg: 0 12px 34px rgba(0, 39, 51, .14);
+
     --sf-shell-header-h: 56px;
-    --sf-shell-nav-h: 40px;
+    --sf-shell-nav-h: 42px;
     --sf-font: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -41,16 +63,38 @@ body {
     color: var(--sf-text);
     font-family: var(--sf-font);
     font-size: 13.5px;
-    line-height: 1.5;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Inter's straight-sided l and single-storey g read better at this size;
+       harmless when the face falls back to Segoe UI. */
+    font-feature-settings: "cv05" 1, "cv11" 1;
 }
+
+/* Figures that sit in a column - money, counts, dates - line up on the
+   decimal instead of shimmying as the digits change. */
+td, th, .sf-kpi__value, .sf-num { font-variant-numeric: tabular-nums; }
+
+h1, h2, h3 { text-wrap: balance; letter-spacing: -0.011em; }
 
 a {
     color: var(--sf-accent);
     text-decoration: none;
+    transition: color .12s ease;
 }
 a:hover {
     text-decoration: underline;
+}
+
+/* One focus treatment for the whole app, on keyboard focus only. */
+:focus-visible {
+    outline: 2px solid var(--sf-teal);
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
 }
 
 .sf-content {
@@ -67,19 +111,33 @@ a:hover {
     background: var(--sf-surface);
     border: 1px solid var(--sf-border);
     border-radius: var(--sf-radius-lg);
-    padding: 16px 20px;
+    box-shadow: var(--sf-shadow-sm);
+    padding: 18px 22px;
     margin-bottom: 16px;
 }
 
+/* A section header is a label, not a rule across the page: the short teal
+   tick reads as a deliberate mark where a full-width hairline read as a
+   leftover border. */
 .sf-section-header {
+    position: relative;
     font-size: 0.82rem;
     font-weight: 700;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--sf-text-muted);
-    border-bottom: 1px solid var(--sf-border);
-    padding-bottom: 8px;
-    margin: 24px 0 12px;
+    padding: 0 0 8px 12px;
+    margin: 26px 0 14px;
+}
+.sf-section-header::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 1px;
+    width: 3px;
+    height: 12px;
+    border-radius: 2px;
+    background: var(--sf-teal);
 }
 .sf-section-header:first-child {
     margin-top: 0;
@@ -103,29 +161,38 @@ a:hover {
 .sf-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     border: 1px solid transparent;
     border-radius: var(--sf-radius);
-    padding: 7px 14px;
+    padding: 8px 16px;
     font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
     line-height: 1.3;
     font-family: inherit;
+    white-space: nowrap;
+    transition: background-color .14s ease, border-color .14s ease,
+                box-shadow .14s ease, transform .08s ease;
 }
 .sf-btn:hover {
     text-decoration: none;
 }
+/* A press that moves is the cheapest way to make a control feel real. */
+.sf-btn:active { transform: translateY(1px); }
 .sf-btn svg { flex-shrink: 0; }
 
 .sf-btn--primary {
     background: var(--sf-primary);
     color: #fff;
     border-color: var(--sf-primary);
+    box-shadow: var(--sf-shadow-sm);
 }
 .sf-btn--primary:hover {
     background: var(--sf-primary-hover);
+    border-color: var(--sf-primary-hover);
+    box-shadow: 0 2px 10px rgba(0, 80, 74, .28);
 }
 
 .sf-btn--secondary {
@@ -134,32 +201,39 @@ a:hover {
     color: var(--sf-text);
 }
 .sf-btn--secondary:hover {
-    background: var(--sf-surface-alt);
+    background: var(--sf-teal-wash);
+    border-color: var(--sf-teal);
+    color: var(--sf-teal-deep);
 }
 
 .sf-btn--danger {
     background: var(--sf-danger);
     color: #fff;
+    border-color: var(--sf-danger);
 }
 .sf-btn--danger:hover {
     background: #93190f;
+    border-color: #93190f;
 }
 
 .sf-btn--ghost {
     background: transparent;
     color: var(--sf-accent);
-    padding: 6px 8px;
+    padding: 7px 10px;
 }
+.sf-btn--ghost:hover { background: var(--sf-teal-wash); }
 
 .sf-btn--sm {
-    padding: 4px 10px;
+    padding: 5px 11px;
     font-size: 0.76rem;
 }
 
 .sf-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    box-shadow: none;
 }
+.sf-btn:disabled:active { transform: none; }
 
 .sf-muted {
     color: var(--sf-text-muted);
@@ -196,6 +270,17 @@ a:hover {
 .sf-alert--info { background: var(--sf-info-bg); border-color: #BFD7FB; color: var(--sf-info); }
 .sf-alert--danger { background: var(--sf-danger-bg); border-color: #F2C4C0; color: var(--sf-danger); }
 
+/* Tables live inside a rounded, shadowed surface of their own rather than
+   sitting raw on the page background. */
+.sf-list-table-wrap {
+    background: var(--sf-surface);
+    border: 1px solid var(--sf-border);
+    border-radius: var(--sf-radius-lg);
+    box-shadow: var(--sf-shadow-sm);
+    overflow: hidden;
+    overflow-x: auto;
+}
+
 table.sf-table {
     width: 100%;
     border-collapse: collapse;
@@ -203,23 +288,44 @@ table.sf-table {
 }
 table.sf-table th {
     text-align: left;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.05em;
     color: var(--sf-text-muted);
     border-bottom: 1px solid var(--sf-border);
     background: var(--sf-surface-alt);
-    padding: 8px 12px;
+    padding: 10px 14px;
     font-weight: 600;
+    white-space: nowrap;
 }
 table.sf-table td {
-    padding: 9px 12px;
-    border-bottom: 1px solid var(--sf-border);
+    padding: 12px 14px;
+    border-bottom: 1px solid #EDF0F0;
     vertical-align: middle;
 }
+table.sf-table tbody tr:last-child td { border-bottom: 0; }
+table.sf-table tbody tr {
+    transition: background-color .12s ease, box-shadow .12s ease;
+}
 table.sf-table tbody tr:hover {
+    background: var(--sf-teal-wash);
+    /* A teal edge on the hovered row: which row the cursor is on stops being
+       a guess when two rows are similar shades apart. */
+    box-shadow: inset 3px 0 0 var(--sf-teal);
+}
+/* A row that opens its case when clicked anywhere (row-links.js). The button
+   at the end of the row stays - it is what the eye goes to when someone is
+   looking for the action rather than the content - but hitting it is no
+   longer the only way in. */
+table.sf-table tbody tr[data-href] {
+    cursor: pointer;
+}
+table.sf-table tbody tr[data-href]:focus-visible {
+    outline: 2px solid var(--sf-accent);
+    outline-offset: -2px;
     background: var(--sf-surface-alt);
 }
+
 table.sf-table tr.sf-row-link {
     cursor: pointer;
 }
@@ -306,21 +412,23 @@ table.sf-table td.sf-row-link-cell {
 .sf-kpi {
     background: var(--sf-surface);
     border: 1px solid var(--sf-border);
-    border-radius: var(--sf-radius);
-    padding: 12px 16px;
+    border-radius: var(--sf-radius-lg);
+    box-shadow: var(--sf-shadow-sm);
+    padding: 14px 18px;
 }
 .sf-kpi__value {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.7rem;
+    font-weight: 600;
     color: var(--sf-text);
     line-height: 1.15;
+    letter-spacing: -0.02em;
 }
 .sf-kpi__label {
     font-size: 0.72rem;
     color: var(--sf-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.03em;
-    margin-top: 2px;
+    letter-spacing: 0.04em;
+    margin-top: 3px;
 }
 
 /* Empty state */

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Link not available{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb">Volkswagen Group Digital Solutions India · General Procurement</div>
+        <h1 class="sf-hero-title">This link isn't available</h1>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{# Says nothing about whether the token ever existed. A page that
+   distinguished "expired" from "never valid" would let anyone with a list of
+   guesses learn which ones are real. #}
+<div class="sf-card" style="max-width:640px;">
+    <p style="margin:0 0 10px;">
+        We can't open a quotation page for this link. That usually means the enquiry
+        has finished, or the link was copied incompletely out of the email.
+    </p>
+    <p class="sf-muted" style="margin:0;">
+        Please open the link straight from the mail we sent you, or reply to the buyer
+        who contacted you and ask them to send it again.
+    </p>
+</div>
+{% endblock %}

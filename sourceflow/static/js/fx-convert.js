@@ -28,7 +28,11 @@
             out.textContent = "";
             return;
         }
-        out.textContent = "≈ " + formatINR(value * rate) + " at the entered conversion rate.";
+        // "Indicative" is the whole point of the wording: the requester no
+        // longer sets this rate, so the figure is a reference-rate estimate
+        // for the TAT band, not the number the case will be valued at.
+        out.textContent = "Indicative: ≈ " + formatINR(value * rate)
+            + " at today's reference rate of " + rate + ".";
     }
 
     valueInput.addEventListener("input", update);

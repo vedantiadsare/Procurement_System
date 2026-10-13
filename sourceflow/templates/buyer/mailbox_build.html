@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% import "_macros/icons.html" as ic %}
+{% block title %}Build case from email · Samagra{% endblock %}
+
+{% macro badge(f) %}
+    {%- if f is not defined or f is none or f.value is none -%}
+        <span class="sf-ex-badge sf-ex-badge--none">Not stated</span>
+    {%- elif f.confidence >= 0.9 -%}
+        <span class="sf-ex-badge sf-ex-badge--ok">Confirmed</span>
+    {%- elif f.confidence >= 0.8 -%}
+        <span class="sf-ex-badge sf-ex-badge--likely">Likely</span>
+    {%- else -%}
+        <span class="sf-ex-badge sf-ex-badge--check">Please check</span>
+    {%- endif -%}
+{% endmacro %}
+
+{# A reviewer is scanning for what to check, not reading a commentary on every
+   field. A confirmed value says nothing at all - the badge is the message.
+   Anything less than confirmed explains itself, because that is where someone
+   has to make a decision. #}
+{% macro why(f) %}
+    {%- if f is defined and f is not none and (f.value is none or f.confidence < 0.9) -%}
+        <div class="sf-ex-why">{{ f.reason or f.source or "" }}</div>
+    {%- endif -%}
+{% endmacro %}
+
+{% macro val(f) %}{{ f.value if (f is defined and f is not none and f.value is not none) else "" }}{% endmacro %}
+
+{% block hero %}
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb"><a href="/mailbox">Mailbox</a> / Build case</div>
+        <h1 class="sf-hero-title">{{ item.subject or "(no subject)" }}</h1>
+        <p class="sf-hero-meta">
+            From {{ item.from_name or item.from_email }} · {{ documents | length }} attachment{{ "s" if documents | length != 1 }}
+            · read by AI, confirm before creating
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="sf-alert sf-alert--info">
+    <b>Nothing has been created yet.</b> These values were read from the email and its
+    attachments. Correct anything wrong, then create the case — the extraction is a
+    suggestion, your confirmation is what counts.
+</div>
+
+{% if unreadable %}
+<div class="sf-alert sf-alert--warning">
+    <b>{{ unreadable | length }} attachment(s) could not be read:</b> {{ unreadable | join(", ") }}.
+    They will still be filed against the case, but nothing was extracted from them.
+</div>
+{% endif %}
+
+{% if unverified %}
+<div class="sf-alert sf-alert--warning">
+    <b>Could not be located in any document:</b> {{ unverified | join("; ") }}.
+    Shown below but marked to check — the AI reported these without a traceable source.
+</div>
+{% endif %}
+
+<form method="post" action="/mailbox/{{ item.id }}/build" data-conditional-form novalidate>
+
+    <div class="sf-card sf-nr-card">
+        <div class="sf-nr-card__head">
+            <span class="sf-nr-card__icon">{{ ic.icon("user", 16) }}</span>
+            <div>
+                <div class="sf-nr-card__title">Requester</div>
+                <div class="sf-nr-card__subtitle">Who this request is for</div>
+            </div>
+        </div>
+        <div class="sf-grid sf-grid--2">
+            <div class="sf-field">
+                <label for="f_requestor_name">Requestor name {{ badge(fields.requestor_name) }}</label>
+                <input type="text" id="f_requestor_name" name="requestor_name" value="{{ val(fields.requestor_name) }}">
+                {{ why(fields.requestor_name) }}
+            </div>
+            <div class="sf-field">
+                <label for="f_requestor_email">Email {{ badge(fields.requestor_email) }}</label>
+                <input type="email" id="f_requestor_email" name="requestor_email" value="{{ val(fields.requestor_email) }}">
+                {{ why(fields.requestor_email) }}
+            </div>
+        </div>
+        <div class="sf-grid sf-grid--2">
+            <div class="sf-field">
+                <label for="f_requesting_dept">Requesting department {{ badge(fields.requesting_dept) }}</label>
+                <select id="f_requesting_dept" name="requesting_dept">
+                    {% for d in departments %}
+                    <option value="{{ d }}" {% if fields.requesting_dept and fields.requesting_dept.value == d %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+                {{ why(fields.requesting_dept) }}
+            </div>
+            <div class="sf-field">
+                <label for="f_cost_center">Cost center {{ badge(fields.cost_center) }}</label>
+                <input type="text" id="f_cost_center" name="cost_center" value="{{ val(fields.cost_center) }}">
+                {{ why(fields.cost_center) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="sf-card sf-nr-card">
+        <div class="sf-nr-card__head">
+            <span class="sf-nr-card__icon">{{ ic.icon("file-text", 16) }}</span>
+            <div>
+                <div class="sf-nr-card__title">The topic</div>
+                <div class="sf-nr-card__subtitle">What is being sourced, and for how much</div>
+            </div>
+        </div>
+
+        <div class="sf-grid sf-grid--2">
+            <div class="sf-field">
+                <label for="f_sourcing_basis">Sourcing basis</label>
+                <select id="f_sourcing_basis" name="sourcing_basis">
+                    {% for b in sourcing_bases %}<option value="{{ b }}">{{ b }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="sf-field">
+                <label for="f_sc_number">Shopping Cart number {{ badge(fields.sc_number) }}</label>
+                <input type="text" id="f_sc_number" name="sc_number" value="{{ val(fields.sc_number) }}">
+                {{ why(fields.sc_number) }}
+            </div>
+        </div>
+
+        <div class="sf-field">
+            <label for="f_topic_title">Topic title {{ badge(fields.topic_title) }}</label>
+            <input type="text" id="f_topic_title" name="topic_title" value="{{ val(fields.topic_title) }}">
+            {{ why(fields.topic_title) }}
+        </div>
+
+        <div class="sf-grid sf-grid--2">
+            <div class="sf-field">
+                <label for="f_expense_commodity">Expense commodity {{ badge(fields.expense_commodity) }}</label>
+                <select id="f_expense_commodity" name="expense_commodity">
+                    <option value="">— not set —</option>
+                    {% for c in expense_commodities %}
+                    <option value="{{ c }}" {% if fields.expense_commodity and fields.expense_commodity.value == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+                {{ why(fields.expense_commodity) }}
+            </div>
+            <div class="sf-field">
+                <label for="f_delivery_location">Delivery location {{ badge(fields.delivery_location) }}</label>
+                <select id="f_delivery_location" name="delivery_location">
+                    <option value="">— not set —</option>
+                    {% for l in delivery_locations %}
+                    <option value="{{ l }}" {% if fields.delivery_location and fields.delivery_location.value == l %}selected{% endif %}>{{ l }}</option>
+                    {% endfor %}
+                </select>
+                {{ why(fields.delivery_location) }}
+            </div>
+        </div>
+
+        <div class="sf-grid sf-grid--3">
+            <div class="sf-field">
+                <label for="f_topic_value">Topic value {{ badge(fields.topic_value) }}</label>
+                <input type="text" id="f_topic_value" name="topic_value" value="{{ val(fields.topic_value) }}">
+                {{ why(fields.topic_value) }}
+            </div>
+            <div class="sf-field">
+                <label for="f_currency">Currency {{ badge(fields.currency) }}</label>
+                <select id="f_currency" name="currency">
+                    {% for c, label in currency_options %}
+                    <option value="{{ c }}" {% if fields.currency and fields.currency.value == c %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="sf-field">
+                <label for="f_tax_basis">Value is {{ badge(fields.tax_basis) }}</label>
+                <select id="f_tax_basis" name="tax_basis">
+                    {% for t in tax_bases %}
+                    <option value="{{ t }}" {% if fields.tax_basis and fields.tax_basis.value == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+                {{ why(fields.tax_basis) }}
+            </div>
+        </div>
+        {% if fields.topic_value_gross and fields.topic_value_gross.value is not none %}
+        <p class="sf-caption">Documents also state a tax-inclusive total of
+            {{ fields.currency.value if fields.currency and fields.currency.value else "" }}
+            {{ fields.topic_value_gross.value }}.</p>
+        {% endif %}
+    </div>
+
+    <div class="sf-card sf-nr-card">
+        <div class="sf-nr-card__head">
+            <span class="sf-nr-card__icon">{{ ic.icon("paperclip", 16) }}</span>
+            <div>
+                <div class="sf-nr-card__title">Documents</div>
+                <div class="sf-nr-card__subtitle">Each type was decided from the filename or the content — change any that are wrong</div>
+            </div>
+        </div>
+        <table class="sf-table">
+            <thead><tr><th>File</th><th>Read as</th><th>Type</th></tr></thead>
+            <tbody>
+            {% for d in documents %}
+            <tr>
+                <td>
+                    {{ d.filename }}
+                    {% if d.error %}<div class="sf-ex-why sf-ex-why--bad">{{ d.error }}</div>{% endif %}
+                </td>
+                <td class="sf-ex-why">{{ d.classified_by }}</td>
+                <td>
+                    <select name="doc_type_{{ d.attachment_id }}">
+                        {% for t in doc_types %}
+                        <option value="{{ t }}" {% if d.doc_type == t %}selected{% endif %}>{{ t }}</option>
+                        {% endfor %}
+                        <option value="SKIP">Don't file this one</option>
+                    </select>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sf-form-actions">
+        <a href="/mailbox" class="sf-btn sf-btn--ghost">Cancel</a>
+        <button type="submit" class="sf-btn sf-btn--primary">Create case</button>
+    </div>
+</form>
+
+{% endblock %}

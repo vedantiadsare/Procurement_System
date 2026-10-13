@@ -23,7 +23,7 @@
     <a href="#" class="sf-list-tabs__item active" data-tab-filter="all">All <span class="sf-list-tabs__count">{{ cases | length }}</span></a>
     <a href="#" class="sf-list-tabs__item" data-tab-filter="needs-input">Needs my input <span class="sf-list-tabs__count">{{ counts["needs-input"] }}</span></a>
     <a href="#" class="sf-list-tabs__item" data-tab-filter="with-procurement">With procurement <span class="sf-list-tabs__count">{{ counts["with-procurement"] }}</span></a>
-    <a href="#" class="sf-list-tabs__item" data-tab-filter="completed">Completed <span class="sf-list-tabs__count">{{ counts["completed"] }}</span></a>
+    <a href="#" class="sf-list-tabs__item" data-tab-filter="completed">Closed <span class="sf-list-tabs__count">{{ counts["completed"] }}</span></a>
 </div>
 
 <form method="get" action="/requests" class="sf-filters" style="margin:16px 0;">
@@ -47,15 +47,15 @@
     </thead>
     <tbody>
     {% for c in cases %}
-    <tr data-category="{{ c.category }}">
-        <td><div class="sf-list-topic">{{ c.topic_title }}</div><div class="sf-list-topic__sub">{{ c.ticket_no }}{{ " · SC " ~ c.sc_number if c.sc_number }}</div></td>
-        <td>{{ c.topic_value_inr | inr }}</td>
+    <tr data-category="{{ c.category }}" data-href="/requests/{{ c.id }}" tabindex="0">
+        <td><div class="sf-list-topic">{{ c.topic_title }}</div><div class="sf-list-topic__sub">{{ c.ticket_no }}{{ " · Frame contract" if c.sourcing_basis == "Frame contract" else (" · SC " ~ c.sc_number) }}</div></td>
+        <td>{{ c | money }}</td>
         <td>{{ c.status | status_chip }}</td>
         <td class="sf-list-next {{ 'sf-list-next--urgent' if c.status == 'ENQUIRED' }}">{{ c.next_step }}</td>
         <td>{{ c.updated_at | date }}</td>
         <td>
             {% if c.status == "ENQUIRED" %}
-            <a href="/requests/{{ c.id }}/edit" class="sf-btn sf-btn--primary sf-btn--sm">Reply</a>
+            <a href="/requests/{{ c.id }}?tab=activity" class="sf-btn sf-btn--primary sf-btn--sm">Reply</a>
             {% else %}
             <a href="/requests/{{ c.id }}" class="sf-btn sf-btn--secondary sf-btn--sm">View</a>
             {% endif %}

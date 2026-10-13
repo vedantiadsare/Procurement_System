@@ -23,17 +23,32 @@ from docx import Document
 SUPPORTED_SC_EXTENSIONS = {"pdf", "docx", "xlsx", "xlsm", "csv"}
 
 _HEADER_HINTS = {
-    "item_no": ["item", "sl no", "s.no", "sr no", "line", "pos"],
-    "description": ["description", "material", "particulars", "item description"],
-    "quantity": ["qty", "quantity"],
+    "item_no": ["item", "sl no", "s no", "sr no", "line", "pos"],
+    # "course name" and "scope" come from the Statement of Work format a
+    # training or frame-contract vendor quotes on - the same table, named for
+    # what is being bought rather than for a material.
+    "description": ["description", "material", "particulars", "item description",
+                    "course name", "service", "scope of work", "activity"],
+    # A SOW prices by duration: "Duration (4 hours/ Day)" is the quantity
+    # column in everything but name.
+    "quantity": ["qty", "quantity", "duration", "no of days", "man days", "mandays"],
     # unit_price is checked before uom on purpose: "unit price"/"unit rate" is
     # a more specific phrase than the bare "unit" hint uom needs to catch a
     # column literally titled "Unit" - if uom were checked first, a header
     # like "Estimated Unit Price" would match uom's "unit" before ever
     # reaching the unit_price hints below, misclassifying the whole column.
-    "unit_price": ["unit price", "rate", "price/unit", "unit rate"],
+    # Every wording seen on a real cart for the same column: SAP prints
+    # "Price / Unit", VW's own budget-approval form prints "Price per unit"
+    # across two lines. All of them have to be matched here, because the
+    # fallback is uom's bare "unit" - which silently files the unit price
+    # under UoM and loses it.
+    "unit_price": ["unit price", "rate", "price/unit", "price per unit",
+                   "per unit", "unit rate", "rate/unit", "rate per unit"],
     "uom": ["uom", "unit of measure", "unit"],
-    "amount": ["amount", "total", "value", "line total"],
+    # Bare "price" is last on purpose: it is checked after unit_price, so
+    # "Unit price" still maps to the unit and only a column headed plainly
+    # "Price INR (Taxes Extra)" - the SOW format - falls through to here.
+    "amount": ["amount", "total", "value", "line total", "price", "fee", "charges"],
 }
 
 
@@ -41,6 +56,23 @@ def _match_column(header_cell) -> str:
     if not header_cell:
         return None
     h = str(header_cell).strip().lower()
+    # A column header is a label, not a sentence. Without this, prose anywhere
+    # in a document can match a hint and turn an unrelated table into line
+    # items - a Statement of Work's ordering block reading "Purchase order
+    # should be placed on Annapurna Catering Services" matched "service" and
+    # became a phantom cart line.
+    if len(h) > 45:
+        return None
+    # Headers wrap across lines in a PDF table ("Price\nper unit") and space
+    # their slashes inconsistently ("Price / Unit"). Normalise both before
+    # matching, or the price column falls through to uom's bare "unit" hint
+    # and the unit price is filed as a unit of measure.
+    h = re.sub(r"\s+", " ", h)
+    h = re.sub(r"\s*/\s*", "/", h)
+    # "Sr. No." and "S.No" are the same column as "Sr No"; the full stops are
+    # punctuation, not meaning. Without this a Statement of Work's very first
+    # column matched nothing and the whole table was skipped.
+    h = h.replace(".", "").strip()
     for field, hints in _HEADER_HINTS.items():
         for hint in hints:
             if hint in h:
@@ -122,6 +154,46 @@ def _row_amount(row):
     return None
 
 
+def scan_totals_in_text(text) -> dict:
+    """Stated totals read line by line off the extracted text.
+
+    Preferred over the table scan because a PDF's table geometry regularly
+    misaligns the two columns that matter. On a real VW cart, pdfplumber
+    merges three visual lines into one row and pairs the label "Net Total"
+    with the VAT figure, so the cart's net total came back as 2,280 - the tax
+    - instead of 12,000. The same document's text layer has one total per
+    line and reads correctly:
+
+        Taxes: VAT 19.00 % EUR 2,280.00
+        Net Total (EUR): 12,000.00
+        Grand Total (EUR): 14,280.00
+    """
+    found = {"stated_net": None, "stated_gross": None}
+    for line in (text or "").splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if _GROSS_TOTAL_RE.search(stripped):
+            key = "stated_gross"
+        elif _NET_TOTAL_RE.search(stripped):
+            key = "stated_net"
+        else:
+            continue
+        if found[key] is not None:
+            continue
+        # The figure is the last number on the line: "Net Total (EUR): 12,000.00"
+        # has a currency in brackets and the amount at the end.
+        numbers = re.findall(r"\d[\d,\s]*(?:\.\d{1,2})?", stripped)
+        for raw in reversed(numbers):
+            amount = _to_number(raw)
+            # A percentage or a line number isn't a total; require something
+            # that looks like money rather than "19.00" from "VAT 19.00 %".
+            if amount is not None and amount >= 100:
+                found[key] = amount
+                break
+    return found
+
+
 def _scan_stated_totals(rows) -> dict:
     """Picks the document's own stated net and gross totals out of a table.
     Only rows whose wording is explicit about the basis count - a bare
@@ -150,17 +222,52 @@ def _scan_stated_totals(rows) -> dict:
 _RECORD_FIELDS = ("item_no", "description", "quantity", "unit_price", "uom", "amount")
 
 
+def _is_header_row(row) -> bool:
+    """A row that names two or more known columns is a header, whatever else
+    it contains.
+
+    This has to be decided before the totals check, not after: a supplier's
+    quotation table is headed "Description | Qty | Unit price | Currency |
+    Line total", and "Line total" carries the word total. Treated as a totals
+    footer, the whole table was discarded - which is why every supplier offer
+    parsed to zero line items while the shopping carts parsed fine."""
+    return sum(1 for cell in row if _match_column(cell)) >= 2
+
+
+def _find_header_row(rows) -> int:
+    """Index of the row that looks most like a column header.
+
+    A worksheet exported from SAP - or any cart a human has prepared - opens
+    with a title block ("APPROVED SHOPPING CART", cart reference, requestor)
+    before the table starts. Assuming row 0 is the header reads that title as
+    the header, matches no columns, and silently yields zero line items.
+
+    The first row matching two or more known columns is taken as the header.
+    Two rather than one on purpose: a footer block extracted as its own table
+    often starts with a lone "Net Total" cell, which matches the amount column
+    by itself and would otherwise be mistaken for the start of a table."""
+    for i, row in enumerate(rows):
+        if _is_header_row(row):
+            return i
+    return 0
+
+
 def _rows_to_items(rows) -> list:
-    """Shared table-to-line-items logic: first row is the header, matched
-    against _HEADER_HINTS; remaining rows become records for matched columns.
-    Every record always carries all _RECORD_FIELDS (None where the source
-    table had no matching column) - the confirm-page template reads these
-    fields by dotted attribute access and would raise on a missing key
-    rather than falling back to "-", for any column the header didn't have."""
+    """Shared table-to-line-items logic: the header row is located with
+    _find_header_row and matched against _HEADER_HINTS; rows below it become
+    records for matched columns. Every record always carries all
+    _RECORD_FIELDS (None where the source table had no matching column) - the
+    confirm-page template reads these fields by dotted attribute access and
+    would raise on a missing key rather than falling back to "-", for any
+    column the header didn't have."""
+    if len(rows) < 2:
+        return []
+    start = _find_header_row(rows)
+    rows = rows[start:]
     if len(rows) < 2:
         return []
     header = rows[0]
-    if _looks_like_total_row(header):
+    if not _is_header_row(header) and _looks_like_total_row(header):
         # A "Net Total" / "Grand Total" footer block is often extracted as
         # its own small table, separate from the real item table - if its
         # first row is itself a totals label, this isn't an item table at
@@ -228,11 +335,19 @@ def parse_sc_pdf(file_obj) -> dict:
     items, stated = [], {}
     try:
         with pdfplumber.open(file_obj) as pdf:
+            page_text = []
             for page in pdf.pages:
+                page_text.append(page.extract_text() or "")
                 for table in page.extract_tables():
                     if table:
                         items.extend(_rows_to_items(table))
                         _merge_stated(stated, table)
+        # Text first: a total read off its own line beats one paired up by
+        # table geometry, which is where the net/VAT mix-up came from.
+        from_text = scan_totals_in_text("\n".join(page_text))
+        for key, value in from_text.items():
+            if value is not None:
+                stated[key] = value
     except Exception as exc:
         return _failed(str(exc))
     return _finalize(items, "No line-item table detected in the SC PDF.", stated)
@@ -482,8 +597,96 @@ def guess_doc_type(text: str) -> str:
     return best_type
 
 
+# The same filename rules the upload widget uses (new-request-upload.js),
+# so a file tagged in the browser and one tagged here agree. Order matters:
+# "quotation" is an OFFER, and only a *request* for one is an RFQ.
+_NAME_RULES = (
+    ("SC", re.compile(r"shop|cart|(?:^|[^a-z0-9])sc(?:[^a-z0-9]|$)", re.I)),
+    ("SFO", re.compile(r"sfo|deviation|selection", re.I)),
+    ("RFQ", re.compile(r"rfq|enquiry|request[ _-]*for[ _-]*quot", re.I)),
+    ("OFFER", re.compile(r"quotation|quote|offer|proposal|angebot|offerta", re.I)),
+    ("BUDGET_APPROVAL", re.compile(r"budget|controlling|kostenstelle", re.I)),
+    ("MRM_APPROVAL", re.compile(r"mrm", re.I)),
+)
+
+
+def doc_type_from_name(filename: str) -> str:
+    """What the filename says the document is, or OTHER when it says nothing."""
+    for doc_type, pattern in _NAME_RULES:
+        if pattern.search(filename or ""):
+            return doc_type
+    return "OTHER"
+
+
+def classify_upload(filename: str, file_obj, ext: str) -> str:
+    """Filename first, then the first page. Never raises."""
+    tag = doc_type_from_name(filename)
+    if tag != "OTHER":
+        return tag
+    try:
+        return sniff_doc_type(file_obj, ext)
+    except Exception:  # noqa: BLE001 - a tag is advisory; never block an upload
+        return "OTHER"
+
+
 def sniff_doc_type(file_obj, ext: str) -> str:
     """guess_doc_type() over a file handle. Only the opening stretch is read -
     a document names itself on its first page. Never raises."""
     text = extract_text(file_obj, ext, max_chars=4000)
     return guess_doc_type(text)
+
+
+def _figure_in_text(value, digits: str) -> bool:
+    """Does this number appear in the document? Compared on digits alone so
+    2,46,000 / 246000 / 246,000.00 all match. A figure the document does not
+    contain is a figure the model made up."""
+    if value is None:
+        return True
+    s = str(int(round(float(value))))
+    return s in digits
+
+
+def parse_sc_with_fallback(file_obj, ext: str) -> dict:
+    """The table parser first; the model only where it found nothing.
+
+    A cart that arrives as a scan, a screenshot or an odd layout used to be
+    marked PARTIAL and left the case without line items for the offers to be
+    checked against. Now the model reads the items - and every quantity,
+    unit price and amount it reports is checked against the digits actually
+    present in the document; a line with an invented figure is dropped. If
+    nothing survives, the result is the parser's original PARTIAL, unchanged.
+    """
+    result = parse_sc_document(file_obj, ext)
+    if result.get("items"):
+        return result
+
+    try:
+        file_obj.seek(0)
+    except Exception:                                 # noqa: BLE001
+        pass
+    text = extract_text(file_obj, ext, max_chars=12000)
+    if not (text or "").strip():
+        return result
+
+    import llm
+    got = llm.extract_line_items(text)
+    if got.get("error") or not got.get("items"):
+        return result
+
+    digits = re.sub(r"\D", "", text)
+    kept = [it for it in got["items"]
+            if it["description"]
+            and _figure_in_text(it["unit_price"], digits)
+            and _figure_in_text(it["amount"], digits)]
+    if not kept:
+        return result
+
+    total = got.get("total")
+    if total is not None and not _figure_in_text(total, digits):
+        total = None
+    if total is None:
+        amounts = [it["amount"] for it in kept if it["amount"] is not None]
+        total = sum(amounts) if amounts else None
+
+    return {**result, "items": kept, "total": total, "status": "OK", "error": None,
+            "source": "model", "dropped": len(got["items"]) - len(kept)}

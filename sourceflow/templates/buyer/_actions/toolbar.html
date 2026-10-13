@@ -1,4 +1,15 @@
 <div data-action-toolbar style="display:contents;">
+{# A case belongs to one buyer. Someone else's case is readable but not
+   actionable - the toolbar offers a take-over instead, so ownership changes
+   are a deliberate, audited act rather than a silent edit. #}
+{% if not may_act %}
+    <span class="sf-hero-meta" style="align-self:center;">Assigned to {{ case.assigned_buyer }}</span>
+    {% if case.status not in ("APPROVED", "REJECTED") %}
+    <form method="post" action="/queue/{{ case.id }}/take-over" style="display:inline;">
+        <button type="submit" class="sf-hero-btn sf-hero-btn--outline">Take over this case</button>
+    </form>
+    {% endif %}
+{% else %}
     {% if case.status == "SUBMITTED" %}
     <button type="button" class="sf-hero-btn sf-hero-btn--outline" data-action-trigger="check">Check</button>
     <div class="sf-action-panel" data-action-panel="check">
@@ -12,6 +23,18 @@
                 <label for="tat_days">TAT (working days)</label>
                 <input type="number" id="tat_days" name="tat_days" min="1" step="1" value="{{ suggested_tat or 30 }}" required>
             </div>
+            {# The clock runs from the day the document set was complete and
+               correct - which is not always today. If the requester sent a
+               clean set on the 3rd and it sat unclaimed until the 10th, the
+               wait is Procurement's, not theirs; the buyer dates the start
+               back to the 3rd. Bounded to the case's own life: never before
+               it was submitted, never in the future. #}
+            <div class="sf-field">
+                <label for="docs_date">Documents complete &amp; correct since</label>
+                <input type="date" id="docs_date" name="docs_date"
+                       value="{{ today_iso }}" min="{{ (case.submitted_at | string)[:10] }}" max="{{ today_iso }}" required>
+                <p class="sf-caption">The TAT clock runs from this date. Default is today; date it back if the set was already right when it arrived and the delay was ours.</p>
+            </div>
             <button type="submit" class="sf-btn sf-btn--primary">Confirm &amp; start clock</button>
         </form>
     </div>
@@ -20,15 +43,15 @@
     {% endif %}
 
     {% if case.status in ("SUBMITTED", "IN_PROGRESS") %}
-    <button type="button" class="sf-hero-btn sf-hero-btn--outline" data-action-trigger="enquire">Enquire</button>
+    <button type="button" class="sf-hero-btn sf-hero-btn--outline" data-action-trigger="enquire">Ask requester</button>
     <div class="sf-action-panel" data-action-panel="enquire">
         <p class="sf-caption">Tell the requester what's missing or needs correction. They'll be able to edit and resubmit their case.</p>
         <form method="post" action="/queue/{{ case.id }}/enquire">
             <div class="sf-field">
-                <label for="enquire_comment">Comment <span class="sf-required">*</span></label>
+                <label for="enquire_comment">What do you need from them? <span class="sf-required">*</span></label>
                 <textarea id="enquire_comment" name="comment" required></textarea>
             </div>
-            <button type="submit" class="sf-btn sf-btn--primary">Send enquiry</button>
+            <button type="submit" class="sf-btn sf-btn--primary">Send to requester</button>
         </form>
     </div>
     {% endif %}
@@ -36,10 +59,21 @@
     {% if case.status == "IN_PROGRESS" %}
     <button type="button" class="sf-hero-btn sf-hero-btn--solid" data-action-trigger="approve">Approve</button>
     <div class="sf-action-panel" data-action-panel="approve">
-        <p class="sf-caption">Confirm approval and record the PO number.</p>
+        {% set ref_label = case.sourcing_basis | closing_ref_label %}
+        {# The readiness check, at the moment it matters. The buyer can still
+           approve - it is their call - but not without having seen what the
+           case is missing. Same check as the "Ready to award?" tab. #}
+        {% if readiness %}
+        <div class="sf-ready sf-ready--{{ 'yes' if readiness.ready else 'no' }}">
+            <b>{{ "Ready to award" if readiness.ready else "Not clean yet" }}</b>
+            <ul>{% for b in readiness.because %}<li>{{ b }}</li>{% endfor %}</ul>
+            <a href="?tab=handover" class="sf-ready__link">See the full check</a>
+        </div>
+        {% endif %}
+        <p class="sf-caption">Confirm approval and record the {{ ref_label | lower }}.</p>
         <form method="post" action="/queue/{{ case.id }}/approve">
             <div class="sf-field">
-                <label for="po_number">PO number <span class="sf-required">*</span></label>
+                <label for="po_number">{{ ref_label }} <span class="sf-required">*</span></label>
                 <input type="text" id="po_number" name="po_number" required>
             </div>
             <button type="submit" class="sf-btn sf-btn--primary">Confirm approval</button>
@@ -60,4 +94,5 @@
         </form>
     </div>
     {% endif %}
+{% endif %}
 </div>

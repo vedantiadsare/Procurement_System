@@ -39,7 +39,7 @@
     </div>
     <div class="sf-grid sf-grid--2">
         {{ ff.text("cost_center", "Cost center", values.cost_center, required=True, help="3-4 digit cost center code.") }}
-        {{ ff.text("employee_code", "Employee code", values.employee_code, required=True) }}
+        {{ ff.text("employee_code", "Employee code", values.employee_code) }}
     </div>
 </div>
 
@@ -52,8 +52,15 @@
         </div>
     </div>
 
+    {{ rg.radios("sourcing_basis", "Is this a one-time sourcing request or a frame contract?", sourcing_bases, values.sourcing_basis or "One-time sourcing", required=True) }}
+
     <div class="sf-grid sf-grid--2">
-        {{ ff.text("sc_number", "Shopping Cart (SC) number", values.sc_number, required=True, help="Your approved Shopping Cart number from SAP (10 digits).") }}
+        {# A frame contract sets rates for future call-offs, so there is no
+           approved cart yet - the number and the document are both asked for
+           only when this is one-time sourcing. #}
+        <div data-show-if="sourcing_basis=One-time sourcing">
+            {{ ff.text("sc_number", "Shopping Cart (SC) number", values.sc_number, required=True, help="Your approved Shopping Cart number from SAP (10 digits).") }}
+        </div>
         {{ rg.radios("sourcing_type", "Sourcing type", sourcing_types, values.sourcing_type or "Product", required=True) }}
     </div>
     {{ ff.text("topic_title", "Topic title", values.topic_title, required=True, help="One line a buyer can recognise the topic by. This becomes the case name.") }}
@@ -82,12 +89,33 @@
             <p class="sf-field-warning" data-topic-value-warning hidden>Exceeds the ₹40,00,000 self-service limit — this case will be flagged out of scope for manual handling.</p>
             <p class="sf-caption" data-tat-preview></p>
         </div>
-        {{ ff.select("currency", "Currency of offers", currencies, values.currency or "INR") }}
+        <div class="sf-field">
+            <label for="f_currency">Currency of offers</label>
+            <select id="f_currency" name="currency">
+                {% for code, label in currency_options %}
+                <option value="{{ code }}" {{ "selected" if code == (values.currency or "INR") }}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
     {{ rg.radios("tax_basis", "The topic value entered is", tax_bases, values.tax_basis or tax_bases[0]) }}
-    <div data-show-if="currency=EUR,USD">
-        {{ ff.text("fx_rate", "Conversion rate: 1 unit = ? INR", values.fx_rate or 1.0, type="number", required=True, attrs='step="0.0001" min="0.0001" data-fx-rate') }}
-        <p class="sf-caption" data-fx-output></p>
+    <div data-show-if="currency!=INR">
+        {# The rate is no longer asked of the requester. They know what the
+           supplier quoted; they have no reason to know today's rate, and the
+           rate that matters is the one applying when the buyer works the
+           case, not the one on the day the form was filled in. The buyer sets
+           it per case from the case page. The indicative figure below uses
+           the configured reference rate purely so the requester still sees a
+           rough TAT band - it is labelled as indicative and is replaced the
+           moment the buyer enters the real rate. #}
+        <input type="hidden" name="fx_rate" value="{{ fx_defaults.get(values.currency or 'INR') or 1 }}" data-fx-rate>
+        <script type="application/json" data-fx-defaults>{{ fx_defaults | tojson }}</script>
+        <div class="sf-field-note">
+            <strong>Procurement will apply the exchange rate.</strong>
+            Quote the value in the supplier's currency — your buyer converts it on the case,
+            using the rate that applies when they work it.
+            <span class="sf-caption" data-fx-output></span>
+        </div>
     </div>
 
     <div class="sf-field"><label for="f_fc_valid_till">Current Contract Expiry (if a contract exists)</label><input type="text" class="sf-date-input" id="f_fc_valid_till" name="fc_valid_till" placeholder="dd.mm.yyyy" inputmode="numeric" maxlength="10" value="{{ values.fc_valid_till | date if values.fc_valid_till else '' }}"></div>
@@ -135,11 +163,16 @@
     <div class="sf-doc-list" data-nr-doc-list>
         <p class="sf-doc-list__empty">No documents attached yet.</p>
     </div>
-    <p class="sf-caption">Required: Approved Shopping Cart, Deviation Note/SFO, RFQ, and at least one Supplier offer. Other supporting files are optional.</p>
+    <p class="sf-caption" data-show-if="sourcing_basis=One-time sourcing">Required: Approved Shopping Cart, Deviation Note/SFO, RFQ, and at least one Supplier offer. Other supporting files are optional.</p>
+    <p class="sf-caption" data-show-if="sourcing_basis=Frame contract">Required: Deviation Note/SFO, RFQ, and at least one Supplier offer. A frame contract has no approved Shopping Cart yet — carts are raised against each call-off later.</p>
 
     <input type="file" id="sc_file" name="sc_file" hidden {{ "required" if mode == "new" }}>
     <input type="file" id="sfo_file" name="sfo_file" hidden {{ "required" if mode == "new" }}>
     <input type="file" id="rfq_file" name="rfq_file" hidden {{ "required" if mode == "new" }}>
     <input type="file" id="offer_files" name="offer_files" multiple hidden {{ "required" if mode == "new" }}>
     <input type="file" id="other_files" name="other_files" multiple hidden>
+    {# Frame contracts only: Controlling's budget confirmation, which stands in
+       for the approval a shopping cart would have carried. Never required -
+       a rate agreement with no committed spend needs none. #}
+    <input type="file" id="budget_file" name="budget_file" hidden>
 </div>

@@ -227,3 +227,248 @@
 .sf-cs-kv:last-child { border-bottom: none; }
 .sf-cs-kv dt { color: var(--sf-text-muted); margin: 0; }
 .sf-cs-kv dd { color: var(--sf-text); font-weight: 600; margin: 0; text-align: right; }
+
+/* --- collapsible line-item list ----------------------------------------- */
+/* Collapsed by default: a thirty-line cart buried the case detail, and the
+   cart document itself is attached just above. */
+.sf-lineitems > summary {
+    cursor: pointer; list-style: none; font-weight: 600; font-size: 15px;
+    display: flex; align-items: center; gap: 10px;
+}
+.sf-lineitems > summary::-webkit-details-marker { display: none; }
+.sf-lineitems > summary::after {
+    content: "▾"; margin-left: auto; color: #7b8494; font-size: 13px;
+    transition: transform .15s ease;
+}
+.sf-lineitems[open] > summary::after { transform: rotate(180deg); }
+.sf-lineitems__count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 26px; height: 22px; padding: 0 7px; border-radius: 999px;
+    background: #eef1f4; color: #47585f; font-size: 12.5px; font-weight: 600;
+}
+
+/* ---- merged activity thread -------------------------------------------- */
+/* Two kinds of entry share one timeline. A question and its reply are
+   messages between two people and get an avatar and a tinted body; a document
+   check or a PO release is the system reporting a fact and gets a dot on the
+   rail. Drawing both as chat bubbles made the one entry that needed answering
+   impossible to pick out of twenty. */
+
+.sf-cs-tabs__dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--sf-warning);
+    vertical-align: middle;
+    margin-left: 2px;
+}
+
+.sf-thread__list {
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0 0 0 4px;
+    position: relative;
+}
+/* The rail every entry hangs off. */
+.sf-thread__list::before {
+    content: "";
+    position: absolute;
+    left: 13px;
+    top: 6px;
+    bottom: 6px;
+    width: 1px;
+    background: var(--sf-border);
+}
+
+.sf-thread__item {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+}
+.sf-thread__mark {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 19px;
+    height: 19px;
+    margin-top: 2px;
+    margin-left: 4px;
+    border-radius: 50%;
+    background: var(--sf-surface);
+    border: 2px solid var(--sf-border-strong);
+    box-shadow: 0 0 0 3px var(--sf-surface);
+}
+/* Messages get a filled avatar in place of the bare dot. */
+.sf-thread__item.is-message .sf-thread__mark {
+    width: 27px;
+    height: 27px;
+    margin-left: 0;
+    margin-top: 0;
+    border: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sf-teal-deep);
+    color: #fff;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+.sf-thread__item.is-mine .sf-thread__mark { background: #5B6472; }
+
+.sf-thread__body { flex: 1; min-width: 0; }
+.sf-thread__head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.sf-thread__who { font-size: 0.82rem; font-weight: 700; color: var(--sf-text); }
+.sf-thread__role,
+.sf-thread__what {
+    font-size: 0.63rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--sf-text-faint);
+}
+.sf-thread__what {
+    background: var(--sf-surface-alt);
+    border: 1px solid var(--sf-border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: var(--sf-text-muted);
+}
+.sf-thread__time {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: var(--sf-text-faint);
+    font-variant-numeric: tabular-nums;
+}
+.sf-thread__text {
+    font-size: 0.84rem;
+    color: var(--sf-text);
+    line-height: 1.55;
+    margin-top: 3px;
+    white-space: pre-line;   /* the "Attached: ..." line stays on its own line */
+}
+.sf-thread__item.is-message .sf-thread__text {
+    background: var(--sf-surface-alt);
+    border: 1px solid var(--sf-border);
+    border-radius: 3px 8px 8px 8px;
+    padding: 9px 12px;
+    margin-top: 6px;
+}
+/* The buyer's open question is the one entry that wants answering. */
+.sf-thread__item.is-ask .sf-thread__text {
+    background: var(--sf-warning-bg);
+    border-color: #F0DCB0;
+    color: #6A5A32;
+}
+.sf-thread__item.is-mine .sf-thread__text {
+    background: var(--sf-teal-wash);
+    border-color: #CBE3E0;
+}
+
+/* ---- reply composer ----------------------------------------------------- */
+
+.sf-reply {
+    margin-top: 18px;
+    padding: 16px;
+    background: var(--sf-surface-alt);
+    border: 1px solid var(--sf-border);
+    border-radius: var(--sf-radius-lg);
+}
+.sf-reply__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.sf-reply__avatar {
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background: #5B6472;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.64rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.sf-reply__head label { font-size: 0.82rem; font-weight: 600; color: var(--sf-text); }
+.sf-reply textarea {
+    width: 100%;
+    border: 1px solid var(--sf-border-strong);
+    border-radius: var(--sf-radius);
+    background: #fff;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 0.84rem;
+    line-height: 1.55;
+    resize: vertical;
+}
+.sf-reply textarea:focus {
+    outline: none;
+    border-color: var(--sf-teal);
+    box-shadow: 0 0 0 3px rgba(0, 140, 130, .14);
+}
+
+.sf-reply__files { display: grid; gap: 8px; margin-top: 10px; }
+.sf-reply__pick { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px dashed var(--sf-border-strong); border-radius: var(--sf-radius); background: #fff; font-size: 0.8rem; color: var(--sf-text-muted); cursor: pointer; }
+.sf-reply__pick:hover { border-color: var(--sf-teal); color: var(--sf-text); }
+.sf-reply__pick b { color: var(--sf-teal-deep); font-weight: 600; }
+.sf-reply__pick svg { color: var(--sf-teal); flex-shrink: 0; }
+.sf-reply__pick input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.sf-reply__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sf-reply__file { display: flex; align-items: center; gap: 10px; padding: 6px 10px; background: #fff; border: 1px solid var(--sf-border); border-radius: var(--sf-radius); font-size: 0.8rem; }
+.sf-reply__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--sf-text); }
+.sf-reply__size { color: var(--sf-text-faint); font-size: 0.72rem; }
+.sf-reply__tag select { height: 26px; border: 1px solid #BEE3C8; border-radius: 999px; background: #E5F5EA; color: #15803D; padding: 0 8px; font: inherit; font-size: 0.72rem; font-weight: 600; cursor: pointer; }
+.sf-reply__tag.is-sniffing select { background: #EEF0F3; border-color: #DBDEE3; color: var(--sf-text-muted); }
+.sf-reply__rm { border: 0; background: none; color: var(--sf-text-faint); font-size: 1rem; line-height: 1; cursor: pointer; padding: 0 2px; }
+.sf-reply__rm:hover { color: #B42318; }
+
+.sf-reply__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--sf-border);
+}
+.sf-reply__foot > div { display: flex; gap: 8px; align-items: center; }
+
+/* An internal note sits in the same stream but must never be mistaken for
+   something the requester can see. */
+.sf-thread__private {
+    font-size: 0.63rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #8A6D0B;
+    background: var(--sf-warning-bg);
+    border: 1px solid #EEDD9F;
+    border-radius: 3px;
+    padding: 1px 6px;
+}
+.sf-thread__item.is-internal .sf-thread__mark { background: #8A6D0B; }
+.sf-thread__item.is-internal .sf-thread__text {
+    background: #FFFBF0;
+    border-color: #EEDD9F;
+    border-left: 3px solid #E8A33D;
+}
+
+/* An optional document that hasn't been supplied is neither done nor wrong -
+   a red cross beside "optional" would be a contradiction. */
+.sf-cs-doc__icon--opt {
+    background: var(--sf-surface-alt);
+    border: 1px solid var(--sf-border-strong);
+    color: var(--sf-text-faint);
+}

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Samagra{% endblock %}
+{% block body_class %}sf-bd-body{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ asset_url('/static/css/dashboard-buyer.css') }}">
+{% endblock %}
+
+{% block hero %}
+{# Six views of one dataset rather than six pages, so the switch lives with
+   the content instead of in the app's main navigation. #}
+<nav class="sf-bd-tabs" id="tabs" role="tablist" aria-label="Dashboard views">
+    <div class="sf-bd-tabs__row">
+        <button type="button" role="tab" data-p="overview" class="on" aria-selected="true">Overview</button>
+        <button type="button" role="tab" data-p="cases" aria-selected="false">{{ "Open and closed" if user.role == "buyer" else "Over time" }}</button>
+        {% if user.role == "buyer" %}
+        <button type="button" role="tab" data-p="dept" aria-selected="false">Departments</button>
+        <button type="button" role="tab" data-p="com" aria-selected="false">Commodities</button>
+        <button type="button" role="tab" data-p="buyers" aria-selected="false">Buyers</button>
+        {% endif %}
+        <button type="button" role="tab" data-p="tat" aria-selected="false">TAT health</button>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="sf-bd">
+
+  {# The same teal band the rest of the app opens with, carrying the
+     greeting, the controls and the six tiles - white cards on teal, so the
+     numbers are the first thing on the page. Charts stay on white below. #}
+  <div class="bd-band">
+  <div class="phead">
+    <div>
+      <p class="greet">{{ "Good morning" if now_hour < 12 else ("Good afternoon" if now_hour < 17 else "Good evening") }}, <strong>{{ user.name.split(" ")[0] }}</strong></p>
+      <h1 id="ptitle">Overview</h1><p id="msub"></p>
+    </div>
+    <div class="tools">
+      {# A calendar rather than a dropdown: a list of "Sep 2026, Aug 2026, ..."
+         gets unreadable once a couple of years of cases have accumulated, and
+         it gives no way to see at a glance which months actually had any. #}
+      <span id="mwrap"><label for="monthBtn">Month</label>
+        <span class="mpick">
+          <button type="button" id="monthBtn" class="mpick__btn" aria-haspopup="dialog" aria-expanded="false">All months</button>
+          <div class="mpick__pop" id="monthPop" hidden role="dialog" aria-label="Choose a month">
+            <div class="mpick__head">
+              <button type="button" id="mPrev" class="mpick__nav" aria-label="Previous year">&lsaquo;</button>
+              <span id="mYear" class="mpick__year"></span>
+              <button type="button" id="mNext" class="mpick__nav" aria-label="Next year">&rsaquo;</button>
+            </div>
+            <div class="mpick__grid" id="mGrid"></div>
+            <button type="button" class="mpick__all" id="mAll">All months</button>
+          </div>
+        </span>
+      </span>
+      <span id="bwrap"{% if user.role != "buyer" %} hidden{% endif %}><label for="buyer">Buyer</label><select id="buyer"></select></span>
+      <button class="btn" id="exp" type="button">Export to Excel</button>
+    </div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  </div>
+
+  <div class="card err" id="nodata" hidden>
+    No sourcing cases have been submitted yet. Every tile and chart on this page
+    fills in on its own as cases arrive — through the portal or through the mailbox.
+  </div>
+
+  <div id="dashbody">
+
+  <section class="page on" id="p-overview">
+    <div class="grid g12">
+      <div class="card"><div class="ch-h"><h2>TAT health</h2><p>Open cases</p></div><div class="cb"><div class="cv" style="height:220px"><canvas id="ovTat"></canvas></div><div class="lg" id="ovTatLg"></div></div></div>
+      <div class="card"><div class="ch-h"><h2>Incoming vs closed</h2><p>Cases per week, last 8 weeks</p><span class="r" id="ovNet"></span></div><div class="cb"><div class="cv" style="height:250px"><canvas id="ovLine"></canvas></div></div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><div class="ch-h"><h2>{{ "Cases by department" if user.role == "buyer" else "My requests by status" }}</h2><p>{{ "Open cases, largest first" if user.role == "buyer" else "Everything you have raised" }}</p></div><div class="cb"><div class="cv" style="height:240px"><canvas id="ovDept"></canvas></div></div></div>
+      <div class="card"><div class="ch-h"><h2>{{ "Cases by commodity" if user.role == "buyer" else "By commodity" }}</h2><p>Open {{ "cases" if user.role == "buyer" else "requests" }}</p><span class="r" id="ovTop"></span></div><div class="cb"><div class="cv" style="height:240px"><canvas id="ovCom"></canvas></div></div></div>
+    </div>
+    <div class="card"><div class="ch-h"><h2 id="ovH">Open cases</h2><p>Click a tile above, or any chart, to see those cases</p></div><div class="chips" id="ovChips"></div><div class="cb tb"><table id="ovList"></table></div><button class="more" id="ovMore" type="button"></button></div>
+  </section>
+
+  <section class="page" id="p-cases">
+    <div class="card mb"><div class="ch-h"><h2>Incoming vs closed</h2><p>Cases per week, last 12 weeks. Closed means PO released.</p></div><div class="cb"><div class="cv" style="height:300px"><canvas id="csLine"></canvas></div></div></div>
+    <div class="grid g2">
+      <div class="card"><div class="ch-h"><h2>Open vs closed by month</h2><p id="csMonthSub"></p></div><div class="cb"><div class="cv" style="height:260px"><canvas id="csMonth"></canvas></div></div></div>
+      <div class="card"><div class="ch-h"><h2>Month summary</h2></div><div class="cb tb"><table id="csTable"></table></div></div>
+    </div>
+  </section>
+
+  <section class="page" id="p-dept">
+    <div class="grid g12">
+      <div class="card"><div class="ch-h"><h2>Share of open cases</h2><p>Top 6 and others</p></div><div class="cb"><div class="cv" style="height:280px"><canvas id="dpPie"></canvas></div></div></div>
+      <div class="card"><div class="ch-h"><h2>Where each department stands</h2><p>Open cases by TAT state, worst first — click a cell for those cases, the department for all of them</p></div><div class="cb"><div class="heat" id="dpBars"></div><div class="lg" id="dpLg"></div></div></div>
+    </div>
+    <div class="card"><div class="ch-h"><h2 id="dpH">Open cases</h2><p>Click a department in either chart to see its cases</p></div><div class="chips" id="dpChips"></div><div class="cb tb"><table id="dpList"></table></div><button class="more" id="dpMore" type="button"></button></div>
+  </section>
+
+  <section class="page" id="p-com">
+    <div class="grid g2">
+      <div class="card"><div class="ch-h"><h2>Commodity cloud</h2><p id="comTop">One bubble per category with open cases — size is open value, colour is the worst TAT state in it. Click a bubble for its cases.</p></div><div class="cb"><div class="bubbles" id="cmBub"></div><div class="lg" id="cmBubLg"></div></div></div>
+      <div class="card"><div class="ch-h"><h2>Open value by commodity</h2><p>₹ lakh</p></div><div class="cb"><div class="cv" style="height:280px"><canvas id="cmVal"></canvas></div><p class="hint" id="cmValNote"></p></div></div>
+    </div>
+    <div class="card"><div class="ch-h"><h2 id="cmH">Open cases</h2><p>Click a commodity in either chart to see its cases</p></div><div class="chips" id="cmChips"></div><div class="cb tb"><table id="cmList"></table></div><button class="more" id="cmMore" type="button"></button></div>
+  </section>
+
+  <section class="page" id="p-buyers">
+    <div class="grid g2">
+      <div class="card"><div class="ch-h"><h2>Open and closed per buyer</h2><p id="bySub">Closed in the last 30 days</p></div><div class="cb"><div class="cv" style="height:270px"><canvas id="byBar"></canvas></div></div></div>
+      <div class="card"><div class="ch-h"><h2>Buyer profile</h2><p id="byRadarSub">The three busiest, on five measures</p></div><div class="cb"><div class="cv" style="height:270px"><canvas id="byRadar"></canvas></div><div class="lg" id="byRadarLg"></div></div></div>
+    </div>
+    <div class="card mb"><div class="ch-h"><h2>TAT health per buyer</h2><p>Open cases by TAT state, worst first — click a segment for those cases, the name for all of them</p></div><div class="cb"><div class="hbars" id="byBars"></div><div class="lg" id="byLg"></div></div></div>
+    <div class="card"><div class="ch-h"><h2 id="byH">Open cases</h2><p>Click a buyer in either chart to see their cases</p></div><div class="chips" id="byChips"></div><div class="cb tb"><table id="byList"></table></div><button class="more" id="byMore" type="button"></button></div>
+  </section>
+
+  <section class="page" id="p-tat">
+    <div class="card mb"><div class="ch-h"><h2>Closed within TAT</h2><p>POs released on or before the committed date, out of every PO released — overall and per commitment. Click a gauge to see those POs.</p><span class="r" id="tGaugeNote"></span></div><div class="cb"><div class="gauges" id="tGauges"></div></div></div>
+    <div class="grid g12">
+      <div class="card"><div class="ch-h"><h2>TAT health</h2><p>Open cases</p></div><div class="cb"><div class="cv" style="height:230px"><canvas id="tTat"></canvas></div><div class="lg" id="tTatLg"></div><p class="hint">TAT starts when the complete document set arrives. {{ tat_small }} working days up to {{ tat_small_label }}, {{ tat_medium }} above. Lateness is counted in working days.</p></div></div>
+      <div class="card"><div class="ch-h"><h2>Month by month</h2><p>Share of that month's POs released within TAT — click a month to see them</p></div><div class="cb"><div class="cv" style="height:260px"><canvas id="tTrend"></canvas></div><p class="hint" id="tTrendNote"></p></div></div>
+    </div>
+    <div class="card"><div class="ch-h"><h2 id="tH">Open cases</h2><p>Most urgent first. Click the chart to see one status.</p></div><div class="chips" id="tChips"></div><div class="cb tb"><table id="tList"></table></div><button class="more" id="tMore" type="button"></button></div>
+  </section>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script id="dashData" type="application/json">{{ data.cases | tojson }}</script>
+<script>
+  window.SAMAGRA_DASH = {
+      today: {{ data.today | tojson }},
+      userName: {{ user.name | tojson }},
+      scope: {{ data.scope | tojson }},
+      commodityCount: {{ data.commodity_count | default(0) | tojson }},
+      // Where a row links to depends on who is reading it: a buyer opens the
+      // case in the queue, a requester opens their own request.
+      caseUrlBase: {{ ("/queue/" if user.role == "buyer" else "/requests/") | tojson }},
+      listNoun: {{ ("cases" if user.role == "buyer" else "requests") | tojson }}
+  };
+</script>
+<script src="/static/js/vendor/chart.umd.min.js"></script>
+<script src="/static/js/vendor/xlsx.full.min.js"></script>
+<script src="{{ asset_url('/static/js/dash-metrics.js') }}"></script>
+<script src="{{ asset_url('/static/js/dash-export.js') }}"></script>
+<script src="{{ asset_url('/static/js/dashboard-buyer.js') }}"></script>
+{% endblock %}

@@ -109,3 +109,17 @@ details.sf-email-preview pre {
     padding: 8px;
     border-radius: var(--sf-radius);
 }
+
+
+/* --- demo sign-in shortcuts ------------------------------------------------ */
+.sf-login-demo { margin: 18px 0 14px; padding: 14px 14px 12px; border: 1px dashed var(--sf-border-strong); border-radius: 8px; background: var(--sf-surface-alt); }
+.sf-login-demo__head { font-size: 0.72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--sf-text-muted); margin-bottom: 10px; }
+.sf-login-demo__head span { font-weight: 500; text-transform: none; letter-spacing: 0; margin-left: 6px; color: var(--sf-text-faint); }
+.sf-login-demo__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.sf-login-demo__btn { all: unset; box-sizing: border-box; cursor: pointer; display: block; padding: 8px 10px; background: #fff; border: 1px solid var(--sf-border); border-radius: 6px; transition: border-color .12s ease, box-shadow .12s ease, transform .08s ease; }
+.sf-login-demo__btn:hover { border-color: var(--sf-teal); box-shadow: 0 2px 8px rgba(0, 80, 74, .12); transform: translateY(-1px); }
+.sf-login-demo__btn:focus-visible { outline: 2px solid var(--sf-teal); outline-offset: 2px; }
+.sf-login-demo__btn b { display: block; font-size: 0.8rem; font-weight: 600; color: var(--sf-text); }
+.sf-login-demo__btn span { display: block; font-size: 0.7rem; color: var(--sf-text-muted); margin-top: 1px; }
+.sf-login-demo__tip { margin: 10px 0 0; font-size: 0.72rem; color: var(--sf-text-muted); line-height: 1.45; }
+.sf-login-demo__tip code { background: #fff; border: 1px solid var(--sf-border); border-radius: 3px; padding: 0 4px; font-size: 0.7rem; }
