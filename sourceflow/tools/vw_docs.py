@@ -255,7 +255,17 @@ def write_sfo_pdf(path, c, offers, sc_date, signed_on):
     pdf.output(str(path))
 
 
-def write_rfq_pdf(path, c, rfq_ref, doc_date, deadline):
+def write_rfq_pdf(path, c, rfq_ref, doc_date, deadline, spec=None, via_requester=False):
+    """`spec`: optional [(item, specification, quantity)]. Without it the RFQ
+    refers to the shopping cart, which is right when it travels with the
+    cart to Procurement. With it, the RFQ carries the specification itself -
+    what a supplier needs when the requester floats it as an enquiry, since a
+    supplier never sees VW's cart.
+
+    `via_requester`: below EUR 50k the requester runs the enquiry and offers
+    come back through each supplier's private Samagra link, not to Purchasing.
+    The template's "submit to the Purchasing Department only" would send a
+    supplier to the wrong place, so this version says where offers really go."""
     pdf = _Doc()
     pdf.set_auto_page_break(True, margin=18)
     pdf.add_page()
@@ -268,9 +278,19 @@ def write_rfq_pdf(path, c, rfq_ref, doc_date, deadline):
     ], label_w=45)
 
     _section(pdf, "Requirement")
-    paragraph(pdf, f"Please provide a quotation for {c['summary'].lower()}. "
-                   f"Quantities and specification are as stated in the attached "
-                   f"shopping cart.")
+    if spec:
+        paragraph(pdf, f"Please provide a quotation for {c['summary'].lower()}, "
+                       f"to the specification below.")
+        pdf.ln(1)
+        total = _avail(pdf)
+        grid(pdf, ["Item", "Specification", "Qty"],
+             [total * 0.30, total * 0.58, total * 0.12],
+             [(item, detail, str(qty)) for item, detail, qty in spec],
+             aligns=["L", "L", "R"])
+    else:
+        paragraph(pdf, f"Please provide a quotation for {c['summary'].lower()}. "
+                       f"Quantities and specification are as stated in the attached "
+                       f"shopping cart.")
 
     _section(pdf, "Commercial Requirements")
     paragraph(pdf, "Please state unit price, total price, currency, payment terms, "
@@ -281,8 +301,15 @@ def write_rfq_pdf(path, c, rfq_ref, doc_date, deadline):
     paragraph(pdf, deadline)
 
     _section(pdf, "Instructions")
-    paragraph(pdf, "Offers are to be submitted to the Purchasing Department only. "
-                   "Offers received after the submission deadline may not be considered.")
+    if via_requester:
+        paragraph(pdf, f"Please submit your offer through the private response link in the "
+                       f"enquiry email from Samagra, where you can upload your quotation or "
+                       f"decline. Offers go to {c['requester']}, who sent this enquiry; "
+                       f"replying to the email also reaches them. Offers received after the "
+                       f"submission deadline may not be considered.")
+    else:
+        paragraph(pdf, "Offers are to be submitted to the Purchasing Department only. "
+                       "Offers received after the submission deadline may not be considered.")
     pdf.output(str(path))
 
 
@@ -462,4 +489,60 @@ def write_deviation_request_pdf(path, c, supplier, reason_index, reason_detail,
         + ("" if above else "  This request is within the CFO limit; no COO approval is required.")),
         new_x="LMARGIN", new_y="NEXT")
     pdf.set_text_color(*INK)
+    pdf.output(str(path))
+
+
+# --------------------------------------------------------------------------
+# InfoSec clearance
+#
+# What a requester attaches when the InfoSec screening on a sourcing request
+# says a supplier will touch company data, systems or information. Generated
+# for testing that upload path only, and marked as such on the page: it is
+# not an Information Security decision and must never pass for one.
+# --------------------------------------------------------------------------
+
+def write_infosec_clearance_pdf(path, c, supplier, ref, issued_on, valid_until,
+                                criteria, verified, scope, conditions):
+    """criteria: [(question, "Yes"|"No")]; verified: [(requirement, evidence)]."""
+    pdf = _Doc()
+    pdf.set_auto_page_break(True, margin=18)
+    pdf.add_page()
+    _title(pdf, "INFORMATION SECURITY CLEARANCE")
+
+    pdf.set_font("Helvetica", "B", 8.5)
+    pdf.set_text_color(170, 40, 30)
+    pdf.cell(0, 5, _t("DEMO DOCUMENT - generated to test Samagra's InfoSec upload. "
+                      "Not an Information Security decision."),
+             align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_text_color(*INK)
+    pdf.ln(2)
+
+    kv_block(pdf, [
+        [("Clearance Ref", ref), ("Issued On", issued_on)],
+        [("Supplier", supplier["SupplierName"]), ("Valid Until", valid_until)],
+        [("Shopping Cart", c["sc"]), ("Requested By", c["requester"])],
+        [("Engagement", c["summary"])],
+    ], label_w=36)
+
+    _section(pdf, "Screening Criteria")
+    total = _avail(pdf)
+    grid(pdf, ["Criterion", "Applies"], [total * 0.86, total * 0.14],
+         criteria, aligns=["L", "C"])
+
+    _section(pdf, "Requirements Verified")
+    grid(pdf, ["Requirement", "Evidence"], [total * 0.34, total * 0.66], verified)
+
+    _section(pdf, "Scope of Access")
+    paragraph(pdf, scope)
+
+    _section(pdf, "Decision")
+    paragraph(pdf, f"CLEARED for this engagement, subject to the conditions below. "
+                   f"Valid until {valid_until}.", boxed=True)
+
+    _section(pdf, "Conditions")
+    for n, line in enumerate(conditions, start=1):
+        paragraph(pdf, f"{n}. {line}")
+
+    _section(pdf, "Issued By")
+    paragraph(pdf, "VW GDS India - Information Security  |  infosec@vwgds.in")
     pdf.output(str(path))

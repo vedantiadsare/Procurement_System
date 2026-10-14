@@ -81,6 +81,9 @@ SUPPLIERS = {
     # Resellers of branded IT peripherals - for the market price check case.
     "nexgen": S("Nexgen IT Solutions Pvt Ltd", "IN", "Net 30", "sales@nexgenit.example"),
     "prism": S("Prism Infotech LLP", "IN", "Net 45", "quotes@prisminfotech.example"),
+    # Mobile device resellers - for the smartphone case.
+    "mobilink": S("Mobilink Devices Pvt Ltd", "IN", "Net 30", "sales@mobilinkdevices.example"),
+    "techserve": S("TechServe Enterprise Solutions", "IN", "Net 45", "quotes@techserve.example"),
 }
 
 
@@ -1198,6 +1201,62 @@ CASES += [
                "case's Summary tab and press Check online prices: each item should be found "
                "online as the same product, with each supplier's gap to the cheapest seller.",
     ),
+    # Smartphones: single-model names (A55, M35) that Indian retailers list
+    # widely, with RAM and storage stated so the market check can tell the
+    # variants apart. The RFQ carries the specification itself, so the same
+    # file can be floated to suppliers as an enquiry. The supplier enrols the
+    # devices into company MDM, which is what makes InfoSec screening apply.
+    case(
+        folder="CASE-28_Smartphones_field_staff",
+        headline="Smartphones for field staff - RFQ flow, market check and InfoSec",
+        proves="Two catalog phones with exact models: float the RFQ to suppliers, "
+               "compare the quotes, check them against Amazon and Flipkart, and "
+               "attach InfoSec clearance because the supplier enrols devices into MDM.",
+        sc="1014899231",
+        summary="Smartphones for field sales staff (25 units)",
+        dept="Delivery Brands & Regions",
+        commodity="Mobile, handsets",
+        location="Pune - Hudson",
+        requester="Vedanti Adsare",
+        requester_email="vedanti.adsare@vwgds.in",
+        currency="INR",
+        tax_basis="Exclusive of GST",
+        value=527500,
+        cart=[("Samsung Galaxy A55 5G smartphone, 8GB RAM, 256GB", 10, 31000, 310000),
+              ("Samsung Galaxy M35 5G smartphone, 6GB RAM, 128GB", 15, 14500, 217500)],
+        rfq_spec=[
+            ("Samsung Galaxy A55 5G", "8GB RAM, 256GB storage, dual SIM, 1-year manufacturer warranty, Indian model with GST invoice", 10),
+            ("Samsung Galaxy M35 5G", "6GB RAM, 128GB storage, dual SIM, 1-year manufacturer warranty, Indian model with GST invoice", 15),
+            ("Services", "Delivery to Pune - Hudson; enrolment of all 25 devices into company MDM before handover", 1),
+        ],
+        quotes=[
+            dict(key="mobilink", ref="MDL/Q/26-0932", currency="INR", net=528000,
+                 gross=False, vat=0.18, fmt="docx",
+                 lines=[("Samsung Galaxy A55 5G (8GB/256GB)", 10, 31500, 315000),
+                        ("Samsung Galaxy M35 5G (6GB/128GB)", 15, 14200, 213000)],
+                 raw="From: sales@mobilinkdevices.example\n"
+                     "Subject: Quotation MDL/Q/26-0932 - smartphones\n\n"
+                     "Samsung Galaxy A55 5G 8GB/256GB at Rs 31,500 and Galaxy M35 5G\n"
+                     "6GB/128GB at Rs 14,200 per unit. Total Rs 5,28,000 exclusive of 18% GST.\n"
+                     "MDM enrolment included. Validity 30 days. Delivery 7 working days.\n"
+                     "Payment Net 30.\n"),
+            dict(key="techserve", ref="TSE-2026-1184", currency="INR", net=528750,
+                 gross=False, vat=0.18, fmt="xlsx",
+                 lines=[("Galaxy A55 5G 8GB 256GB", 10, 30900, 309000),
+                        ("Galaxy M35 5G 6GB 128GB", 15, 14650, 219750)],
+                 raw="From: quotes@techserve.example\n"
+                     "Subject: RE: RFQ smartphones for field staff\n\n"
+                     "Per unit: Galaxy A55 Rs 30,900, Galaxy M35 Rs 14,650, exclusive of GST at 18%.\n"
+                     "25 units, Rs 5,28,750. MDM enrolment included.\n"
+                     "Offer valid 45 days. Delivery 10 working days. Payment Net 45.\n"),
+        ],
+        chosen="Mobilink Devices Pvt Ltd",
+        expect="Mobilink at Rs 5,28,000 net against TechServe's Rs 5,28,750 - 0.1% apart. "
+               "TechServe is cheaper on the A55, Mobilink on the M35, so the per-item "
+               "market check is where the negotiating room shows. Rs 5.3 lakh, so 30 "
+               "working days. InfoSec applies: answer Yes to 'access company systems' "
+               "(MDM enrolment) and attach 06_InfoSec_Clearance_Mobilink.pdf.",
+    ),
 ]
 
 # --------------------------------------------------------------------------
@@ -1317,6 +1376,8 @@ TIMELINES = {
     # Raised through the portal on the day it is uploaded, not back-dated.
     "CASE-27_Hybrid_meeting_kit": dict(
         buyer=None, submitted="2026-10-13", docs_complete=None, po_released=None),
+    "CASE-28_Smartphones_field_staff": dict(
+        buyer=None, submitted="2026-10-14", docs_complete=None, po_released=None),
     # Closed history. Two of the six missed their commitment, so the monthly
     # trend is a real line rather than a flat 100%.
     "CASE-18_Meeting_room_AV": dict(
@@ -1409,7 +1470,8 @@ def _build_one(c, today, made):
 
         vw_docs.write_rfq_pdf(
             folder / "03_Request_for_Quotation.pdf", c,
-            rfq_ref=f"RFQ-{c['sc'][-4:]}-2026", doc_date=_fmt(rfq_date), deadline=deadline)
+            rfq_ref=f"RFQ-{c['sc'][-4:]}-2026", doc_date=_fmt(rfq_date), deadline=deadline,
+            spec=c.get("rfq_spec"))
 
         for i, q in enumerate(c["quotes"], start=4):
             sup = SUPPLIERS[q["key"]]

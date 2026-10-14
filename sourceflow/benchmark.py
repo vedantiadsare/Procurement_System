@@ -57,7 +57,7 @@ MAX_LISTINGS = 15
 MIN_BAND = 4
 # Bumped whenever what a search fetches changes, so a result saved under the
 # old rules is searched afresh rather than reused for the rest of the day.
-SEARCH_VERSION = 4
+SEARCH_VERSION = 5
 # A search result is reused for a day: prices move, but not between two
 # clicks of the same button, and the free search quota is small.
 REUSE_FOR = timedelta(hours=24)
@@ -81,11 +81,36 @@ _FOREIGN_DOMAIN = re.compile(r"\.(?!in$)[a-z]{2}$")
 
 _MAJOR_RETAILERS = ("amazon", "flipkart", "croma", "reliance digital", "jiomart",
                     "vijay sales", "tata cliq", "tatacliq")
+# Only these count. Google Shopping also returns small shops, spare-parts
+# stores and gifting sites - a live search priced a Galaxy A55 off a
+# spare-parts shop's motherboard at INR 12,599. A buyer can only negotiate
+# with a price a supplier will accept as real, so the market is the major
+# Indian retailers plus the brands' own stores, and nothing else.
+_BRAND_STORES = ("samsung", "dell", "lenovo", "apple", "logitech", "jabra", "lg electronics")
+_TRUSTED_RE = re.compile(r"\b(" + "|".join(re.escape(x) for x in _MAJOR_RETAILERS + _BRAND_STORES) + r")\b")
 
 
 def _is_major(source) -> bool:
     src = str(source or "").lower()
     return any(m in src for m in _MAJOR_RETAILERS)
+
+
+def _trusted(source) -> bool:
+    return bool(_TRUSTED_RE.search(str(source or "").lower()))
+
+
+# Parts of a product, sold on their own - wherever in the title they appear.
+# Words that are also ordinary features ("display", "battery") are left out;
+# these are not.
+_SPARE_PART = re.compile(r"\b(motherboards?|mainboards?|logic ?boards?|pcb|lcd|folder|back ?panels?|"
+                         r"back ?glass|housings?|flex ?cables?|charging ?ports?|sim ?trays?|"
+                         r"screen ?guards?|tempered ?glass|spares?|spare ?parts?)\b", re.I)
+
+
+def _clean_query(q) -> str:
+    """Brackets and slashes from a supplier's wording - "(8GB/256GB)" - throw
+    shopping search off; the words and numbers are what it needs."""
+    return re.sub(r"\s+", " ", re.sub(r"[()\[\]/,|]+", " ", str(q or ""))).strip()
 
 
 def _abroad(source) -> bool:
@@ -431,7 +456,9 @@ def _classify(target, description, listings) -> tuple:
         title = l["title"]
         if _USED.search(title) or _accessory_for(title, tokens, asked_for):
             continue
-        if _abroad(l.get("source")):
+        if _abroad(l.get("source")) or not _trusted(l.get("source")):
+            continue
+        if _SPARE_PART.search(title) and not _SPARE_PART.search(asked_for):
             continue
         # "Logitech C920x HD Pro Webcam for Beginners: Step-by-Step
         # Instructions" is a INR 449 book, and the model called it similar.
@@ -476,7 +503,8 @@ def _market(listings) -> dict:
     search for "USB-C docking station" ran from an INR 811 no-name dock to an
     INR 26,990 premium one; a band that wide puts every quote "within" it and
     tells the buyer nothing."""
-    same = sorted((l for l in listings if l["match"] == "same"), key=lambda l: l["price"])
+    same = sorted((l for l in listings if l["match"] == "same" and not l.get("ignored")),
+                  key=lambda l: l["price"])
     comp = sorted((l for l in listings if l["match"] == "comparable"), key=lambda l: l["price"])
     ignored = 0
     if len(same) >= 3:
@@ -605,11 +633,12 @@ def benchmark_case(case_id: int, actor: str = None) -> dict:
             # unlucky result can't empty an item.
             # Plus Amazon.in's own search, which is the steady one - see
             # search_amazon.
-            listings, error = search(query)
+            wording = _clean_query(query)
+            listings, error = search(wording)
             tokens = _model_tokens(query)
-            short = " ".join([query.split()[0]] + [t.upper() for t in tokens]) if tokens else None
+            short = " ".join([wording.split()[0]] + [t.upper() for t in tokens]) if tokens else None
             seen = {(l["source"].lower(), round(l["price"])) for l in listings}
-            sources = [f"Google Shopping: {query}"]
+            sources = [f"Google Shopping: {wording}"]
 
             def _merge(more):
                 for l in more:
@@ -618,15 +647,15 @@ def benchmark_case(case_id: int, actor: str = None) -> dict:
                         seen.add(key)
                         listings.append(l)
 
-            if short and short.lower() != query.lower():
+            if short and short.lower() != wording.lower():
                 more, more_error = search(short)
                 if not more_error:
                     _merge(more)
                     sources.append(f"Google Shopping: {short}")
-            on_amazon, amazon_error = search_amazon(query)
+            on_amazon, amazon_error = search_amazon(wording)
             if not amazon_error:
                 _merge(on_amazon)
-                sources.append(f"Amazon.in: {query}")
+                sources.append(f"Amazon.in: {wording}")
             # Only a failure of every search is an error; one source
             # answering is enough to price against.
             if error and not amazon_error:
@@ -648,6 +677,15 @@ def benchmark_case(case_id: int, actor: str = None) -> dict:
             continue
         entry["listings"] = kept
 
+        # A new product does not sell online for under 40% of what every
+        # supplier quoted. A listing that does is a part, used stock or a
+        # mistake; it is shown, marked, and left out of the market.
+        quoted = [q["incl_inr"] for q in item_quotes if q.get("incl_inr")]
+        if quoted:
+            floor = min(quoted) * 0.4
+            for l in entry["listings"]:
+                if l["match"] == "same" and l["price"] < floor:
+                    l["ignored"] = True
         entry["market"] = _market(entry["listings"])
         for q in item_quotes:
             _position(q, entry["market"])
