@@ -697,11 +697,31 @@ def benchmark_case(case_id: int, actor: str = None) -> dict:
     db.update_case(case_id, market_benchmark=json.dumps(result),
                    market_benchmark_at=result["checked_at"])
 
-    same = sum(1 for i in out_items if (i.get("market") or {}).get("kind") == "same")
-    db.insert_audit(case_id, actor or "Samagra", "REMARK",
-                    f"Market price check: {len(out_items)} item(s) searched online, "
-                    f"same product found for {same}.", visibility="internal")
+    db.insert_audit_if_changed(case_id, actor or "Samagra", "REMARK",
+                               _summary_note(out_items), prefix="Market price check:")
     return result
+
+
+def _summary_note(items) -> str:
+    """One line per item - what the market reference was and where the quotes
+    sat - so the note says something a buyer can use, and two identical runs
+    produce identical text (which is what keeps them from being logged twice)."""
+    parts = []
+    for it in items:
+        name = (it.get("description") or "").split(",")[0].strip()[:48]
+        m = it.get("market") or {}
+        gaps = [q["gap_pct"] for q in it.get("quotes", []) if q.get("gap_pct") is not None]
+        if it.get("error"):
+            parts.append(f"{name}: not checked")
+        elif m.get("kind") == "same":
+            span = (f", quotes {min(gaps):+.1f}% to {max(gaps):+.1f}%" if len(gaps) > 1
+                    else f", quote {gaps[0]:+.1f}%" if gaps else "")
+            parts.append(f"{name}: {m['best']['source']} INR {m['low']:,.0f}{span}")
+        elif m.get("kind") == "comparable" and not m.get("thin"):
+            parts.append(f"{name}: comparable INR {m['low']:,.0f}-{m['high']:,.0f}")
+        else:
+            parts.append(f"{name}: no reliable online price")
+    return "Market price check: " + "; ".join(parts) + "."
 
 
 def stored(case) -> dict | None:

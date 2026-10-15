@@ -291,7 +291,10 @@ def _rows_to_items(rows) -> list:
             if field in ("quantity", "unit_price", "amount"):
                 record[field] = _to_number(cell)
             else:
-                record[field] = str(cell).strip() if cell is not None else None
+                # A cell that wraps onto two lines is still one value: the
+                # line break pdfplumber keeps would otherwise travel into the
+                # description, the coverage check and the price search.
+                record[field] = " ".join(str(cell).split()) if cell is not None else None
         # Require a real description before treating a row as a line item.
         # An amount-only row (no description) is almost always footer noise -
         # a GST/tax note, a rounding remark, a page-total fragment that

@@ -510,3 +510,23 @@
 .sf-sup__step--declined { background: var(--sf-warning-bg); color: var(--sf-warning); }
 .sf-sup__step--withdrew { background: var(--sf-danger-bg); color: var(--sf-danger); }
 .sf-sup__arrow { color: var(--sf-text-faint); }
+
+/* Buyer: correct a detail on the requester's word, and re-file a document. */
+.sf-visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.sf-retag { display: flex; gap: 6px; align-items: center; }
+.sf-retag select { font: inherit; font-size: 0.8rem; padding: 4px 6px; border: 1px solid var(--sf-border-strong); border-radius: var(--sf-radius); background: var(--sf-surface); max-width: 190px; }
+.sf-details-edit { margin-top: 14px; border-top: 1px solid var(--sf-border); padding-top: 10px; }
+.sf-details-edit > summary { cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--sf-teal-deep); list-style: none; }
+.sf-details-edit > summary::-webkit-details-marker { display: none; }
+.sf-details-edit > summary:hover { text-decoration: underline; }
+.sf-details-edit form { margin-top: 10px; display: grid; gap: 12px; }
+.sf-details-edit__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px 16px; }
+.sf-details-edit label { display: block; font-size: 0.74rem; font-weight: 600; color: var(--sf-text-muted); margin-bottom: 3px; }
+.sf-details-edit input[type="text"], .sf-details-edit select, .sf-details-edit textarea { width: 100%; font: inherit; font-size: 0.84rem; padding: 6px 8px; border: 1px solid var(--sf-border-strong); border-radius: var(--sf-radius); background: var(--sf-surface); }
+.sf-details-edit fieldset { border: 1px solid var(--sf-border); border-radius: var(--sf-radius); padding: 8px 12px; margin: 0; min-width: 0; }
+.sf-details-edit legend { font-size: 0.74rem; font-weight: 600; color: var(--sf-text-muted); padding: 0 4px; }
+.sf-details-edit__q { display: flex; justify-content: space-between; gap: 12px; align-items: center; font-size: 0.8rem; padding: 4px 0; border-bottom: 1px dashed var(--sf-border); }
+.sf-details-edit__q:last-child { border-bottom: 0; }
+.sf-details-edit__q span { display: flex; gap: 10px; flex-shrink: 0; }
+.sf-details-edit__q label { display: inline-flex; gap: 4px; margin: 0; font-weight: 500; color: inherit; font-size: 0.8rem; }
+.sf-details-edit .sf-btn { justify-self: start; }

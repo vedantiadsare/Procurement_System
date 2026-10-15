@@ -90,6 +90,51 @@
             {% endif %}
         </div>
     </div>
+
+    {# Small facts the requester supplied, usually in reply to an enquiry -
+       recorded here instead of sending them back through the whole form.
+       Value, currency, SC and commodity are not offered: they move the TAT
+       band or the buyer, so they stay the requester's to change. #}
+    {% if may_act and case.source != "import" and case.status not in ("APPROVED", "REJECTED") %}
+    <details class="sf-details-edit">
+        <summary>Correct details from the requester</summary>
+        <form method="post" action="/queue/{{ case.id }}/details">
+            <p class="sf-caption" style="margin:0;">For small facts the requester gave you, e.g. in reply to your enquiry. Each change is logged as old → new and is visible to the requester. Value, currency, SC number and commodity are not editable here.</p>
+            <div class="sf-details-edit__grid">
+                <div><label for="d_employee_code">Employee code</label><input type="text" id="d_employee_code" name="employee_code" value="{{ case.employee_code or '' }}" maxlength="40"></div>
+                <div><label for="d_user_id">User ID</label><input type="text" id="d_user_id" name="user_id" value="{{ case.user_id or '' }}" maxlength="40"></div>
+                <div><label for="d_contact">Contact number</label><input type="text" id="d_contact" name="requestor_contact" value="{{ case.requestor_contact or '' }}" maxlength="30"></div>
+                <div><label for="d_cost_center">Cost center</label><input type="text" id="d_cost_center" name="cost_center" value="{{ case.cost_center or '' }}" maxlength="4" inputmode="numeric" pattern="\d{3,4}"></div>
+                <div><label for="d_location">Delivery location</label>
+                    <select id="d_location" name="delivery_location">
+                        {% for loc in delivery_locations %}<option {{ "selected" if loc == case.delivery_location }}>{{ loc }}</option>{% endfor %}
+                        {% if case.delivery_location and case.delivery_location not in delivery_locations %}<option selected>{{ case.delivery_location }}</option>{% endif %}
+                    </select></div>
+                <div><label for="d_mrm_relevant">MRM relevant</label>
+                    <select id="d_mrm_relevant" name="mrm_relevant">{% for o in ("Yes", "No") %}<option {{ "selected" if (case.mrm_relevant or "Yes") == o }}>{{ o }}</option>{% endfor %}</select></div>
+                <div><label for="d_mrm_conducted">MRM conducted</label>
+                    <select id="d_mrm_conducted" name="mrm_conducted">{% for o in ("Yes", "No") %}<option {{ "selected" if (case.mrm_conducted or "No") == o }}>{{ o }}</option>{% endfor %}</select></div>
+                <div><label for="d_mrm_reason">Reason MRM not conducted</label><input type="text" id="d_mrm_reason" name="mrm_reason" value="{{ case.mrm_reason or '' }}" maxlength="300"></div>
+            </div>
+            <div><label for="d_description">Description</label><textarea id="d_description" name="description" rows="2" maxlength="2000">{{ case.description or '' }}</textarea></div>
+            <fieldset>
+                <legend>InfoSec screening</legend>
+                {% for key, question in infosec_questions %}
+                <div class="sf-details-edit__q">
+                    <div>{{ question }}</div>
+                    <span>
+                        <label><input type="radio" name="infosec_{{ key }}" value="Yes" {{ "checked" if infosec_answers.get(key) == "Yes" }}> Yes</label>
+                        <label><input type="radio" name="infosec_{{ key }}" value="No" {{ "checked" if infosec_answers.get(key) == "No" }}> No</label>
+                    </span>
+                </div>
+                {% endfor %}
+                <p class="sf-caption" style="margin:6px 0 0;">Any Yes makes InfoSec clearance a required document. Attach it from the requester's reply on the Documents tab by filing it as "InfoSec clearance".</p>
+            </fieldset>
+            <div><label for="d_source">Where this came from</label><input type="text" id="d_source" name="source" maxlength="200" placeholder="e.g. requester's reply of {{ today_str or 'today' }}"></div>
+            <button type="submit" class="sf-btn sf-btn--primary sf-btn--sm">Save changes</button>
+        </form>
+    </details>
+    {% endif %}
 </div>
 
 {% if not case.in_scope %}

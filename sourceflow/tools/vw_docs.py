@@ -113,24 +113,56 @@ def grid(pdf, headers, widths, rows, aligns=None):
     for head, w in zip(headers, widths):
         pdf.cell(w, 8, " " + _t(head), border=1, fill=True, new_x="RIGHT", new_y="TOP")
     pdf.ln(8)
+    line_h = 4.4
     for row in rows:
+        # Each cell: shrink the type a little to stay on one line; past that,
+        # wrap onto more lines and make the whole row taller. Shrinking alone
+        # used to run long specifications into the next column, so the RFQ
+        # printed "GST 1in2voice" over a quantity of 12 - and a reader, person
+        # or model, could not tell the quantity any more.
+        cells = []
         for value, w, align in zip(row, widths, aligns):
             pad = " " if align == "L" else ""
-            text = pad + _t(value)
-            # Shrink the type to fit rather than cutting the text off. Every
-            # row stays one line high, which is what keeps the ruled grid the
-            # table extractor keys off intact - but a clipped description is
-            # not a cosmetic problem: the coverage check asks whether each
-            # cart item appears in the offers, and an item the cart calls
-            # "...5-year warr" matches nothing a supplier ever wrote.
+            text = _t(value)
             size = 8.5
             pdf.set_font("Helvetica", "", size)
-            while pdf.get_string_width(text) > w - 2 and size > 5.5:
+            while pdf.get_string_width(pad + text) > w - 2 and size > 7:
                 size -= 0.25
                 pdf.set_font("Helvetica", "", size)
-            pdf.cell(w, 8, text, border=1, align=align, new_x="RIGHT", new_y="TOP")
-        pdf.ln(8)
+            if pdf.get_string_width(pad + text) <= w - 2:
+                cells.append(([text], size))
+            else:
+                pdf.set_font("Helvetica", "", 8)
+                cells.append((_wrap(pdf, text, w - 2 - pdf.get_string_width(pad)), 8))
+        h = max(8, max(len(lines) for lines, _ in cells) * line_h + 3)
+        if pdf.get_y() + h > pdf.page_break_trigger:
+            pdf.add_page()
+        x, y = pdf.get_x(), pdf.get_y()
+        for (lines, size), w, align in zip(cells, widths, aligns):
+            pad = " " if align == "L" else ""
+            pdf.rect(x, y, w, h)
+            pdf.set_font("Helvetica", "", size)
+            top = y + (h - len(lines) * line_h) / 2
+            for i, ln in enumerate(lines):
+                pdf.set_xy(x, top + i * line_h)
+                pdf.cell(w, line_h, pad + ln, align=align)
+            x += w
+        pdf.set_xy(pdf.l_margin, y + h)
     pdf.set_font("Helvetica", "", 8.5)
+
+
+def _wrap(pdf, text, width):
+    """Split text into lines no wider than width at the current font."""
+    lines, cur = [], ""
+    for word in text.split():
+        trial = f"{cur} {word}" if cur else word
+        if pdf.get_string_width(trial) <= width or not cur:
+            cur = trial
+        else:
+            lines.append(cur)
+            cur = word
+    lines.append(cur)
+    return lines
 
 
 def paragraph(pdf, text, size=8.5, boxed=False):
@@ -255,6 +287,13 @@ def write_sfo_pdf(path, c, offers, sc_date, signed_on):
     pdf.output(str(path))
 
 
+def _mid_sentence(title):
+    """A title placed inside a sentence: first letter lowered, unless the
+    first word is an acronym - "USB headsets", not "usb headsets"."""
+    first = title.split(" ", 1)[0]
+    return title if first.isupper() else title[:1].lower() + title[1:]
+
+
 def write_rfq_pdf(path, c, rfq_ref, doc_date, deadline, spec=None, via_requester=False):
     """`spec`: optional [(item, specification, quantity)]. Without it the RFQ
     refers to the shopping cart, which is right when it travels with the
@@ -279,7 +318,7 @@ def write_rfq_pdf(path, c, rfq_ref, doc_date, deadline, spec=None, via_requester
 
     _section(pdf, "Requirement")
     if spec:
-        paragraph(pdf, f"Please provide a quotation for {c['summary'].lower()}, "
+        paragraph(pdf, f"Please provide a quotation for {_mid_sentence(c['summary'])}, "
                        f"to the specification below.")
         pdf.ln(1)
         total = _avail(pdf)
@@ -288,7 +327,7 @@ def write_rfq_pdf(path, c, rfq_ref, doc_date, deadline, spec=None, via_requester
              [(item, detail, str(qty)) for item, detail, qty in spec],
              aligns=["L", "L", "R"])
     else:
-        paragraph(pdf, f"Please provide a quotation for {c['summary'].lower()}. "
+        paragraph(pdf, f"Please provide a quotation for {_mid_sentence(c['summary'])}. "
                        f"Quantities and specification are as stated in the attached "
                        f"shopping cart.")
 

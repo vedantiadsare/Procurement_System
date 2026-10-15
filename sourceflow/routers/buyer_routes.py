@@ -3,6 +3,7 @@ a case (check/enquire/approve/reject/comment/work-note)."""
 
 import json
 import re
+import sqlite3
 from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, Form, Request
@@ -15,10 +16,11 @@ import llm
 import notifications
 import parser as sc_parser
 import rate_sheet
-from config import (DEPARTMENTS, REPO_DIR, STATUSES, TAT_MEDIUM_DAYS, as_of_date,
-                    case_required_docs, default_fx_rate, required_doc_types)
+from config import (DELIVERY_LOCATIONS, DEPARTMENTS, DOC_TYPES, INFOSEC_QUESTIONS, REPO_DIR, STATUSES,
+                    TAT_MEDIUM_DAYS, as_of_date, case_required_docs, default_fx_rate,
+                    infosec_required, required_doc_types)
 from deps import require_buyer
-from formatting import format_inr
+from formatting import doc_type_label, format_inr
 from tat import (add_working_days, clock_for, days_remaining, days_remaining_text,
                  get_tat_band, parse_date, working_days_remaining)
 from templating import templates
@@ -59,6 +61,15 @@ def owns(case, user) -> bool:
         return False
     assigned = (case.get("assigned_buyer") or "").strip()
     return not assigned or assigned == user["name"]
+
+
+def _infosec_answers(case) -> dict:
+    """The requester's InfoSec answers as {key: "Yes"/"No"}, empty if never screened."""
+    try:
+        answers = json.loads(case.get("infosec_answers") or "null") or {}
+    except (TypeError, ValueError):
+        return {}
+    return {k: ("Yes" if v else "No") for k, v in answers.items() if v is not None}
 
 
 def _blocked(case_id):
@@ -331,6 +342,9 @@ async def queue_case_detail(request: Request, case_id: int, user=Depends(require
             "clock": clock,
             "po_released_on": po_released_on,
             "may_act": owns(case, user),
+            "doc_types": DOC_TYPES,
+            "delivery_locations": DELIVERY_LOCATIONS,
+            "infosec_answers": _infosec_answers(case),
             "denied": bool(denied),
             "suggested_tat": suggested_tat,
             # Pre-fills the rate box on a case nobody has valued yet, so the
@@ -345,6 +359,7 @@ async def queue_case_detail(request: Request, case_id: int, user=Depends(require
             "flash": _pop_flash(request),
             "llm_configured": llm.is_configured(),
             "offer_analysis_error": _pop_offer_analysis_error(request),
+            "action_error": request.session.pop("flash_action_error", None),
             "market_check_on": benchmark.is_benchmarkable(case),
             "market_check": benchmark.stored(case),
             "market_check_blocked": benchmark.unavailable_reason(case),
@@ -842,7 +857,12 @@ def analyze_case_offers(case_id: int, actor: str, log=None) -> dict:
             offer_analysis_at=datetime.now().isoformat(timespec="seconds"),
             offer_comparison=json.dumps(structured),
         )
-        db.insert_audit(case_id, actor, "REMARK", "Generated AI offer analysis.", visibility="internal")
+        # Named for its result, and written only when that result changes:
+        # re-analysing the same offers used to add the same note every time.
+        lowest = structured.get("cheapest")
+        note = (f"AI offer analysis: {len(offers_with_text)} offer(s) compared"
+                + (f", lowest {lowest}." if lowest else "."))
+        db.insert_audit_if_changed(case_id, actor, "REMARK", note, prefix="AI offer analysis:")
         _log("act", f"stored the analysis on {case['ticket_no']} and wrote an audit entry")
         return {"stored": True, "error": any_error, "offers": len(offers_with_text), "groups": len(groups)}
 
@@ -935,11 +955,30 @@ async def action_approve(
     if case["status"] != "IN_PROGRESS":
         return RedirectResponse(url=f"/queue/{case_id}", status_code=303)
     po_number = po_number.strip()
+    label = "frame contract number" if case.get("sourcing_basis") == "Frame contract" else "PO number"
     if not po_number:
+        request.session["flash_action_error"] = f"Enter the {label} to approve this case."
+        return RedirectResponse(url=f"/queue/{case_id}", status_code=303)
+    # A PO number identifies one order. The same number on two cases means one
+    # of them is wrong, and it would surface later as a reconciliation problem.
+    def _clash_message(clash):
+        return (f"{label[0].upper() + label[1:]} {po_number} is already on {clash['ticket_no']}. "
+                f"Check the number - each case needs its own.")
+
+    clash = db.case_with_po(po_number, exclude_case_id=case_id)
+    if clash:
+        request.session["flash_action_error"] = _clash_message(clash)
         return RedirectResponse(url=f"/queue/{case_id}", status_code=303)
 
-    db.update_case(case_id, status="APPROVED", po_number=po_number,
-                    assigned_buyer=case["assigned_buyer"] or user["name"])
+    try:
+        db.update_case(case_id, status="APPROVED", po_number=po_number,
+                        assigned_buyer=case["assigned_buyer"] or user["name"])
+    except sqlite3.IntegrityError:
+        # Another case took this PO between the check above and this save -
+        # the database's unique index caught it.
+        clash = db.case_with_po(po_number, exclude_case_id=case_id) or {"ticket_no": "another case"}
+        request.session["flash_action_error"] = _clash_message(clash)
+        return RedirectResponse(url=f"/queue/{case_id}", status_code=303)
     db.insert_audit(case_id, user["name"], "APPROVED", f"PO {po_number}", visibility="external")
     _push_flash(request, notifications.notify_case_approved(case, user["name"], po_number))
     return RedirectResponse(url=f"/queue/{case_id}", status_code=303)
@@ -1003,6 +1042,123 @@ async def action_set_fx_rate(
         detail += " Clock already started - the agreed TAT is unchanged."
     db.insert_audit(case_id, user["name"], "REVALUED", detail, visibility="external")
     return RedirectResponse(url=f"/queue/{case_id}", status_code=303)
+
+
+# The facts a buyer may correct on the requester's word: small, administrative,
+# usually the answer to an enquiry ("my employee code is...", "MRM was held
+# on..."). Value, currency, tax basis, SC number, commodity and department are
+# deliberately not here - they move the TAT band, the buyer assignment or the
+# requester's commitment, so they stay the requester's to change.
+_EDITABLE_DETAILS = [
+    ("requestor_contact", "Contact number"),
+    ("employee_code", "Employee code"),
+    ("user_id", "User ID"),
+    ("cost_center", "Cost center"),
+    ("delivery_location", "Delivery location"),
+    ("description", "Description"),
+    ("mrm_relevant", "MRM relevant"),
+    ("mrm_conducted", "MRM conducted"),
+    ("mrm_reason", "Reason MRM not conducted"),
+]
+
+
+@router.post("/queue/{case_id}/details")
+async def action_correct_details(request: Request, case_id: int, user=Depends(require_buyer)):
+    """Record a detail the requester supplied, usually in reply to an enquiry,
+    without sending them back through the request form for one field.
+
+    Every change is written to the activity trail as old -> new, visible to
+    the requester, so nothing about their request changes behind their back."""
+    case = db.get_case(case_id)
+    if case is None:
+        return RedirectResponse(url="/queue", status_code=303)
+    if not owns(case, user):
+        return _blocked(case_id)
+    if case["status"] in ("APPROVED", "REJECTED") or case.get("source") == "import":
+        return RedirectResponse(url=f"/queue/{case_id}", status_code=303)
+
+    form = await request.form()
+    changes, updates = [], {}
+    for field, label in _EDITABLE_DETAILS:
+        if field not in form:
+            continue
+        new = (form.get(field) or "").strip()
+        old = (case.get(field) or "").strip() if isinstance(case.get(field), str) else (case.get(field) or "")
+        if str(new) != str(old):
+            updates[field] = new or None
+            changes.append(f"{label}: {old or '-'} → {new or '-'}")
+
+    if "cost_center" in updates and updates["cost_center"] and not re.fullmatch(r"\d{3,4}", updates["cost_center"]):
+        request.session["flash_action_error"] = "Cost center is a 3 or 4 digit number. Nothing was changed."
+        return RedirectResponse(url=f"/queue/{case_id}", status_code=303)
+    mrm_relevant = updates.get("mrm_relevant", case.get("mrm_relevant"))
+    mrm_conducted = updates.get("mrm_conducted", case.get("mrm_conducted"))
+    mrm_reason = updates.get("mrm_reason", case.get("mrm_reason"))
+    if mrm_relevant != "No" and mrm_conducted == "No" and not mrm_reason:
+        request.session["flash_action_error"] = ("MRM is relevant but not conducted - add the reason. "
+                                                 "Nothing was changed.")
+        return RedirectResponse(url=f"/queue/{case_id}", status_code=303)
+
+    # InfoSec answers travel as one JSON value; compared per question so the
+    # trail says which answer moved.
+    infosec_note = None
+    if any(f"infosec_{key}" in form for key, _ in INFOSEC_QUESTIONS):
+        try:
+            answers = json.loads(case.get("infosec_answers") or "null") or {}
+        except (TypeError, ValueError):
+            answers = {}
+        new_answers = dict(answers)
+        for key, question in INFOSEC_QUESTIONS:
+            raw = form.get(f"infosec_{key}")
+            if raw not in ("Yes", "No"):
+                continue
+            value = raw == "Yes"
+            if answers.get(key) is None or bool(answers.get(key)) != value:
+                before = "-" if answers.get(key) is None else ("Yes" if answers.get(key) else "No")
+                changes.append(f"InfoSec, \"{question}\": {before} → {raw}")
+            new_answers[key] = value
+        if new_answers != answers:
+            updates["infosec_answers"] = json.dumps(new_answers)
+            now_required = infosec_required(new_answers)
+            updates["infosec_required"] = 1 if now_required else 0
+            if now_required and not any(a["doc_type"] == "INFOSEC_CLEARANCE"
+                                        for a in db.list_attachments(case_id)):
+                infosec_note = "InfoSec clearance is now required and none is on the case."
+
+    if not changes:
+        request.session["flash_action_error"] = "Nothing was changed - the details already say that."
+        return RedirectResponse(url=f"/queue/{case_id}?tab=summary", status_code=303)
+
+    db.update_case(case_id, **updates)
+    source = (form.get("source") or "").strip()
+    detail = "Details corrected" + (f" ({source})" if source else "") + ": " + "; ".join(changes) + "."
+    if infosec_note:
+        detail += " " + infosec_note
+    db.insert_audit(case_id, user["name"], "UPDATED", detail, visibility="external")
+    return RedirectResponse(url=f"/queue/{case_id}?tab=summary", status_code=303)
+
+
+@router.post("/queue/{case_id}/attachments/{attachment_id}/type")
+async def action_retag_document(request: Request, case_id: int, attachment_id: int,
+                                user=Depends(require_buyer), doc_type: str = Form(...)):
+    """File a document under the right type - a requester's reply is tagged
+    from its name and first page, and "Other document" is a common guess for
+    an MRM approval or an InfoSec clearance mail."""
+    case = db.get_case(case_id)
+    if case is None:
+        return RedirectResponse(url="/queue", status_code=303)
+    if not owns(case, user):
+        return _blocked(case_id)
+    if case["status"] in ("APPROVED", "REJECTED") or doc_type not in DOC_TYPES:
+        return RedirectResponse(url=f"/queue/{case_id}?tab=documents", status_code=303)
+    att = next((a for a in db.list_attachments(case_id) if a["id"] == attachment_id), None)
+    if att is None or att["doc_type"] == doc_type:
+        return RedirectResponse(url=f"/queue/{case_id}?tab=documents", status_code=303)
+    db.update_attachment_type(attachment_id, doc_type)
+    db.insert_audit(case_id, user["name"], "UPDATED",
+                    f"{att['filename']} filed as {doc_type_label(doc_type)} "
+                    f"(was {doc_type_label(att['doc_type'])}).", visibility="external")
+    return RedirectResponse(url=f"/queue/{case_id}?tab=documents", status_code=303)
 
 
 @router.post("/queue/{case_id}/reject")

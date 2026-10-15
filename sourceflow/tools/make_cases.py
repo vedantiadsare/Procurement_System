@@ -84,6 +84,9 @@ SUPPLIERS = {
     # Mobile device resellers - for the smartphone case.
     "mobilink": S("Mobilink Devices Pvt Ltd", "IN", "Net 30", "sales@mobilinkdevices.example"),
     "techserve": S("TechServe Enterprise Solutions", "IN", "Net 45", "quotes@techserve.example"),
+    # Tablet resellers - for the case whose quotes arrive in revisions.
+    "zentrix": S("Zentrix Devices Pvt Ltd", "IN", "Net 30", "sales@zentrixdevices.example"),
+    "brightway": S("Brightway Infosystems LLP", "IN", "Net 45", "bids@brightwayinfo.example"),
 }
 
 
@@ -1257,6 +1260,71 @@ CASES += [
                "working days. InfoSec applies: answer Yes to 'access company systems' "
                "(MDM enrolment) and attach 06_InfoSec_Clearance_Mobilink.pdf.",
     ),
+    # Tablets: two Samsung models Indian retailers list widely, with RAM,
+    # storage and connectivity stated so the market check can tell variants
+    # apart. The quotes here are the FINAL versions - each supplier revised
+    # its offer during the enquiry, and the earlier versions are written
+    # separately for replaying the revisions through the supplier portal.
+    # Factory-sealed devices with no supplier access to anything, so the
+    # InfoSec screening is all No - the contrast to CASE-28.
+    case(
+        folder="CASE-29_Tablets_workshop_demos",
+        headline="Tablets for customer workshops - quotes revised during the enquiry",
+        proves="Two catalog tablets with exact specs: float the RFQ, let each supplier "
+               "send revised quotations (versions 1-3), compare the final offers and "
+               "check them against Amazon and Flipkart. InfoSec does not apply.",
+        sc="1014905518",
+        summary="Tablets for customer workshop demos (20 units)",
+        dept="Value Development",
+        commodity="Laptop, desktop, tablets",
+        location="Pune - Ganges",
+        requester="Vedanti Adsare",
+        requester_email="vedanti.adsare@vwgds.in",
+        currency="INR",
+        tax_basis="Exclusive of GST",
+        value=508000,
+        cart=[("Samsung Galaxy Tab S9 FE Wi-Fi tablet, 10.9 inch, 6GB RAM, 128GB", 12, 30000, 360000),
+              ("Samsung Galaxy Tab A9+ Wi-Fi tablet, 11 inch, 8GB RAM, 128GB", 8, 18500, 148000)],
+        rfq_spec=[
+            ("Samsung Galaxy Tab S9 FE (Wi-Fi)",
+             "10.9-inch display, 6GB RAM, 128GB storage, Wi-Fi only, S Pen in the box, "
+             "IP68, colour Gray, 1-year manufacturer warranty, Indian model with GST invoice", 12),
+            ("Samsung Galaxy Tab A9+ (Wi-Fi)",
+             "11-inch 90Hz display, 8GB RAM, 128GB storage, Wi-Fi only, colour Graphite, "
+             "1-year manufacturer warranty, Indian model with GST invoice", 8),
+            ("Delivery",
+             "Factory-sealed units delivered to Pune - Ganges within 10 working days of PO. "
+             "No software set-up or device enrolment by the supplier.", 1),
+        ],
+        quotes=[
+            dict(key="zentrix", ref="ZDP/Q/26-0418-R2", currency="INR", net=506000,
+                 gross=False, vat=0.18, fmt="docx",
+                 lines=[("Samsung Galaxy Tab S9 FE Wi-Fi 6GB/128GB with S Pen", 12, 29900, 358800),
+                        ("Samsung Galaxy Tab A9+ Wi-Fi 8GB/128GB", 8, 18400, 147200)],
+                 raw="From: sales@zentrixdevices.example\n"
+                     "Subject: Revised quotation ZDP/Q/26-0418-R2 - tablets (final offer)\n\n"
+                     "Revision 2, superseding ZDP/Q/26-0418-R1.\n"
+                     "Galaxy Tab S9 FE Wi-Fi 6GB/128GB Rs 29,900 and Galaxy Tab A9+ Wi-Fi\n"
+                     "8GB/128GB Rs 18,400 per unit. Total Rs 5,06,000 exclusive of 18% GST.\n"
+                     "Delivery 7 working days from PO, free to Pune - Ganges. Validity 30 days.\n"
+                     "Payment Net 30.\n"),
+            dict(key="brightway", ref="BWI-2026-0773 Rev B", currency="INR", net=510800,
+                 gross=False, vat=0.18, fmt="xlsx",
+                 lines=[("Galaxy Tab S9 FE WiFi 6GB 128GB Gray", 12, 30100, 361200),
+                        ("Galaxy Tab A9 Plus WiFi 8GB 128GB Graphite", 8, 18700, 149600)],
+                 raw="From: bids@brightwayinfo.example\n"
+                     "Subject: RE: RFQ tablets - revised offer Rev B\n\n"
+                     "Rev B, replacing our offer BWI-2026-0773 Rev A.\n"
+                     "Per unit: Tab S9 FE Rs 30,100, Tab A9+ Rs 18,700, exclusive of GST at 18%.\n"
+                     "20 units, Rs 5,10,800. Delivery 10 working days.\n"
+                     "Offer valid 45 days. Payment Net 45.\n"),
+        ],
+        chosen="Zentrix Devices Pvt Ltd",
+        expect="Zentrix at Rs 5,06,000 net against Brightway's Rs 5,10,800 - 0.9% apart, "
+               "Zentrix cheaper on both tablets and faster on delivery. Rs 5.1 lakh, so 30 "
+               "working days. InfoSec: all five questions No - no clearance needed. "
+               "Check online prices compares both tablets with Amazon and Flipkart.",
+    ),
 ]
 
 # --------------------------------------------------------------------------
@@ -1378,6 +1446,10 @@ TIMELINES = {
         buyer=None, submitted="2026-10-13", docs_complete=None, po_released=None),
     "CASE-28_Smartphones_field_staff": dict(
         buyer=None, submitted="2026-10-14", docs_complete=None, po_released=None),
+    # The enquiry runs 14.10-21.10 and the suppliers' final revisions are
+    # dated 17.10, so the request goes to Procurement after that.
+    "CASE-29_Tablets_workshop_demos": dict(
+        buyer=None, submitted="2026-10-19", docs_complete=None, po_released=None),
     # Closed history. Two of the six missed their commitment, so the monthly
     # trend is a real line rather than a flat 100%.
     "CASE-18_Meeting_room_AV": dict(

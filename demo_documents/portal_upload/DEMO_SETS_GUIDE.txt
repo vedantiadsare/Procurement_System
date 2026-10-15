@@ -1,0 +1,42 @@
+DEMO SETS - which one shows what
+================================
+
+Each folder: For_supplier_enquiry (RFQ to float), For_supplier_replies (every
+version each supplier sends), 01-0x (the sourcing request), READ_ME_first.txt
+(step by step). The enquiry stays open for supplier replies until 22.10.2026.
+Requester for every set: Vedanti Adsare. Password for all demo logins: as usual.
+
+CASE-29_Tablets_workshop_demos
+  Shows      Tablets for customer workshops - quotes revised three times
+  Buyer      Sayali Parikh  (Laptop, desktop, tablets)
+  InfoSec    No
+  Finals     Zentrix Rs 4,81,600 (3 versions); Brightway Rs 4,83,400 (3 versions)
+  Award      Zentrix Devices Pvt Ltd
+
+CASE-30_Headsets_contact_centre
+  Shows      Headsets for the contact centre - four revisions and a GST-inclusive quote
+  Buyer      Vikas Suryawanshi  (Headsets)
+  InfoSec    No
+  Finals     Nexgen Rs 2,72,500 (4 versions); Prism Rs 2,75,300 (3 versions)
+  Award      Nexgen IT Solutions Pvt Ltd
+
+CASE-31_Network_printers_branches
+  Shows      Network printers for branch offices - InfoSec applies
+  Buyer      Sayali Parikh  (Printer equipment, accessories)
+  InfoSec    Yes - clearance attached as 06_
+  Finals     Printwell Rs 3,18,600 (3 versions); Inkpoint Rs 3,23,880 (3 versions)
+  Award      Printwell Systems Pvt Ltd
+
+CASE-32_UPS_workstations
+  Shows      UPS units for workstations - a supplier declines, then changes its mind
+  Buyer      Nilesh Koram  (UPS, battery)
+  InfoSec    No
+  Finals     Powerline Rs 2,83,400 (4 versions); Vertexa Rs 2,86,100 (2 versions); Ampere Rs 2,91,250 (1 version)
+  Award      Powerline Electricals Pvt Ltd
+
+CASE-33_Video_bars_meeting_rooms
+  Shows      Video conferencing bars - one supplier quotes in euros
+  Buyer      Vikas Suryawanshi  (AV, VC)
+  InfoSec    No
+  Finals     Visionaire Rs 5,16,000 (3 versions); Konferenz EUR 5,538.00 (2 versions)
+  Award      Visionaire AV Solutions Pvt Ltd

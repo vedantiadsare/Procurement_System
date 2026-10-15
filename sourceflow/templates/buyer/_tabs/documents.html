@@ -1,2 +1,6 @@
 {% import "_macros/document_list.html" as doclist %}
-{{ doclist.render(attachments) }}
+{% set can_retag = may_act and case.status not in ("APPROVED", "REJECTED") %}
+{{ doclist.render(attachments, retag_case_id=case.id if can_retag else None, doc_types=doc_types) }}
+{% if can_retag %}
+<p class="sf-caption" style="margin-top:8px;">Filed under the wrong type? Pick the right one and save — for example a reply tagged "Other document" that is really an MRM approval or an InfoSec clearance. The change is logged.</p>
+{% endif %}

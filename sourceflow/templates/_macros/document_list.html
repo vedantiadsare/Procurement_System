@@ -1,5 +1,7 @@
 {% import "_macros/icons.html" as ic %}
-{% macro render(attachments) %}
+{# retag_case_id: given on the buyer's page while the case is open, so a
+   document filed under the wrong type can be moved to the right one. #}
+{% macro render(attachments, retag_case_id=None, doc_types=None) %}
 {% if not attachments %}
 <p class="sf-caption">No documents on file.</p>
 {% else %}
@@ -8,7 +10,17 @@
     <tbody>
     {% for a in attachments %}
     <tr>
-        <td>{{ a.doc_type }}</td>
+        <td>
+            {% if retag_case_id and doc_types %}
+            <form method="post" action="/queue/{{ retag_case_id }}/attachments/{{ a.id }}/type" class="sf-retag">
+                <label class="sf-visually-hidden" for="retag_{{ a.id }}">File {{ a.filename }} as</label>
+                <select id="retag_{{ a.id }}" name="doc_type" onchange="this.form.querySelector('button').hidden = this.value === '{{ a.doc_type }}'">
+                    {% for t in doc_types %}<option value="{{ t }}" {{ "selected" if t == a.doc_type }}>{{ t | doc_type_label }}</option>{% endfor %}
+                </select>
+                <button type="submit" class="sf-btn sf-btn--primary sf-btn--sm" hidden>Save</button>
+            </form>
+            {% else %}{{ a.doc_type | doc_type_label }}{% endif %}
+        </td>
         <td style="display:flex;align-items:center;gap:8px;">{{ ic.icon("file-text", 15) }}{{ a.filename }}</td>
         <td>{{ a.uploaded_at | date }}</td>
         <td>{{ ((a.size_bytes or 0) / 1024) | round }} KB</td>

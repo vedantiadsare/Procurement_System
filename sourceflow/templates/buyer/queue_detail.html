@@ -31,6 +31,9 @@
 </div>
 {% endif %}
 
+{% if action_error %}
+<div class="sf-alert sf-alert--warning">{{ action_error }}</div>
+{% endif %}
 {% if flash %}
 <div class="sf-alert {{ 'sf-alert--success' if flash.sent else ('sf-alert--warning' if flash.get('error') else 'sf-alert--info') }}">
     {% if flash.sent %}

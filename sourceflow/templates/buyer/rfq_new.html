@@ -43,13 +43,11 @@
         <div class="sf-field">
             <div class="sf-rfqn-labelrow">
                 <label for="message">Your note to suppliers</label>
-                {% if cases or case %}
-                <button type="button" class="sf-btn sf-btn--secondary sf-btn--sm" id="draftBtn" title="Draft the note from a linked case's RFQ and deviation note">Draft from a case</button>
-                {% endif %}
+                <button type="button" class="sf-btn sf-btn--secondary sf-btn--sm" id="draftBtn" title="The Enquiry agent reads the RFQ you attach in step 2 and fills in subject, note and respond-by date">Draft from the RFQ</button>
             </div>
             <textarea id="message" name="message" rows="9"
                       placeholder="Scope, quantities, delivery location, what the quotation must cover, commercial terms…">{{ values.message }}</textarea>
-            <p class="sf-caption" id="draftNote">Plain text — this goes into the body of the mail exactly as typed.</p>
+            <p class="sf-caption" id="draftNote">Plain text — this goes into the body of the mail exactly as typed. Attach your RFQ in step 2 and Samagra drafts this for you.</p>
         </div>
 
         {# Linking is opt-in: a new enquiry stands on its own unless the
@@ -57,7 +55,7 @@
         {% if cases or case %}
         <div class="sf-rfqn-link {{ 'is-open' if case }}" id="caseLink">
             <button type="button" class="sf-rfqn-link__toggle" id="caseToggle" aria-expanded="{{ 'true' if case else 'false' }}">
-                {{ ic.icon("paperclip", 14) }} <span>Link to one of my cases</span> <em>optional</em>
+                {{ ic.icon("paperclip", 14) }} <span>More quotes for a request I already submitted?</span> <em>optional</em>
             </button>
             <div class="sf-rfqn-link__body">
                 <select id="case_id" name="case_id">
@@ -66,7 +64,7 @@
                     <option value="{{ c.id }}" {{ "selected" if case and case.id == c.id }}>{{ c.ticket_no }} — {{ c.topic_title }}</option>
                     {% endfor %}
                 </select>
-                <p class="sf-caption">Only cases still waiting on quotes are listed. Linking lets Samagra draft the note from the case's RFQ and deviation note, and shows the enquiry on the case.</p>
+                <p class="sf-caption">Usually you float the enquiry first and raise the sourcing request afterwards, so leave this empty. Use it only when Procurement asks for another quote on a request you have already submitted: Samagra can then draft the note from that request's RFQ and deviation note. Your open requests without a PO are listed.</p>
             </div>
         </div>
         {% endif %}
@@ -242,37 +240,59 @@
     files.addEventListener("change", renderFiles);
     renderFiles(); renderWhen(); refresh();
 
-    // --- draft from a linked case ------------------------------------------
-    var btn = $("draftBtn");
-    if (btn) btn.addEventListener("click", function () {
-        if (!sel.value) {
-            link.classList.add("is-open"); toggle.setAttribute("aria-expanded", "true");
-            note.textContent = "Pick a case to draft from — the note is written from its documents.";
-            sel.focus();
+    // --- the Enquiry agent: draft from the attached RFQ (or a linked case) ---
+    // The RFQ is the file in step 2 whose name says so; failing that, the
+    // first PDF or Word file. Nothing is saved by drafting - the file is only
+    // read; it is stored when the enquiry is sent.
+    var btn = $("draftBtn"), draftedFrom = null, busy = false;
+    function rfqFile() {
+        var list = Array.prototype.slice.call(files.files || []);
+        var docs = list.filter(function (f) { return /\.(pdf|docx?|txt)$/i.test(f.name); });
+        return docs.filter(function (f) { return /rfq|request.?for.?quot|enquiry|inquiry/i.test(f.name); })[0] || docs[0] || null;
+    }
+    function draft(auto) {
+        if (busy) return;
+        var useCase = sel && sel.value;
+        var file = useCase ? null : rfqFile();
+        if (!useCase && !file) {
+            if (!auto) note.textContent = "Attach your RFQ in step 2 first (PDF or Word) — the note is written from it.";
             return;
         }
         // Never silently overwrite something the requester typed.
-        if (box.value.trim() && !confirm("Replace what's in the note with the draft?")) return;
+        if (!auto && box.value.trim() && !confirm("Replace what's in the note with a new draft?")) return;
 
-        btn.disabled = true;
+        busy = true; btn.disabled = true;
         var was = btn.textContent;
-        btn.textContent = "Reading the case…";
-        note.textContent = "Reading the RFQ and deviation note. This takes a moment.";
+        btn.textContent = useCase ? "Reading the request…" : "Reading the RFQ…";
+        note.textContent = (useCase ? "Reading the request's RFQ and deviation note" : "Reading " + file.name)
+            + " and drafting the note. This takes a moment.";
 
         var body = new FormData();
-        body.append("case_id", sel.value);
+        if (useCase) body.append("case_id", sel.value); else body.append("rfq_file", file);
         fetch("/supplier-rfq/draft", { method: "POST", body: body, credentials: "same-origin" })
             .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
             .then(function (res) {
                 if (!res.ok || !res.j.ok) { note.textContent = "Couldn't draft: " + (res.j.error || "unknown error"); return; }
                 box.value = res.j.draft;
-                if (!subj.value.trim()) subj.value = res.j.subject || "";
-                note.textContent = res.j.summary + ". Read it through and edit before sending — anything marked [to confirm] wasn't in the documents.";
-                box.focus();
+                var filled = ["note"];
+                if (res.j.subject && !subj.value.trim()) { subj.value = res.j.subject; filled.push("subject"); }
+                if (res.j.closes_on && !when.value) { when.value = res.j.closes_on; renderWhen(); filled.push("respond-by date"); }
+                draftedFrom = file ? file.name + file.size : "case";
+                note.textContent = res.j.summary + ". Filled in: " + filled.join(", ")
+                    + ". Read it through and edit before sending — anything marked [to confirm] wasn't in the RFQ.";
             })
             .catch(function () { note.textContent = "Couldn't draft just now. Try again."; })
-            .finally(function () { btn.disabled = false; btn.textContent = was; });
-    });
+            .finally(function () { busy = false; btn.disabled = false; btn.textContent = was; });
+    }
+    if (btn) btn.addEventListener("click", function () { draft(false); });
+    // Attaching the RFQ drafts by itself, but only into an empty note and
+    // only once per file - it never overwrites what the requester wrote.
+    function autoDraft() {
+        var f = rfqFile();
+        if (f && !box.value.trim() && draftedFrom !== f.name + f.size && !(sel && sel.value)) draft(true);
+    }
+    files.addEventListener("change", autoDraft);
+    drop.addEventListener("drop", function () { setTimeout(autoDraft, 0); });
     // --- InfoSec check on Send: shown once, then the form really submits
     (function () {
         var form = $("rfqForm"), dlg = $("infosecDialog");
@@ -284,8 +304,18 @@
                 noteEl.hidden = !Array.prototype.some.call(boxes, function (x) { return x.checked; });
             });
         });
+        var sending = false;
         form.addEventListener("submit", function (e) {
-            if (confirmed) return;
+            // Sending mails every supplier before the page changes, which takes
+            // a while; a second click in that gap used to float the enquiry twice.
+            if (sending) { e.preventDefault(); return; }
+            if (confirmed) {
+                sending = true;
+                var btn = $("sendBtn");
+                btn.disabled = true;
+                btn.textContent = "Sending enquiry…";
+                return;
+            }
             e.preventDefault();
             dlg.showModal();
         });

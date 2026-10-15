@@ -152,6 +152,20 @@ def versions(files: list) -> list:
     """
     from datetime import datetime, timedelta
     ordered = sorted(files, key=lambda f: str(f.get("uploaded_at") or ""))
+    # Files recorded with their submission number are grouped by it - each
+    # send is its own version however quickly it follows the last. Only files
+    # from before that was recorded fall back to the time-gap rule below.
+    if ordered and all(f.get("submission") for f in ordered):
+        groups = []
+        for f in ordered:
+            if not groups or groups[-1]["_n"] != f["submission"]:
+                groups.append({"_n": f["submission"], "version": len(groups) + 1,
+                               "at": f.get("uploaded_at"), "files": []})
+            groups[-1]["files"].append(f)
+        for g in groups:
+            g.pop("_n")
+            g["current"] = g is groups[-1]
+        return groups
     groups = []
     last_at = None
     for f in ordered:
@@ -277,9 +291,10 @@ def record_response(round_, decision, text, files) -> dict:
     open - a revised quotation is normal - and replaces the previous text but
     adds to the file list rather than deleting what was sent before."""
     stored = _store(_round_dir(round_["reference"]) / "responses", files)
+    submission = db.next_rfq_submission(round_["invitation_id"]) if stored else None
     for f in stored:
         db.insert_rfq_response_file(round_["invitation_id"], f["filename"], f["path"],
-                                    f["ext"], f["size_bytes"])
+                                    f["ext"], f["size_bytes"], submission=submission)
     # What they said before this answer - round_ was read before the update -
     # so the requester's mail can say "withdrew" or "changed their mind"
     # rather than describe each answer as if it were the first.

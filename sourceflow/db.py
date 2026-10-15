@@ -382,6 +382,24 @@ def _migrate(conn):
     _ensure_columns(conn, "attachments", _ATTACHMENTS_MIGRATED_COLUMNS)
     _ensure_columns(conn, "rfq_rounds", _RFQ_ROUNDS_MIGRATED_COLUMNS)
     _ensure_columns(conn, "rfq_invitations", _RFQ_INVITATIONS_MIGRATED_COLUMNS)
+    # Which submission a returned file came with: 1, 2, 3... Versions used to
+    # be told apart by a gap of more than a minute between uploads, which
+    # merged a quick revision into the first version.
+    _ensure_columns(conn, "rfq_response_files", [("submission", "INTEGER")])
+
+    # One PO number, one case - enforced by the database itself, so two
+    # approvals at the same moment can't both get through the route's check.
+    # Matched ignoring case and spaces, like case_with_po(); blank is allowed
+    # on any number of cases (open ones have none yet).
+    try:
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS ux_cases_po_number "
+            "ON cases (LOWER(TRIM(po_number))) "
+            "WHERE po_number IS NOT NULL AND TRIM(po_number) != ''")
+    except sqlite3.IntegrityError:
+        # Existing data already repeats a PO. Starting the app matters more;
+        # the approve route's own check still refuses new duplicates.
+        pass
 
     conn.execute("UPDATE cases SET status = 'APPROVED' WHERE status = 'COMPLETED'")
     conn.execute("UPDATE audit_trail SET action = 'APPROVED' WHERE action = 'COMPLETED'")
@@ -567,6 +585,15 @@ def insert_attachment(case_id, doc_type, filename, file_path, file_ext, size_byt
         conn.close()
 
 
+def update_attachment_type(attachment_id, doc_type):
+    conn = get_connection()
+    try:
+        conn.execute("UPDATE attachments SET doc_type = ? WHERE id = ?", (doc_type, attachment_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def list_attachments(case_id) -> list:
     conn = get_connection()
     try:
@@ -658,6 +685,37 @@ def count_audit_action_in_month(action: str, year_month: str) -> int:
             (action, year_month),
         ).fetchone()
         return row["n"] if row else 0
+    finally:
+        conn.close()
+
+
+def insert_audit_if_changed(case_id, actor, action, detail, prefix, visibility="internal") -> bool:
+    """Write a note only when it differs from the last note of the same kind
+    (the same `prefix`) on this case. Re-running a check that finds the same
+    thing adds nothing to the activity - a buyer who clicks it a hundred times
+    would otherwise get a hundred identical notes. Returns whether it wrote."""
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            "SELECT detail FROM audit_trail WHERE case_id = ? AND detail LIKE ? "
+            "ORDER BY created_at DESC, id DESC LIMIT 1",
+            (case_id, prefix + "%")).fetchone()
+    finally:
+        conn.close()
+    if row and row[0] == detail:
+        return False
+    insert_audit(case_id, actor, action, detail, visibility=visibility)
+    return True
+
+
+def case_with_po(po_number, exclude_case_id=None):
+    """The case already carrying this PO or frame contract number, if any."""
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            "SELECT id, ticket_no FROM cases WHERE LOWER(TRIM(po_number)) = LOWER(TRIM(?)) "
+            "AND id != ?", (po_number, exclude_case_id or -1)).fetchone()
+        return _row_to_dict(row) if row else None
     finally:
         conn.close()
 
@@ -1601,14 +1659,28 @@ def record_rfq_response(invitation_id, decision, response_text, files=0):
         conn.close()
 
 
-def insert_rfq_response_file(invitation_id, filename, file_path, file_ext, size_bytes) -> int:
+def next_rfq_submission(invitation_id) -> int:
+    """The number the next set of files from this supplier is filed under."""
+    conn = get_connection()
+    try:
+        row = conn.execute("SELECT MAX(submission), COUNT(*) FROM rfq_response_files "
+                           "WHERE invitation_id = ?", (invitation_id,)).fetchone()
+        # Files from before submissions were numbered count as one earlier
+        # submission, so a revision after them is still a new version.
+        return (row[0] or (1 if row[1] else 0)) + 1
+    finally:
+        conn.close()
+
+
+def insert_rfq_response_file(invitation_id, filename, file_path, file_ext, size_bytes,
+                             submission=None) -> int:
     conn = get_connection()
     try:
         cur = conn.execute(
             "INSERT INTO rfq_response_files (invitation_id, filename, file_path, file_ext, "
-            "size_bytes, uploaded_at) VALUES (?, ?, ?, ?, ?, ?)",
+            "size_bytes, uploaded_at, submission) VALUES (?, ?, ?, ?, ?, ?, ?)",
             (invitation_id, filename, file_path, file_ext, size_bytes,
-             datetime.now().isoformat(timespec="seconds")),
+             datetime.now().isoformat(timespec="seconds"), submission),
         )
         conn.commit()
         return cur.lastrowid

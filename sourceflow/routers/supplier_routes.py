@@ -26,7 +26,7 @@ import quotation_check
 import supplier_rfq
 from config import (ALLOWED_EXTENSIONS, MAX_FILE_MB, RFQ_DEFAULT_OPEN_DAYS,
                     SOURCEFLOW_ROOT, INFOSEC_CONTACT, INFOSEC_QUESTIONS, infosec_required)
-from deps import require_requester
+from deps import get_current_user, require_requester
 from templating import templates
 
 router = APIRouter()
@@ -140,13 +140,34 @@ async def rfq_draft(request: Request, user=Depends(require_requester)):
     import agents
 
     form = await request.form()
+
+    # The usual path: no case exists yet, so the agent reads the RFQ the
+    # requester is attaching. Nothing is stored - the file is read and dropped;
+    # it is saved only when the enquiry is actually sent.
+    rfq = form.get("rfq_file")
+    if rfq is not None and getattr(rfq, "filename", ""):
+        content = await rfq.read()
+        ext = rfq.filename.rsplit(".", 1)[-1].lower() if "." in rfq.filename else ""
+        if ext not in ALLOWED_EXTENSIONS or len(content) > MAX_FILE_MB * 1024 * 1024:
+            return JSONResponse({"ok": False, "error": f"Can't read {rfq.filename} - use a PDF or Word file "
+                                                      f"under {MAX_FILE_MB} MB."}, status_code=400)
+        agent = agents.get("enquiry")
+        result = agent.execute(trigger="manual", actor=user["name"],
+                               document={"filename": rfq.filename, "ext": ext, "bytes": content})
+        if result["status"] != "ok":
+            return JSONResponse({"ok": False, "error": result["summary"]}, status_code=422)
+        fields = getattr(agent, "last_fields", {}) or {}
+        return JSONResponse({"ok": True, "draft": agent.last_draft, "subject": fields.get("subject") or "",
+                             "closes_on": fields.get("closes_on") or "", "summary": result["summary"]})
+
     try:
         case_id = int(form.get("case_id") or 0)
     except ValueError:
         case_id = 0
     case = db.get_case(case_id) if case_id else None
     if case is None or case["id"] not in {c["id"] for c in _linkable_cases(user)}:
-        return JSONResponse({"ok": False, "error": "Pick a case to draft from first."}, status_code=400)
+        return JSONResponse({"ok": False, "error": "Attach the RFQ in step 2, or pick a request to draft from."},
+                            status_code=400)
 
     agent = agents.get("enquiry")
     result = agent.execute(trigger="manual", actor=user["name"], case_id=case_id)
@@ -353,8 +374,13 @@ async def supplier_portal(request: Request, token: str):
         return templates.TemplateResponse(request, "supplier/rfq_unavailable.html",
                                           {"user": None, "hide_nav_tabs": True}, status_code=404)
 
-    db.mark_rfq_opened(round_["invitation_id"])
-    return _supplier_page(request, round_, token=token,
+    # Someone signed in to Samagra is the requester (or a colleague) checking
+    # the link, not the supplier. Their visit must not count as "opened", and
+    # they can't answer on the supplier's behalf - they see a preview.
+    viewer = get_current_user(request)
+    if viewer is None:
+        db.mark_rfq_opened(round_["invitation_id"])
+    return _supplier_page(request, round_, token=token, preview_by=viewer,
                           is_open=supplier_rfq.is_open(round_),
                           files=db.list_rfq_response_files(round_["invitation_id"]),
                           errors=[], sent=request.session.pop("rfq_supplier_ok", None))
@@ -374,6 +400,9 @@ async def supplier_respond(request: Request, token: str):
                               files=db.list_rfq_response_files(round_["invitation_id"]),
                               errors=[], sent=None)
 
+    if get_current_user(request) is not None:
+        return RedirectResponse(url=f"/rfq/{token}", status_code=303)
+
     form = await request.form()
     decision = form.get("decision")
     text = (form.get("message") or "").strip()
@@ -382,8 +411,11 @@ async def supplier_respond(request: Request, token: str):
     errors = []
     if decision not in ("ACCEPTED", "DECLINED"):
         errors.append("Choose whether you are submitting a quotation or declining this enquiry.")
-    if decision == "ACCEPTED" and not files and not text:
-        errors.append("Attach your quotation, or write your response in the box.")
+    # A quotation is a document with prices - "Yes" with only a note (often
+    # "item not available") is really a decline sent with the wrong button.
+    if decision == "ACCEPTED" and not files and not db.list_rfq_response_files(round_["invitation_id"]):
+        errors.append("Attach your quotation file. If you are not quoting, choose "
+                      "\"No - declining this enquiry\" instead.")
     if decision == "DECLINED" and not text:
         errors.append("Please tell us briefly why you are declining.")
     for f in files:
