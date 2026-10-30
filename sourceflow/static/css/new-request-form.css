@@ -321,3 +321,9 @@
 @media (max-width: 640px) {
     .sf-infosec__q { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
+
+/* Autofill from the attached documents. */
+.sf-prefill { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 12px; }
+.sf-prefill .sf-caption { margin: 0; flex: 1 1 320px; min-width: 0; }
+.sf-prefilled input:not([type="radio"]):not([type="hidden"]), .sf-prefilled select, .sf-prefilled textarea { border-color: var(--sf-teal, #1B4F4F); background-color: #F1F8F7; }
+.sf-prefill-src { display: block; margin-top: 4px; font-size: 0.72rem; font-weight: 600; color: var(--sf-teal-deep, #123939); }

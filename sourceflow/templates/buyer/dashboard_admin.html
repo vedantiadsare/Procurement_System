@@ -71,6 +71,39 @@
         <div class="ad-bars" id="ovBars"></div>
       </div>
     </div>
+    {# Rework: every case sent back to its requester, counted from the audit
+       trail. GP's own figure is an estimate; this is the measured one. #}
+    {% if rework %}
+    <div class="ad-card ad-rework">
+      <div class="ad-card__h"><div><h2>Sent back to requester</h2><p>Rework, counted from every "Ask requester" on a case: how often, why, and how long the answer takes</p></div></div>
+      <div class="ad-rework__kpis">
+        <div><b>{{ rework.cases_sent_back }}</b><span>of {{ rework.total_cases }} cases sent back ({{ rework.share_pct }}%)</span></div>
+        <div><b>{{ rework.queries }}</b><span>questions asked</span></div>
+        <div><b>{{ "%.1f" | format(rework.avg_reply_days) ~ " days" if rework.avg_reply_days is not none else "–" }}</b><span>average time to answer</span></div>
+        <div><b>{{ rework.waiting_now }}</b><span>waiting on the requester now</span></div>
+      </div>
+      {% if rework.recent %}
+      <div class="ad-rework__table">
+      <table>
+        <thead><tr><th>Case</th><th>Asked</th><th>By</th><th>Question</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for q in rework.recent %}
+        <tr>
+          <td><a href="/queue/{{ q.case_id }}?tab=activity">{{ q.ticket }}</a></td>
+          <td>{{ q.asked_on | date }}</td>
+          <td>{{ q.asked_by }}</td>
+          <td class="ad-rework__q">{{ q.question | truncate(140) }}</td>
+          <td>{% if q.answered %}<span class="ad-rework__ok">Answered{{ " in %.1f days" | format(q.reply_days) if q.reply_days is not none }}</span>{% else %}<span class="ad-rework__wait">Waiting</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      {% else %}
+      <p class="ad-rework__none">No case has been sent back yet.</p>
+      {% endif %}
+    </div>
+    {% endif %}
     <div class="ad-card ad-list" data-list="overview"></div>
   </section>
 

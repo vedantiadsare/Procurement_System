@@ -4,7 +4,7 @@ Network laser printers for branch offices (6 sites)
 Network printers for branch offices - InfoSec applies
 
 WHAT THIS CASE IS FOR
-  The supplier installs the printers on the VW network, so InfoSec screening says Yes and a clearance must be attached. Product plus an installation service line; the market check covers the products only.
+  The supplier installs the printers on the VW network, so InfoSec screening says Yes and a clearance must be attached. Printers and UPS units plus an installation service line; the market check covers the products only.
 
 FILL THE PORTAL FORM LIKE THIS
   Sourcing basis      One-time sourcing
@@ -17,7 +17,7 @@ FILL THE PORTAL FORM LIKE THIS
   Expense commodity   Printer equipment, accessories
   Delivery location   Gurugram
   Currency            INR
-  Topic value         322,800
+  Topic value         277,200
   Topic value is      Exclusive of taxes
   Requestor           Vedanti Adsare  <vedanti.adsare@vwgds.in>
 
@@ -29,13 +29,13 @@ ATTACH, IN THIS ORDER
   05_Quotation_Inkpoint.xlsx       -> Supplier offer
 
 WHAT THE SYSTEM SHOULD WORK OUT ON ITS OWN
-  Printwell final Rs 3,18,600 net against Inkpoint's Rs 3,23,880 - 1.6% apart; Printwell is cheaper on every line: printer, toner and installation.
-  Rs 3.2 lakh, so 15 working days.
+  Printwell final Rs 2,73,600 net against Inkpoint's Rs 2,77,680 - 1.5% apart; Printwell is cheaper on every line: printer, UPS and installation.
+  Rs 2.8 lakh, so 15 working days.
   InfoSec applies: answer Yes to 'access company systems' and attach 06_InfoSec_Clearance_Printwell.pdf.
 
 REFERENCE
   Quotation deadline stated in the RFQ  22.10.2026
-  Value in rupees                       Rs 3,22,800
+  Value in rupees                       Rs 2,77,200
   Expected TAT band                     15 working days
   Offers on file                        2
   Expected award                        Printwell Systems Pvt Ltd
@@ -60,19 +60,19 @@ STEP 1 - FLOAT THE ENQUIRY (as Vedanti Adsare)
   Send. InfoSec popup: tick access company systems.
 
 STEP 2 - SUPPLIERS REPLY (open each link in a PRIVATE window, one upload per visit)
-  Printwell   Yes + For_supplier_replies/Printwell/Printwell_v1_09-10.docx    Rs 3,36,000
-  Inkpoint    Yes + For_supplier_replies/Inkpoint/Inkpoint_v1_10-10.xlsx     Rs 3,34,800
-  Printwell   Yes + For_supplier_replies/Printwell/Printwell_v2_12-10.docx    Rs 3,24,600
-  Inkpoint    Yes + For_supplier_replies/Inkpoint/Inkpoint_v2_12-10.xlsx     Rs 3,27,000
-  Printwell   Yes + For_supplier_replies/Printwell/Printwell_v3_14-10.docx    Rs 3,18,600
-  Inkpoint    Yes + For_supplier_replies/Inkpoint/Inkpoint_v3_14-10.xlsx     Rs 3,23,880
+  Printwell   Yes + For_supplier_replies/Printwell/Printwell_v1_09-10.docx    Rs 2,88,900
+  Inkpoint    Yes + For_supplier_replies/Inkpoint/Inkpoint_v1_10-10.xlsx     Rs 2,86,200
+  Printwell   Yes + For_supplier_replies/Printwell/Printwell_v2_12-10.docx    Rs 2,79,000
+  Inkpoint    Yes + For_supplier_replies/Inkpoint/Inkpoint_v2_12-10.xlsx     Rs 2,80,500
+  Printwell   Yes + For_supplier_replies/Printwell/Printwell_v3_14-10.docx    Rs 2,73,600
+  Inkpoint    Yes + For_supplier_replies/Inkpoint/Inkpoint_v3_14-10.xlsx     Rs 2,77,680
 
   What Samagra should show on the enquiry page:
     - each supplier's versions, older ones marked superseded
     - the history of each answer (declined / quoted / revised)
     - Compare now uses each supplier's LATEST version only:
-        Printwell Systems Pvt Ltd          Rs 3,18,600
-        Inkpoint Technologies LLP          Rs 3,23,880
+        Printwell Systems Pvt Ltd          Rs 2,73,600
+        Inkpoint Technologies LLP          Rs 2,77,680
 
 STEP 3 - RAISE THE SOURCING REQUEST with 01-0x above
   (04, 05... are the FINAL versions - the same files as each supplier's last reply)

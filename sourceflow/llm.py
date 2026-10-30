@@ -111,7 +111,9 @@ def chat(prompt: str, system: str = None, timeout: float = 300.0) -> tuple[str |
     try:
         resp = httpx.post(
             f"{base_url.rstrip('/')}/chat/completions",
-            json={"model": model, "messages": messages, "temperature": 0.2},
+            # 0: every call here reads figures out of procurement documents,
+            # where the same document must give the same answer every time.
+            json={"model": model, "messages": messages, "temperature": 0},
             headers=headers,
             timeout=timeout,
         )

@@ -1,0 +1,433 @@
+<title>Samagra Business Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one reading column. Every question is a card: "In short" first (2-3 lines), then the detail, then the terms. Same family as the Technical Guide so the two print as a pair. */
+:root {
+  --bg: #F7FAFA;
+  --surface: #FFFFFF;
+  --ink: #13211F;
+  --muted: #56646A;
+  --line: #D9E2E1;
+  --teal: #00726B;
+  --teal-deep: #00504A;
+  --wash: #E8F3F2;
+  --code: #EEF4F3;
+  --warn-bg: #FEF2E1;
+  --warn: #8A4A08;
+  --term-bg: #F2F5FA;
+  --term: #2B4C7E;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1716; --surface: #142120; --ink: #E2ECEB; --muted: #9DAEAD; --line: #26383A;
+    --teal: #5EC4B9; --teal-deep: #8ED8CF; --wash: #173230; --code: #1A2B2A;
+    --warn-bg: #2E2414; --warn: #F0C27A; --term-bg: #18222F; --term: #A9C4EE; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1716; --surface: #142120; --ink: #E2ECEB; --muted: #9DAEAD; --line: #26383A;
+  --teal: #5EC4B9; --teal-deep: #8ED8CF; --wash: #173230; --code: #1A2B2A;
+  --warn-bg: #2E2414; --warn: #F0C27A; --term-bg: #18222F; --term: #A9C4EE; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+.page { max-width: 880px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 64px; }
+header.cover { border-bottom: 3px solid var(--teal); padding-bottom: 22px; margin-bottom: 26px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--teal); font-weight: 600; margin: 0 0 6px; }
+h1 { font-size: 2.1rem; line-height: 1.15; margin: 0 0 8px; letter-spacing: -.01em; text-wrap: balance; }
+.lede { color: var(--muted); margin: 0; max-width: 66ch; }
+.meta { margin-top: 12px; font-size: 13px; color: var(--muted); }
+nav.toc { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 22px; margin-bottom: 34px; }
+nav.toc h2 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; border: 0; padding: 0; }
+nav.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+nav.toc li { margin: 2px 0; break-inside: avoid; }
+nav.toc a { color: var(--teal-deep); text-decoration: none; }
+nav.toc a:hover { text-decoration: underline; }
+section.chapter { margin-top: 44px; counter-reset: q; }
+h2 { font-size: 1.45rem; margin: 0 0 6px; padding-bottom: 6px; border-bottom: 1px solid var(--line); text-wrap: balance; }
+h2 .num { color: var(--teal); margin-right: 8px; font-variant-numeric: tabular-nums; }
+h3 { font-size: 1.05rem; margin: 26px 0 8px; color: var(--teal-deep); }
+p { margin: 8px 0; max-width: 72ch; }
+.intro { color: var(--muted); }
+code { font-family: var(--font-mono); font-size: .86em; background: var(--code); padding: 1px 5px; border-radius: 3px; }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px; margin: 14px 0; counter-increment: q; }
+.q h4 { margin: 0 0 8px; font-size: 15.5px; line-height: 1.4; }
+.q h4::before { content: counter(q) ".  "; color: var(--teal); font-variant-numeric: tabular-nums; font-weight: 700; }
+.q p, .q ul, .q ol { margin: 6px 0; font-size: 14.5px; }
+.q ul, .q ol { padding-left: 20px; }
+.q li { margin: 3px 0; }
+.inshort { margin: 0 0 10px; padding: 8px 12px; background: var(--wash); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; font-size: 14.5px; }
+.inshort b:first-child { display: block; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--teal-deep); margin-bottom: 2px; }
+.trap { display: block; margin-top: 10px; padding: 6px 10px; background: var(--warn-bg); border-left: 3px solid var(--warn); border-radius: 0 4px 4px 0; font-size: 13.5px; }
+.trap b { color: var(--warn); }
+.terms { margin-top: 10px; padding: 8px 12px; background: var(--term-bg); border-radius: 4px; font-size: 13.5px; }
+.terms > b { display: block; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--term); margin-bottom: 2px; }
+.terms dl { margin: 0; display: grid; grid-template-columns: minmax(120px, 28%) 1fr; gap: 4px 12px; }
+.terms dt { font-weight: 600; color: var(--term); min-width: 0; }
+.terms dd { margin: 0; min-width: 0; }
+.table-wrap { overflow-x: auto; margin: 10px 0 6px; }
+table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); font-size: 13.5px; }
+th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+th { background: var(--wash); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--teal-deep); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.say { background: var(--wash); border-left: 3px solid var(--teal); padding: 12px 16px; margin: 14px 0; border-radius: 0 4px 4px 0; }
+.say p { margin: 4px 0; }
+footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+@media (max-width: 640px) {
+  h1 { font-size: 1.6rem; }
+  nav.toc ol { columns: 1; }
+  .terms dl { grid-template-columns: 1fr; gap: 0; }
+  .terms dd { margin-bottom: 6px; }
+}
+@page { size: A4; margin: 15mm 13mm; }
+@media print {
+  :root { --bg: #fff; --surface: #fff; --ink: #000; --muted: #444; --line: #bbb; --teal: #00504A; --teal-deep: #00504A; --wash: #EEF5F4; --code: #F1F4F4; --warn-bg: #FFF6E8; --warn: #6B3A06; --term-bg: #F3F5F9; --term: #1F3A63; color-scheme: light; }
+  body { font-size: 10.5pt; }
+  .page { max-width: none; padding: 0; }
+  nav.toc a { color: #000; }
+  section.chapter { break-before: page; margin-top: 0; }
+  section.chapter:first-of-type { break-before: auto; }
+  .q, tr, .terms, .inshort, .say { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+}
+</style>
+
+<div class="page">
+<header class="cover">
+  <p class="eyebrow">i.mobilothon 6.0 · Team Dual Core · Business guide</p>
+  <h1>Samagra Business Guide</h1>
+  <p class="lede">Why Samagra matters to VW GDS India's General Procurement: the problem in GP's own numbers, how each person works with it, the value, what is real today, how it would roll out and scale across VW, the risks, and the next step. Every answer starts with a 2–3 line version, then the detail. Every procurement and business term is explained where it is used.</p>
+  <p class="meta">Baseline figures from Himanshu Tiwari, VW GDS General Procurement, 13.10.2026 · companion to the Samagra Technical Guide</p>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#minute">Samagra in one minute</a></li>
+    <li><a href="#problem">The problem, in GP's numbers</a></li>
+    <li><a href="#process">The process, end to end</a></li>
+    <li><a href="#people">What changes for each person</a></li>
+    <li><a href="#value">Business value and ROI</a></li>
+    <li><a href="#real">What is real today</a></li>
+    <li><a href="#scale">Rolling out and scaling across VW</a></li>
+    <li><a href="#data">Data, compliance and control</a></li>
+    <li><a href="#risks">Risks and how they are handled</a></li>
+    <li><a href="#next">Next steps</a></li>
+    <li><a href="#tough">Tough questions</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ -->
+<section class="chapter" id="minute">
+<h2><span class="num">1</span>Samagra in one minute</h2>
+
+<div class="q"><h4>What is Samagra?</h4>
+  <div class="inshort"><b>In short</b>One portal for sub-€50k sourcing at VW GDS India. Requesters collect supplier quotes and raise complete requests; buyers get them already read and compared, with a market price to negotiate with; management sees turnaround and workload live.</div>
+  <p>"Samagra" means complete, whole: the whole small-purchase cycle in one place, from the supplier enquiry to the PO number.</p>
+  <div class="say"><p><b>One-liner:</b> "High-volume, low-value buying costs Procurement more effort per rupee than anything else it does, and today it runs on email and Excel. Samagra gives that effort back to the buyers."</p></div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Sourcing</dt><dd>Finding and choosing a supplier for something the company needs to buy.</dd>
+    <dt>Sub-€50k</dt><dd>Purchases below about €50,000, where the requester collects quotes themselves before Procurement takes over.</dd>
+    <dt>PO</dt><dd>Purchase order: the official order to a supplier, with its own number.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>What is the single biggest benefit?</h4>
+  <div class="inshort"><b>In short</b>Buyers spend their time negotiating instead of chasing documents and rebuilding spreadsheets, and they negotiate with a reference price in hand.</div>
+  <p>Negotiation is already the longest part of a buyer's work (Himanshu). Samagra helps twice: it frees time for it, and the market price check shows when a supplier sits above what Amazon or Flipkart charge for the same model.</p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="problem">
+<h2><span class="num">2</span>The problem, in GP's numbers</h2>
+
+<div class="q"><h4>How big is the problem?</h4>
+  <div class="inshort"><b>In short</b>About 600 sub-€50k cases a year, 60–90 minutes of buyer time each on the steps in the problem statement, ₹35–45 crore of spend, and 10–15% of requests sent back for rework. TAT is already met 97–98% of the time.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Figure (from GP)</th><th>Value</th><th>What it means</th></tr>
+    <tr><td>Cases per year</td><td>~600</td><td>About 12 a week</td></tr>
+    <tr><td>Buyer time per case</td><td>60–90 min</td><td>600–900 buyer hours a year: a third to half of one buyer's working year</td></tr>
+    <tr><td>Annual spend</td><td>₹35–45 crore</td><td>About ₹6–7.5 lakh per case on average</td></tr>
+    <tr><td>Rework</td><td>10–15% (estimate, not measured)</td><td>60–90 requests a year go back to the requester</td></tr>
+    <tr><td>TAT</td><td>15–30 days, met 97–98%</td><td>Only 2–3% of cases miss the commitment</td></tr>
+    <tr><td>Mixed currencies / tax bases</td><td>Rare</td><td>A safeguard, not the headline</td></tr>
+  </table></div>
+  <span class="trap"><b>Important:</b> don't sell Samagra as fixing TAT. GP already meets it. Sell effort, negotiation and visibility.</span>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>TAT</dt><dd>Turnaround time: the working days GP commits to for closing a case (15 up to ₹3.5 lakh, 30 up to ₹40 lakh).</dd>
+    <dt>Rework</dt><dd>A request sent back to the requester because something is missing or wrong.</dd>
+    <dt>Crore / lakh</dt><dd>Indian units: 1 lakh = 100,000; 1 crore = 10 million.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>What goes wrong today?</h4>
+  <div class="inshort"><b>In short</b>Requests arrive incomplete and bounce by email; quotes come in every format and are rebuilt by hand into one comparison; status means asking someone; and there's no common record of why a supplier won.</div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="process">
+<h2><span class="num">3</span>The process, end to end</h2>
+
+<div class="q"><h4>How does a sub-€50k purchase flow through Samagra?</h4>
+  <div class="inshort"><b>In short</b>The requester floats the enquiry and collects quotes, then raises a complete sourcing request. The case goes to the commodity's buyer, who checks it, compares the offers, checks market prices, negotiates and releases the PO. Every step is recorded.</div>
+  <ol>
+    <li><b>Enquiry</b> (requester): attach the RFQ, and the AI drafts the supplier note; answer the InfoSec screening; send. Each supplier gets a private link.</li>
+    <li><b>Quotes</b> (suppliers): quote, revise (v1, v2, v3…) or decline until the deadline. Samagra compares the latest versions automatically.</li>
+    <li><b>Sourcing request</b> (requester): attach cart, SFO, RFQ, offers and, if needed, InfoSec clearance. Incomplete requests can't be submitted.</li>
+    <li><b>Routing</b>: the case goes straight to the buyer who owns that commodity.</li>
+    <li><b>Check</b> (buyer): confirm the documents; the TAT clock starts from the day the set was complete.</li>
+    <li><b>Compare and benchmark</b> (buyer): offers ranked net of tax in one currency; market price from Amazon and Flipkart.</li>
+    <li><b>Ask</b> (buyer ↔ requester): questions and answers on the case; small corrections recorded old → new.</li>
+    <li><b>Award</b> (buyer): approve with a PO number, which can't be reused on another case.</li>
+  </ol>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>RFQ</dt><dd>Request for quotation: the document telling suppliers what to quote for.</dd>
+    <dt>Shopping cart (SC)</dt><dd>The approved purchase request raised in SAP before sourcing.</dd>
+    <dt>SFO / deviation note</dt><dd>Suggestion for Order: the signed note recommending a supplier, listing the offers.</dd>
+    <dt>Commodity</dt><dd>The category of what is bought (e.g. headsets, UPS, AV); decides which buyer handles it.</dd>
+    <dt>InfoSec clearance</dt><dd>Information Security's approval, needed when a supplier will touch VW data, systems or networks.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>What about frame contracts and requests that arrive by email?</h4>
+  <div class="inshort"><b>In short</b>Frame contracts have no cart yet, so they need SFO, RFQ and offers, get an FC- number and close with a contract number. Emailed requests are read from the GP mailbox and proposed as a case for a buyer to confirm.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Frame contract</dt><dd>An agreement on rates and terms for future orders (call-offs), each raised later.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="people">
+<h2><span class="num">4</span>What changes for each person</h2>
+
+<div class="q"><h4>Requester</h4>
+  <div class="inshort"><b>In short</b>Knows exactly what's needed, can't submit something incomplete, runs supplier enquiries in one place, sees status without asking, and answers questions on the case itself.</div>
+</div>
+<div class="q"><h4>GP buyer</h4>
+  <div class="inshort"><b>In short</b>Receives complete cases already routed to them, with offers read and ranked, a market price to negotiate against, and the next action spelled out. Time moves from clerical work to negotiation.</div>
+</div>
+<div class="q"><h4>GP head</h4>
+  <div class="inshort"><b>In short</b>Sees TAT, workload per buyer, spend per department and single sourcing as live numbers with Excel export, plus evidence for every award decision.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Single sourcing</dt><dd>Buying from one supplier without competing quotes; needs justification and is watched.</dd>
+  </dl></div>
+</div>
+<div class="q"><h4>Supplier</h4>
+  <div class="inshort"><b>In short</b>Needs only email and a browser: no account, no password. One link to download the RFQ and quote, revise or decline, even from a phone.</div>
+</div>
+<div class="q"><h4>InfoSec</h4>
+  <div class="inshort"><b>In short</b>Every request is screened against their five criteria, and nothing that needs clearance reaches Procurement without it.</div>
+</div>
+<div class="q"><h4>Does it replace buyers?</h4>
+  <div class="inshort"><b>In short</b>No. It removes the clerical part: checking completeness, reading quotes, building comparison sheets. Every decision stays with a named person.</div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="value">
+<h2><span class="num">5</span>Business value and ROI</h2>
+
+<div class="q"><h4>Where does the value come from?</h4>
+  <div class="inshort"><b>In short</b>Four places: time (buyers stop rebuilding comparisons), money (a reference price for negotiation and like-for-like comparison), control (InfoSec enforced, PO uniqueness, full audit), and visibility (live numbers instead of hand-built reports).</div>
+  <div class="table-wrap"><table>
+    <tr><th>Value</th><th>How Samagra delivers it</th></tr>
+    <tr><td>Time</td><td>Complete requests first time; automatic routing; quotes read, tax stripped, ranked; Rate Comparison sheet filled; next action shown</td></tr>
+    <tr><td>Money</td><td>Market price check per product; net-vs-net comparison prevents gross-vs-net mistakes; every supplier version kept for negotiation</td></tr>
+    <tr><td>Control</td><td>InfoSec screening enforced; duplicate PO refused; audit trail of every step; changes logged old → new</td></tr>
+    <tr><td>Visibility</td><td>Dashboards for TAT, workload, spend, single sourcing; rework measured automatically</td></tr>
+  </table></div>
+</div>
+
+<div class="q"><h4>What is the ROI?</h4>
+  <div class="inshort"><b>In short</b>If Samagra saves 30–50% of the 600–900 buyer hours, that's 180–450 hours a year. If better negotiation improves price by 1% on ₹35–45 crore, that's ₹35–45 lakh a year. Both are scenarios until a pilot measures them.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Lever</th><th>Baseline</th><th>Scenario</th><th class="num">Result</th></tr>
+    <tr><td>Buyer time</td><td>600–900 h/year</td><td>30–50% saved</td><td class="num">180–450 h/year (22–56 working days)</td></tr>
+    <tr><td>Price</td><td>₹35–45 crore spend</td><td>1% better price</td><td class="num">₹35–45 lakh/year</td></tr>
+    <tr><td>Rework</td><td>60–90 requests/year</td><td>Missing-document share blocked at submission</td><td class="num">Measured by Samagra itself</td></tr>
+  </table></div>
+  <span class="trap"><b>Careful:</b> always say "if" and "a pilot would measure it". The price lever applies only to catalogue products, so the real figure depends on that share of spend.</span>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>ROI</dt><dd>Return on investment: what you gain compared with what it costs.</dd>
+    <dt>Catalogue product</dt><dd>A standard model sold in shops (a laptop, a UPS), as opposed to a service.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>How does GP benchmark prices today, and what does Samagra add?</h4>
+  <div class="inshort"><b>In short</b>Today buyers check VW's own purchase history for the same item. Samagra adds what history can't show: what the same model sells for online today. History tells you what you paid; the market tells you what it's worth now.</div>
+  <p>Purchase history is VW data and stays inside VW. Running inside VW, Samagra would build that history itself from every case (items, every supplier's price, the winner, the date), and past POs could be imported once to start with years of history. That price-history view is on the roadmap, not built.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Benchmarking</dt><dd>Comparing a price against a reference: past prices or the market.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>How would we measure success after six months?</h4>
+  <div class="inshort"><b>In short</b>Buyer minutes per case, requests sent back for missing documents, share of cases within TAT, savings negotiated with the market check, and user feedback, each against the period before.</div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="real">
+<h2><span class="num">6</span>What is real today</h2>
+
+<div class="q"><h4>What works live, and what is simulated?</h4>
+  <div class="inshort"><b>In short</b>Everything in the demo runs for real: AI reading, email, supplier links over the internet, the market price check against live retailers, comparisons, TAT and dashboards. Simulated: the case data, exchange rates, SAP, VW login, and hosting on a laptop.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Real and working</th><th>Simulated or not built</th></tr>
+    <tr><td>AI reading of carts and quotes, Ask this case, the Enquiry agent drafting from an RFQ</td><td>Case data is synthetic: realistic documents, invented values and suppliers</td></tr>
+    <tr><td>Email via Microsoft Graph, arriving in real inboxes</td><td>Exchange rate is a configured reference, not a live feed</td></tr>
+    <tr><td>Supplier links over a public tunnel, versions, declines, deadlines</td><td>No SAP: the buyer types the PO number</td></tr>
+    <tr><td>Market price check against live Amazon.in, Flipkart, Google Shopping</td><td>No VW single sign-on: demo accounts with passwords</td></tr>
+    <tr><td>TAT, routing, InfoSec, alerts, next action, PO uniqueness</td><td>Runs on a laptop, not VW hosting</td></tr>
+    <tr><td>Dashboards, Excel exports, Rate Comparison workbook, email intake</td><td>Price history from past purchases: roadmap</td></tr>
+  </table></div>
+  <span class="trap"><b>Say it first:</b> juries reward naming what's simulated before they ask.</span>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="scale">
+<h2><span class="num">7</span>Rolling out and scaling across VW</h2>
+
+<div class="q"><h4>How would it roll out?</h4>
+  <div class="inshort"><b>In short</b>A pilot of a few weeks with two or three buyers on real cases alongside today's process; fix what it shows; then all of GP India; then other entities or countries if the numbers justify it.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Stage</th><th>Scope</th><th>Needs</th><th>Measures</th></tr>
+    <tr><td>1. Pilot</td><td>2–3 buyers, 1–2 departments</td><td>VW server, SSO, InfoSec and data-protection review, LLMaaS key, shared mailbox</td><td>Minutes per case, rework, usefulness of the market price</td></tr>
+    <tr><td>2. GP India</td><td>All sub-€50k cases</td><td>Production hosting (database server, file storage, monitoring), training, support owner</td><td>TAT, buyer hours, savings, adoption</td></tr>
+    <tr><td>3. Beyond</td><td>Other VW entities or countries</td><td>Per-country settings (departments, commodities, TAT, currency), SAP integration</td><td>Same metrics per entity</td></tr>
+  </table></div>
+</div>
+
+<div class="q"><h4>Will it handle more users and more data?</h4>
+  <div class="inshort"><b>In short</b>Yes. Ten years of GP India is about 100 MB of data, which is small. For VW-wide use the business rules stay and the infrastructure grows: a database server, cloud file storage, several app copies, VW login. The Technical Guide lists every change.</div>
+  <p>What is already configurable without code: departments, commodities and which buyer owns them, TAT bands, InfoSec questions, document types. A new entity is mostly configuration plus an "entity" field so each sees only its own cases.</p>
+</div>
+
+<div class="q"><h4>What does it take to run, and what does it cost?</h4>
+  <div class="inshort"><b>In short</b>No licence fees: the software is open source. Running costs are a small VW cloud setup, AI usage (low, because each document is read once) and a price-search plan. Exact figures come after VW IT quotes the platform.</div>
+  <span class="trap"><b>Careful:</b> don't give a rupee figure for running costs before IT has quoted. Compare it with 600–900 buyer hours a year.</span>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Open source</dt><dd>Software whose code is public and free to use (Python, FastAPI, PostgreSQL).</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>How do we get people to use it?</h4>
+  <div class="inshort"><b>In short</b>It's less work for each of them from day one: requesters get status without chasing, suppliers need only a link, buyers stop rebuilding spreadsheets. Training is minimal: a guided form and a case page that says what to do next.</div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="data">
+<h2><span class="num">8</span>Data, compliance and control</h2>
+
+<div class="q"><h4>What data does Samagra hold, and who sees it?</h4>
+  <div class="inshort"><b>In short</b>Cases, their documents, supplier quotes and the audit trail; personal data is limited to names, work emails and roles. Requesters see their own cases, buyers the queue, suppliers one page each.</div>
+</div>
+
+<div class="q"><h4>Does VW data leave VW?</h4>
+  <div class="inshort"><b>In short</b>Not in production. AI requests go to VW's own LLMaaS; mail goes through Microsoft, which VW already uses; only the product name for the price check (e.g. "APC BX1100C-IN") goes to the search service, never prices or suppliers.</div>
+</div>
+
+<div class="q"><h4>How does it support audits and compliance?</h4>
+  <div class="inshort"><b>In short</b>Every action is recorded with who and when; every supplier version and every correction (old → new) is kept; InfoSec clearance is enforced; a PO number can't be on two cases. "Why did supplier X win?" is answerable months later.</div>
+  <p>Before production it goes through VW's InfoSec and data-protection review, with a retention period for closed cases.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>TISAX / ISO 27001</dt><dd>Information-security certifications suppliers may be asked for when they handle VW information.</dd>
+    <dt>NDA</dt><dd>Non-disclosure agreement.</dd>
+    <dt>Retention period</dt><dd>How long records must be kept by law and policy.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="risks">
+<h2><span class="num">9</span>Risks and how they are handled</h2>
+<div class="table-wrap"><table>
+  <tr><th>Risk</th><th>How it's handled</th></tr>
+  <tr><td>The AI reads a figure wrong</td><td>Every figure is checked against the document; anything unverified is flagged; calculations and ranking are code; a person approves</td></tr>
+  <tr><td>The AI service is down</td><td>Forms, documents, TAT, routing, dashboards and approvals keep working; AI panels say so</td></tr>
+  <tr><td>Online prices aren't comparable to enterprise prices</td><td>Shown as a reference for negotiation, never as a rule; trusted retailers and same product only; thin results give no verdict</td></tr>
+  <tr><td>A supplier forwards their link</td><td>One link per supplier per enquiry, closes at the deadline, every response recorded; production can add an email code</td></tr>
+  <tr><td>Users keep using email</td><td>The mailbox intake turns emailed requests into cases</td></tr>
+  <tr><td>Built by a small team</td><td>One language, documented, configuration separate from logic; production ownership decided at the pilot</td></tr>
+</table></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="next">
+<h2><span class="num">10</span>Next steps</h2>
+<div class="q"><h4>What is the next step?</h4>
+  <div class="inshort"><b>In short</b>Three steps: a pilot with GP on real cases, measured against today; production readiness on VW infrastructure (SSO, InfoSec review, LLMaaS key, shared mailbox); then integration with SAP and a price history from Samagra's own cases.</div>
+  <div class="say"><p><b>Close with a question to the challenge owner:</b> "Which buyers would you want in the pilot?"</p></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="tough">
+<h2><span class="num">11</span>Tough questions</h2>
+
+<div class="q"><h4>Why build this instead of buying SAP Ariba or Coupa?</h4>
+  <div class="inshort"><b>In short</b>Those suites cover the whole procure-to-pay process, with licences and long rollouts. Samagra targets one narrow, high-volume flow with VW's own forms and rules. Its core value, AI reading and fair comparison, could also sit beside a suite if VW already uses one.</div>
+  <span class="trap"><b>Careful:</b> don't claim VW has no such tool. Say you would check with GP.</span>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Procure-to-pay</dt><dd>The whole chain from purchase request to paying the invoice.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Another team solved the same problem. Why yours?</h4>
+  <div class="inshort"><b>In short</b>Don't compare; show what's specific: built on GP's own figures, the supplier enquiry with versions and a link that works on a phone, the market price check, InfoSec enforcement, every AI figure verified, and an honest list of what's simulated.</div>
+</div>
+
+<div class="q"><h4>What if suppliers' online prices are always lower?</h4>
+  <div class="inshort"><b>In short</b>That's the point: it's a negotiation lever, not a rule. Retail prices often lack a GST invoice to VW, enterprise warranty, delivery to site or set-up; the buyer weighs those and asks the supplier to explain the gap.</div>
+</div>
+
+<div class="q"><h4>How long until it's in production?</h4>
+  <div class="inshort"><b>In short</b>That depends on VW IT's hosting and the InfoSec review, so don't name a date. The pilot can start on a single VW server as soon as those are approved.</div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="glossary">
+<h2><span class="num">12</span>Glossary</h2>
+<div class="terms"><dl>
+  <dt>Audit trail</dt><dd>Record of every action: what, who, when.</dd>
+  <dt>Benchmarking</dt><dd>Comparing a price with a reference.</dd>
+  <dt>Buyer (GP)</dt><dd>Procurement person who handles a case and releases the PO.</dd>
+  <dt>Commodity</dt><dd>Category of what is bought; decides the buyer.</dd>
+  <dt>Crore / lakh</dt><dd>10 million / 100,000.</dd>
+  <dt>Deviation note / SFO</dt><dd>Signed note recommending a supplier.</dd>
+  <dt>Enquiry</dt><dd>The request for quotes sent to suppliers.</dd>
+  <dt>Frame contract</dt><dd>Agreement on rates for future call-offs.</dd>
+  <dt>GP</dt><dd>General Procurement, VW GDS India.</dd>
+  <dt>GST</dt><dd>India's goods and services tax; quotes are compared without it.</dd>
+  <dt>InfoSec</dt><dd>Information Security; clears suppliers that touch VW data or systems.</dd>
+  <dt>MRM</dt><dd>A required review meeting for certain purchases; the request states whether it was held.</dd>
+  <dt>Net / gross</dt><dd>Price without tax / with tax.</dd>
+  <dt>PO</dt><dd>Purchase order and its number.</dd>
+  <dt>Rate Comparison sheet</dt><dd>The Excel comparison buyers already use; Samagra fills it.</dd>
+  <dt>Requester</dt><dd>Employee who needs something bought.</dd>
+  <dt>Rework</dt><dd>A request sent back for missing or wrong information.</dd>
+  <dt>RFQ</dt><dd>Request for quotation.</dd>
+  <dt>ROI</dt><dd>Return on investment.</dd>
+  <dt>SAP</dt><dd>VW's enterprise system for carts, POs and invoices.</dd>
+  <dt>Shopping cart (SC)</dt><dd>Approved purchase request in SAP.</dd>
+  <dt>Single sourcing</dt><dd>Buying from one supplier without competition.</dd>
+  <dt>Sourcing request</dt><dd>The complete case the requester sends to Procurement.</dd>
+  <dt>TAT</dt><dd>Turnaround time in working days.</dd>
+  <dt>TISAX / ISO 27001</dt><dd>Information-security certifications for suppliers.</dd>
+</dl></div>
+</section>
+
+<footer>Samagra · Team Dual Core · i.mobilothon 6.0. Baseline from Himanshu Tiwari, VW GDS General Procurement (13.10.2026). Savings figures are scenarios until a pilot measures them.</footer>
+</div>

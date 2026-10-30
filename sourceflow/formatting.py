@@ -38,6 +38,7 @@ ACTION_DISPLAY = {
     "RESUBMITTED": "Requester responded",
     "REVALUED": "Exchange rate applied",
     "UPDATED": "Details corrected",
+    "REASSIGNED": "Reassigned",
     "REMARK": "Note added",
     "COMMENT": "Comment",
     "APPROVED": "Approved",

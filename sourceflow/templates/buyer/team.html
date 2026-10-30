@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Team · Samagra{% endblock %}
+
+{% block hero %}
+<div class="sf-hero-band">
+    <div class="sf-hero-inner">
+        <div class="sf-hero-breadcrumb">General Procurement</div>
+        <h1 class="sf-hero-title">Team</h1>
+        <p class="sf-hero-meta">Who the buyers are, which commodities each one owns, and who covers when someone is on leave. New cases follow these settings the moment you save.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if flash %}<div class="sf-alert sf-alert--success">{{ flash }}</div>{% endif %}
+{% if error %}<div class="sf-alert sf-alert--warning">{{ error }}</div>{% endif %}
+
+<div class="sf-card sf-team">
+    <h2 class="sf-section-header" style="margin-top:0;">Buyers</h2>
+    <div class="sf-team__table">
+    <table class="sf-table">
+        <thead><tr><th>Buyer</th><th>Commodities</th><th>Open cases</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for b in buyers %}
+        <tr>
+            <td><b>{{ b.name }}</b><div class="sf-caption">{{ b.email }}</div></td>
+            <td>{{ b.commodities | length }}<div class="sf-caption">{{ (b.commodities[:4] | join(", ")) ~ ("…" if b.commodities | length > 4 else "") if b.commodities else "None yet" }}</div></td>
+            <td>{{ b.open }}</td>
+            <td>{% if b.cover %}<span class="sf-team__chip sf-team__chip--leave">On leave · covered by {{ b.cover }}</span>
+                {% else %}<span class="sf-team__chip">Available</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<div class="sf-team__grid">
+    <div class="sf-card sf-team">
+        <h2 class="sf-section-header" style="margin-top:0;">Leave and cover</h2>
+        <form method="post" action="/team/leave" class="sf-team__form">
+            <div><label for="leave_buyer">Buyer</label>
+                <select id="leave_buyer" name="buyer" required>
+                    {% for b in buyers %}<option value="{{ b.name }}">{{ b.name }}{{ " (on leave)" if b.cover }}</option>{% endfor %}
+                </select></div>
+            <div><label for="leave_cover">Covered by</label>
+                <select id="leave_cover" name="cover">
+                    <option value="">Nobody - back from leave</option>
+                    {% for b in buyers if not b.cover %}<option value="{{ b.name }}">{{ b.name }}</option>{% endfor %}
+                </select></div>
+            <label class="sf-team__check"><input type="checkbox" name="move_open" value="1" checked> Also move their open cases to the cover now</label>
+            <p class="sf-caption" style="margin:0;">While on leave, new cases for their commodities go to the cover. Each moved case gets a line in its activity trail. To end the leave, pick "Nobody".</p>
+            <button type="submit" class="sf-btn sf-btn--primary sf-btn--sm">Save</button>
+        </form>
+    </div>
+
+    <div class="sf-card sf-team">
+        <h2 class="sf-section-header" style="margin-top:0;">Add a buyer</h2>
+        <form method="post" action="/team/buyer" class="sf-team__form">
+            <div><label for="new_name">Full name</label><input type="text" id="new_name" name="name" required maxlength="80" placeholder="e.g. Priya Sharma"></div>
+            <div><label for="new_email">Email</label><input type="email" id="new_email" name="email" required maxlength="120" placeholder="firstname.lastname@vwgds.in"></div>
+            <p class="sf-caption" style="margin:0;">They get buyer access straight away. If they have no account yet, one is created with the demo password <code>{{ default_password }}</code>; with VW sign-on this step goes away. Then give them commodities below.</p>
+            <button type="submit" class="sf-btn sf-btn--primary sf-btn--sm">Add buyer</button>
+        </form>
+    </div>
+</div>
+
+<div class="sf-card sf-team">
+    <h2 class="sf-section-header" style="margin-top:0;">Who owns each commodity</h2>
+    <p class="sf-caption">A new case goes to its commodity's owner. Unassigned commodities wait unclaimed in the queue for any buyer. Changing an owner does not move open cases.</p>
+    <form method="post" action="/team/commodities">
+        <input type="text" id="commodityFilter" class="sf-team__filter" placeholder="Filter commodities…" aria-label="Filter commodities">
+        <div class="sf-team__table sf-team__table--tall">
+        <table class="sf-table">
+            <thead><tr><th>Commodity</th><th>Owner</th></tr></thead>
+            <tbody id="commodityRows">
+            {% for c in commodities %}
+            <tr data-name="{{ c | lower }}">
+                <td>{{ c }}</td>
+                <td><select name="owner::{{ c }}" aria-label="Owner of {{ c }}">
+                    <option value="">Unassigned</option>
+                    {% for b in buyers %}<option value="{{ b.name }}" {{ "selected" if owners.get(c) == b.name }}>{{ b.name }}</option>{% endfor %}
+                </select></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <button type="submit" class="sf-btn sf-btn--primary sf-btn--sm" style="margin-top:12px;">Save owners</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    var f = document.getElementById("commodityFilter");
+    if (!f) return;
+    f.addEventListener("input", function () {
+        var q = f.value.trim().toLowerCase();
+        document.querySelectorAll("#commodityRows tr").forEach(function (tr) {
+            tr.hidden = q && tr.getAttribute("data-name").indexOf(q) === -1;
+        });
+    });
+}());
+</script>
+{% endblock %}

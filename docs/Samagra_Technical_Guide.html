@@ -1,0 +1,1061 @@
+<title>Samagra Technical Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one reading column. Every question is a card: "In short" first (2-3 lines), then the detail, then where it lives in the code, then the terms. Same family as the Jury Question Bank so printouts match. */
+:root {
+  --bg: #F7FAFA;
+  --surface: #FFFFFF;
+  --ink: #13211F;
+  --muted: #56646A;
+  --line: #D9E2E1;
+  --teal: #00726B;
+  --teal-deep: #00504A;
+  --wash: #E8F3F2;
+  --code: #EEF4F3;
+  --warn-bg: #FEF2E1;
+  --warn: #8A4A08;
+  --term-bg: #F2F5FA;
+  --term: #2B4C7E;
+  --file-bg: #F4F2EC;
+  --file: #5B4A1E;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1716; --surface: #142120; --ink: #E2ECEB; --muted: #9DAEAD; --line: #26383A;
+    --teal: #5EC4B9; --teal-deep: #8ED8CF; --wash: #173230; --code: #1A2B2A;
+    --warn-bg: #2E2414; --warn: #F0C27A; --term-bg: #18222F; --term: #A9C4EE;
+    --file-bg: #26231A; --file: #E2CF9A; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1716; --surface: #142120; --ink: #E2ECEB; --muted: #9DAEAD; --line: #26383A;
+  --teal: #5EC4B9; --teal-deep: #8ED8CF; --wash: #173230; --code: #1A2B2A;
+  --warn-bg: #2E2414; --warn: #F0C27A; --term-bg: #18222F; --term: #A9C4EE;
+  --file-bg: #26231A; --file: #E2CF9A; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+.page { max-width: 880px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 64px; }
+header.cover { border-bottom: 3px solid var(--teal); padding-bottom: 22px; margin-bottom: 26px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--teal); font-weight: 600; margin: 0 0 6px; }
+h1 { font-size: 2.1rem; line-height: 1.15; margin: 0 0 8px; letter-spacing: -.01em; text-wrap: balance; }
+.lede { color: var(--muted); margin: 0; max-width: 66ch; }
+.meta { margin-top: 12px; font-size: 13px; color: var(--muted); }
+nav.toc { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 22px; margin-bottom: 34px; }
+nav.toc h2 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; border: 0; padding: 0; }
+nav.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+nav.toc li { margin: 2px 0; break-inside: avoid; }
+nav.toc a { color: var(--teal-deep); text-decoration: none; }
+nav.toc a:hover { text-decoration: underline; }
+section.chapter { margin-top: 44px; counter-reset: q; }
+h2 { font-size: 1.45rem; margin: 0 0 6px; padding-bottom: 6px; border-bottom: 1px solid var(--line); text-wrap: balance; }
+h2 .num { color: var(--teal); margin-right: 8px; font-variant-numeric: tabular-nums; }
+h3 { font-size: 1.05rem; margin: 26px 0 8px; color: var(--teal-deep); }
+p { margin: 8px 0; max-width: 72ch; }
+.intro { color: var(--muted); }
+code { font-family: var(--font-mono); font-size: .86em; background: var(--code); padding: 1px 5px; border-radius: 3px; }
+pre { font-family: var(--font-mono); font-size: 12.5px; background: var(--code); padding: 12px 14px; border-radius: 4px; overflow-x: auto; line-height: 1.45; margin: 8px 0; }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px; margin: 14px 0; counter-increment: q; }
+.q h4 { margin: 0 0 8px; font-size: 15.5px; line-height: 1.4; }
+.q h4::before { content: counter(q) ".  "; color: var(--teal); font-variant-numeric: tabular-nums; font-weight: 700; }
+.q p, .q ul, .q ol { margin: 6px 0; font-size: 14.5px; }
+.q ul, .q ol { padding-left: 20px; }
+.q li { margin: 3px 0; }
+.inshort { margin: 0 0 10px; padding: 8px 12px; background: var(--wash); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; font-size: 14.5px; }
+.inshort b:first-child { display: block; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--teal-deep); margin-bottom: 2px; }
+.trap { display: block; margin-top: 10px; padding: 6px 10px; background: var(--warn-bg); border-left: 3px solid var(--warn); border-radius: 0 4px 4px 0; font-size: 13.5px; }
+.trap b { color: var(--warn); }
+.files { margin-top: 10px; padding: 8px 12px; background: var(--file-bg); border-radius: 4px; font-size: 13.5px; }
+.files > b { display: block; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--file); margin-bottom: 2px; }
+.files code { background: transparent; padding: 0; color: var(--file); font-weight: 500; }
+.terms { margin-top: 10px; padding: 8px 12px; background: var(--term-bg); border-radius: 4px; font-size: 13.5px; }
+.terms > b { display: block; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--term); margin-bottom: 2px; }
+.terms dl { margin: 0; display: grid; grid-template-columns: minmax(120px, 28%) 1fr; gap: 4px 12px; }
+.terms dt { font-weight: 600; color: var(--term); min-width: 0; }
+.terms dd { margin: 0; min-width: 0; }
+.table-wrap { overflow-x: auto; margin: 10px 0 6px; }
+table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); font-size: 13.5px; }
+th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+th { background: var(--wash); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--teal-deep); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.say { background: var(--wash); border-left: 3px solid var(--teal); padding: 12px 16px; margin: 14px 0; border-radius: 0 4px 4px 0; }
+.say p { margin: 4px 0; }
+footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+@media (max-width: 640px) {
+  h1 { font-size: 1.6rem; }
+  nav.toc ol { columns: 1; }
+  .terms dl { grid-template-columns: 1fr; gap: 0; }
+  .terms dd { margin-bottom: 6px; }
+}
+@page { size: A4; margin: 15mm 13mm; }
+@media print {
+  :root { --bg: #fff; --surface: #fff; --ink: #000; --muted: #444; --line: #bbb; --teal: #00504A; --teal-deep: #00504A; --wash: #EEF5F4; --code: #F1F4F4; --warn-bg: #FFF6E8; --warn: #6B3A06; --term-bg: #F3F5F9; --term: #1F3A63; --file-bg: #F6F4EE; --file: #4A3C14; color-scheme: light; }
+  body { font-size: 10.5pt; }
+  .page { max-width: none; padding: 0; }
+  nav.toc a { color: #000; }
+  section.chapter { break-before: page; margin-top: 0; }
+  section.chapter:first-of-type { break-before: auto; }
+  .q, tr, .terms, .files, .inshort { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+}
+</style>
+
+<div class="page">
+<header class="cover">
+  <p class="eyebrow">i.mobilothon 6.0 · Team Dual Core · Technical guide</p>
+  <h1>Samagra Technical Guide</h1>
+  <p class="lede">Everything about how Samagra is built and runs: the architecture block by block, what happens while it runs, the frontend, the backend, the data, the AI, Microsoft Graph and the other services, how to start it, how it scales, and which file does what. Every answer starts with a 2–3 line version, then the detail. Every technical term is explained where it is used.</p>
+  <p class="meta">Checked against the code in <code>sourceflow/</code> on 16 October 2026 · 44 Python files, about 14,300 lines · Python 3.14, FastAPI, SQLite</p>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#picture">Samagra in one picture</a></li>
+    <li><a href="#blocks">The architecture, block by block</a></li>
+    <li><a href="#start">Starting it: <code>run.ps1 -Tunnel</code></a></li>
+    <li><a href="#running">What happens while it runs</a></li>
+    <li><a href="#frontend">Frontend</a></li>
+    <li><a href="#backend">Backend</a></li>
+    <li><a href="#data">Data: database and files</a></li>
+    <li><a href="#ai">AI and the agents</a></li>
+    <li><a href="#graph">Microsoft Graph and email</a></li>
+    <li><a href="#services">Price search and the tunnel</a></li>
+    <li><a href="#security">Security</a></li>
+    <li><a href="#scale">Scaling: data, users, VW-wide</a></li>
+    <li><a href="#ops">Running it in production</a></li>
+    <li><a href="#quality">Testing</a></li>
+    <li><a href="#codemap">Code map: every file</a></li>
+    <li><a href="#gaps">Known gaps</a></li>
+    <li><a href="#glossary">Glossary A–Z</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ -->
+<section class="chapter" id="picture">
+<h2><span class="num">1</span>Samagra in one picture</h2>
+
+<div class="q"><h4>What is Samagra, technically?</h4>
+  <div class="inshort"><b>In short</b>One Python web application. Browsers talk to it; inside it, business rules do the work, AI agents only read documents, and everything is stored in a database plus a folder of files. For email, prices and AI it calls three outside services.</div>
+  <pre>
+ USERS & SOURCES            SAMAGRA  (one Python program)                       OUTSIDE
+ ───────────────            ──────────────────────────────                      ───────
+ Requester ──┐              Uvicorn  listens on port 8000
+ GP buyer  ──┼─ browser ──▶ FastAPI  address → Python function
+ GP head   ──┘                │
+                              ├─ WEB LAYER      login & roles · ~60 routes · Jinja2 pages
+ Supplier ── token link ────▶ │                                                  ──▶ SerpAPI
+   (through Cloudflare tunnel)├─ DOMAIN RULES   intake parser · comparison ·         (prices)
+ GP mailbox ── Graph ───────▶ │                 market check · TAT & advisor ·   ──▶ Microsoft Graph
+                              │                 supplier RFQ · notifications         (mail in & out)
+                              ├─ AI AGENTS      offer · enquiry · ask this case  ──▶ LLM
+                              │  (read only)    — all through one gateway, llm.py    (LLMaaS / Ollama)
+                              └─ DATA           SQLite (16 tables) + file store      SAP (proposed)
+</pre>
+  <p>The sentence to remember: <b>"The model reads, the code decides, a person approves."</b> AI turns messy documents into data; ordinary code does every calculation and check; every decision is a person's click.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Web application</dt><dd>A program on a server that people use through a browser, without installing anything.</dd>
+    <dt>Monolith</dt><dd>One program containing the whole application, as opposed to many small programs (microservices) talking over the network.</dd>
+    <dt>Layered</dt><dd>Code organised in levels (web, rules, AI, data); each level uses the one below it.</dd>
+    <dt>Server</dt><dd>The computer (or program) that answers requests. Today: the demo laptop.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Why one program and not microservices?</h4>
+  <div class="inshort"><b>In short</b>Because 600 cases a year doesn't need them. One program is simpler to run, test and secure; the layers inside keep it organised, so a part can be split out later if it ever needs to be.</div>
+  <p>Microservices pay off when different parts must scale separately or are owned by different teams. Here one small team owns everything and the load is light. Splitting would add network calls between services, separate deployments and more places to fail, without a benefit. The layered design means the price check, for example, could become its own service later without rewriting the rest.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Microservices</dt><dd>An architecture where each function is a separate program with its own deployment, talking to the others over HTTP.</dd>
+    <dt>Deployment</dt><dd>Putting a version of the software onto the server where people use it.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="blocks">
+<h2><span class="num">2</span>The architecture, block by block</h2>
+<p class="intro">Every box on the architecture slide, left to right and top to bottom: what it is, why it is there, and where it lives in the code.</p>
+
+<h3>Users and sources (left column)</h3>
+
+<div class="q"><h4>Requester</h4>
+  <div class="inshort"><b>In short</b>The VW employee who needs something bought. They float enquiries to suppliers, then raise the sourcing request with all documents, and answer the buyer's questions.</div>
+  <p>Uses the browser, signed in. Sees only their own requests and enquiries. The request form refuses to submit until the required documents are attached and the InfoSec questions are answered.</p>
+  <div class="files"><b>In the code</b><code>routers/requester_routes.py</code> (request form, my requests, reply), the enquiry half of <code>routers/supplier_routes.py</code>, <code>validators.py</code> (what makes a request complete), templates in <code>templates/requester/</code>.</div>
+</div>
+
+<div class="q"><h4>GP buyer</h4>
+  <div class="inshort"><b>In short</b>The Procurement person. Receives complete cases routed by commodity, checks the documents, compares offers, checks market prices, asks questions, and approves with a PO number.</div>
+  <p>Only the buyer a case is assigned to can act on it; others can "take over", which is logged. Commodities are split between buyers in configuration: for example tablets and printers go to Sayali, headsets and AV to Vikas, UPS to Nilesh.</p>
+  <p>The head manages the team on the <b>Team</b> page: adds buyers, sets which commodities each owns, and marks a buyer on leave so new cases go to a cover (optionally moving their open cases, each logged).</p>
+  <div class="files"><b>In the code</b><code>routers/buyer_routes.py</code> (queue, case page, every buyer action), <code>config.py</code> (<code>buyer_for_commodity</code>, leave cover), <code>team.py</code> and <code>routers/team_routes.py</code> (Team page), templates in <code>templates/buyer/</code>.</div>
+</div>
+
+<div class="q"><h4>GP head</h4>
+  <div class="inshort"><b>In short</b>The manager. Sees dashboards: open cases, TAT performance, workload per buyer, spend per department, single sourcing, with Excel export.</div>
+  <div class="files"><b>In the code</b><code>dashboard.py</code> (the numbers), <code>dashboard_export.py</code> (Excel), <code>static/js/dashboard-admin.js</code> and <code>dashboard-buyer.js</code> (charts), <code>templates/buyer/dashboard_admin.html</code>.</div>
+</div>
+
+<div class="q"><h4>Supplier: token link through the tunnel</h4>
+  <div class="inshort"><b>In short</b>An outside company with no account. They get an email with a private link containing a long random token; the page lets them download the RFQ and quote, revise or decline until the deadline.</div>
+  <p>The laptop is not on the internet, so the <b>Cloudflare tunnel</b> gives it a public address for the demo. In production this becomes VW's own internet gateway (see Scaling).</p>
+  <div class="files"><b>In the code</b>the bottom half of <code>routers/supplier_routes.py</code> (routes <code>/rfq/{token}</code>), <code>supplier_rfq.py</code>, <code>templates/supplier/rfq_portal.html</code>.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Token</dt><dd>A long random string that works as a key: whoever has the link can open that one page.</dd>
+    <dt>Tunnel</dt><dd>A connection that carries internet traffic to a machine that is otherwise unreachable.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>GP mailbox</h4>
+  <div class="inshort"><b>In short</b>Requests that arrive by email. A buyer clicks "Check mailbox now"; Samagra reads the inbox through Microsoft Graph, identifies cart, SFO, RFQ and offers in the attachments, and proposes a case for the buyer to confirm.</div>
+  <p>Nothing runs in the background and nothing is created without a person confirming.</p>
+  <div class="files"><b>In the code</b><code>mailbox.py</code> (reading the inbox via Graph), <code>mailbox_intake.py</code> and <code>extraction.py</code> (turning a mail into case fields), <code>mailbox_staging.py</code>, <code>routers/mailbox_routes.py</code>.</div>
+</div>
+
+<h3>The Samagra box: FastAPI on Uvicorn, one Python process</h3>
+
+<div class="q"><h4>Web layer: Auth &amp; roles</h4>
+  <div class="inshort"><b>In short</b>Login, and checking on every request who you are and what you may do. A signed cookie remembers you; your role comes from your email address.</div>
+  <p>After login the browser stores a <b>session cookie</b> holding your email, signed with a server secret so it can't be forged. Before each page, a <b>dependency</b> such as <code>require_buyer</code> reads it: not logged in → login page; wrong role → "403 not allowed".</p>
+  <div class="files"><b>In the code</b><code>routers/auth_routes.py</code>, <code>security.py</code> (password hashing), <code>deps.py</code> (<code>require_login</code>, <code>require_buyer</code>, <code>require_requester</code>), session set-up in <code>main.py</code>.</div>
+</div>
+
+<div class="q"><h4>Web layer: ~60 routes</h4>
+  <div class="inshort"><b>In short</b>A route is one web address plus the Python function that answers it. There are about 60, grouped into 8 files by who uses them.</div>
+  <div class="table-wrap"><table>
+    <tr><th>File</th><th>Routes</th><th>For</th></tr>
+    <tr><td><code>buyer_routes.py</code></td><td>18</td><td>Queue, case page, check, enquire, approve, compare, market check, ask, correct details</td></tr>
+    <tr><td><code>supplier_routes.py</code></td><td>12</td><td>Requester's enquiries and the supplier's token page</td></tr>
+    <tr><td><code>requester_routes.py</code></td><td>10</td><td>New request, my requests, reply</td></tr>
+    <tr><td><code>mailbox_routes.py</code></td><td>8</td><td>Requests arriving by email</td></tr>
+    <tr><td><code>auth_routes.py</code></td><td>7</td><td>Login, logout, password reset</td></tr>
+    <tr><td><code>attachments_routes.py</code>, <code>agents_routes.py</code></td><td>1 + 1</td><td>Document download, agent runs</td></tr>
+    <tr><td><code>team_routes.py</code></td><td>4</td><td>Team page (head only): buyers, commodity owners, leave cover</td></tr>
+    <tr><td><code>main.py</code></td><td>5</td><td>Home, dashboard, health check</td></tr>
+  </table></div>
+</div>
+
+<div class="q"><h4>Web layer: Pages (Jinja2, no SPA)</h4>
+  <div class="inshort"><b>In short</b>Python builds each finished page on the server by filling an HTML template with data; the browser just shows it. Small JavaScript files add interactions.</div>
+  <p>See the Frontend chapter for the full explanation and why not React.</p>
+  <div class="files"><b>In the code</b><code>templating.py</code> (sets up Jinja2 and its filters like money and dates), 41 templates in <code>templates/</code>, CSS and JavaScript in <code>static/</code>.</div>
+</div>
+
+<div class="q"><h4>Domain rules: Intake parser</h4>
+  <div class="inshort"><b>In short</b>Reads uploaded carts and quotations (PDF, Word, Excel) and pulls out the item table: description, quantity, unit price, total. If the table can't be read, the AI reads it and every figure is checked against the text.</div>
+  <p><b>Form autofill:</b> when the requester attaches documents, the request form fills its empty fields from them: SC number, department, cost center, title, description, commodity, delivery location, value, currency and tax basis, from the cart, or for a frame contract from the SFO and RFQ. Each filled field says which document it came from; nothing the requester typed is overwritten; MRM, InfoSec and who the request is for are never filled, because they are the requester's own declarations. Tested on 33 document sets: 290 values right, none wrong, uncertain ones left blank.</p>
+  <div class="files"><b>In the code</b><code>parser.py</code> (tables and text from PDF/Word/Excel), <code>extraction.py</code>, <code>prefill.py</code> and <code>static/js/prefill.js</code> (form autofill), <code>validators.py</code>, <code>vision.py</code> (scans; switched off).</div>
+</div>
+
+<div class="q"><h4>Domain rules: Comparison</h4>
+  <div class="inshort"><b>In short</b>Puts all quotations on one basis before ranking: removes GST where a quote includes it, converts currencies, then ranks. A quote that prints a higher number can rank cheaper.</div>
+  <div class="files"><b>In the code</b><code>comparison.py</code>, <code>quotation_check.py</code> (does the quote cover what was asked, what's missing), <code>rate_sheet*.py</code> (the Rate Comparison Excel buyers already use).</div>
+</div>
+
+<div class="q"><h4>Domain rules: Market check</h4>
+  <div class="inshort"><b>In short</b>For catalogue products, searches Amazon.in and Google Shopping India, keeps trusted sellers and the same product only, and shows each supplier's price against the market.</div>
+  <p>Filters drop used, refurbished, foreign, accessories and spare parts; model numbers must match as whole words; required specs (RAM, storage) must be present. The AI judges "same product?" and code makes the final call.</p>
+  <div class="files"><b>In the code</b><code>benchmark.py</code>, the panel <code>templates/buyer/_tabs/_market_check.html</code>.</div>
+</div>
+
+<div class="q"><h4>Domain rules: TAT &amp; advisor</h4>
+  <div class="inshort"><b>In short</b>TAT counts working days from the day the documents were complete: 15 days up to ₹3.5 lakh, 30 up to ₹40 lakh. The advisor reads the case's facts and recommends the one next action, with reasons.</div>
+  <div class="files"><b>In the code</b><code>tat.py</code>, <code>agents/advisor.py</code>, <code>handover.py</code> ("Ready to award?").</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>TAT</dt><dd>Turnaround time: the working days GP commits to for closing a case.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Domain rules: Supplier RFQ</h4>
+  <div class="inshort"><b>In short</b>Creates an enquiry ("round"), a private link per supplier, records each reply, and keeps every version of every quotation (v1, v2, v3). Deadlines close and reopen the links.</div>
+  <div class="files"><b>In the code</b><code>supplier_rfq.py</code>, <code>routers/supplier_routes.py</code>.</div>
+</div>
+
+<div class="q"><h4>Domain rules: Notifications</h4>
+  <div class="inshort"><b>In short</b>Every email Samagra sends (case submitted, question asked, approved, enquiry to suppliers, deadline extended) plus the in-app messages. Mail goes out through Microsoft Graph.</div>
+  <div class="files"><b>In the code</b><code>notifications.py</code> (what to send), <code>mailbox.py</code> → <code>send_via_graph</code> (how).</div>
+</div>
+
+<div class="q"><h4>AI agents: read, never decide</h4>
+  <div class="inshort"><b>In short</b>Three agents follow a logged perceive → decide → act cycle. The Offer agent and the Enquiry agent use AI to read or draft. The Advisor uses only rules. A fourth AI feature, Ask this case, answers questions from a case's documents.</div>
+  <p>Details in the AI chapter. All model calls go through one gateway, <code>llm.py</code>.</p>
+  <div class="files"><b>In the code</b><code>agents/base.py</code>, <code>agents/offer.py</code>, <code>agents/enquiry.py</code>, <code>agents/advisor.py</code>, <code>ask_case.py</code>, <code>llm.py</code>.</div>
+</div>
+
+<div class="q"><h4>Data: SQLite and the file store</h4>
+  <div class="inshort"><b>In short</b>One database file (<code>sourceflow.db</code>, 16 tables) holds every fact and the audit trail; the documents themselves are files in folders, one per case and one per enquiry.</div>
+  <div class="files"><b>In the code</b><code>db.py</code> is the only file that talks to the database. Files: <code>repository/</code> (cases), <code>rfq_rounds/</code> (enquiries), <code>mailbox_staging/</code>, <code>drafts_staging/</code>.</div>
+</div>
+
+<h3>Right column: deployment and external services</h3>
+
+<div class="q"><h4>Deployment box</h4>
+  <div class="inshort"><b>In short</b>Today: one process on the demo laptop. Next: the same code packaged as a container on VW's cloud, with a fixed address.</div>
+</div>
+
+<div class="q"><h4>SerpAPI, Microsoft Graph, LLM, SAP</h4>
+  <div class="inshort"><b>In short</b>SerpAPI returns shopping search results for the market check. Microsoft Graph sends all mail and reads the intake inbox. The LLM is VW LLMaaS GPT-4o, with Ollama on the laptop as fallback. SAP is proposed, not built.</div>
+  <p>Each has its own section below: Graph in chapter 9, SerpAPI and the tunnel in chapter 10, the LLM in chapter 8.</p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="start">
+<h2><span class="num">3</span>Starting it: <code>.\run.ps1 -Tunnel</code></h2>
+
+<div class="q"><h4>What does <code>.\run.ps1 -Tunnel</code> do?</h4>
+  <div class="inshort"><b>In short</b>It is a start-up script that does five things in order: frees port 8000, opens the public tunnel and saves its address, makes sure the local AI is running, checks every feature, and starts the server.</div>
+  <ol>
+    <li><b>Frees port 8000.</b> Stops any old Samagra still listening there; if it can't, it uses the next free port.</li>
+    <li><b>Opens the tunnel</b> (only with <code>-Tunnel</code>). Starts <code>cloudflared.exe</code> from your Downloads folder, waits for it to print its public address (<code>https://….trycloudflare.com</code>) and writes that address into <code>public_url.txt</code>. Samagra reads this file whenever it builds a supplier link.</li>
+    <li><b>Starts Ollama</b> if it isn't running, so the local AI model is there as a fallback.</li>
+    <li><b>Runs the readiness check</b> <code>tools/demo_check.py</code>: database, AI model, email, price search, supplier links. If VW LLMaaS isn't reachable (VPN off), this run switches to the local model.</li>
+    <li><b>Starts the server</b>: <code>uvicorn main:app --host 127.0.0.1 --port 8000</code>.</li>
+  </ol>
+  <p>Without <code>-Tunnel</code>, step 2 is skipped and supplier links point to <code>localhost</code>, which only works on your own laptop.</p>
+  <span class="trap"><b>Remember:</b> the tunnel address changes on every start, and dies if the laptop sleeps or the network changes. Start it shortly before the demo, then send enquiries. Python code changes need a restart; template changes don't.</span>
+  <div class="files"><b>In the code</b><code>run.ps1</code> (the script), <code>public_url.txt</code> (the address, written by the script), <code>config.py</code> (reads it), <code>supplier_rfq.portal_link</code> (builds each supplier link from it), <code>tools/demo_check.py</code>.</div>
+</div>
+
+<div class="q"><h4>What does <code>uvicorn main:app --host 127.0.0.1 --port 8000</code> mean, word by word?</h4>
+  <div class="inshort"><b>In short</b>"Uvicorn, take the object called <code>app</code> from the file <code>main.py</code>, and answer requests arriving at this computer on door 8000."</div>
+  <ul>
+    <li><code>uvicorn</code>: the server program that receives web requests.</li>
+    <li><code>main:app</code>: file <code>main.py</code>, object <code>app</code> (the FastAPI application created there).</li>
+    <li><code>--host 127.0.0.1</code>: accept requests only from this same computer. Outside visitors come in through the tunnel, which runs on the laptop.</li>
+    <li><code>--port 8000</code>: the numbered door to listen on.</li>
+  </ul>
+  <p>Why not <code>python main.py</code>? <code>main.py</code> only <i>defines</i> the application; it doesn't listen on the network. Uvicorn is what makes it reachable.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Script (PowerShell)</dt><dd>A text file of commands Windows runs in order. <code>.ps1</code> is a PowerShell script.</dd>
+    <dt>Port</dt><dd>A numbered "door" on a computer so several network programs can run side by side. 8000 is Samagra; 11434 is Ollama.</dd>
+    <dt>127.0.0.1 / localhost</dt><dd>The address meaning "this same computer".</dd>
+    <dt>Process</dt><dd>One running copy of a program.</dd>
+    <dt>Ollama</dt><dd>A program that runs open AI models on your own computer.</dd>
+    <dt>cloudflared</dt><dd>Cloudflare's small program that creates the tunnel.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="running">
+<h2><span class="num">4</span>What happens while it runs</h2>
+
+<div class="q"><h4>A user clicks something. What happens, step by step?</h4>
+  <div class="inshort"><b>In short</b>The browser sends a request; Uvicorn receives it; FastAPI finds the function for that address; the login check runs; the function reads or writes the database and applies the rules; Jinja2 fills the page; the finished page goes back.</div>
+  <p>Example: a buyer opens case 57.</p>
+<pre>
+Browser:  GET /queue/57
+   │
+Uvicorn   receives it on port 8000
+   │
+FastAPI   finds the function queue_detail() in routers/buyer_routes.py
+   │
+deps.py   require_buyer: reads the session cookie → logged in? a buyer?   no → login page / 403
+   │ yes
+buyer_routes.queue_detail()
+   ├── db.py            reads the case, documents, audit trail from sourceflow.db
+   ├── tat.py           working days left on the clock
+   ├── agents/advisor   next action and alerts (rules only)
+   ▼
+Jinja2    fills templates/buyer/queue_detail.html with that data
+   │
+Browser   receives finished HTML, applies CSS, runs JavaScript for tabs and buttons
+</pre>
+  <p>An ordinary page takes milliseconds. Pages that wait on the AI ("Ask this case", offer analysis, market check) take seconds to a minute, because the model is reading documents.</p>
+</div>
+
+<div class="q"><h4>What happens in the background, without anyone clicking?</h4>
+  <div class="inshort"><b>In short</b>Only one thing: when a supplier uploads a quotation, the Offer agent starts by itself in a background thread and prepares the comparison. There is no scheduler and no polling.</div>
+  <p>At start-up the app also creates or updates the database tables and removes expired form drafts (<code>main.py</code> → <code>lifespan</code>). Everything else happens because a person clicked.</p>
+  <div class="files"><b>In the code</b><code>supplier_rfq._fire_offer_agent</code> (the background thread), <code>main.py</code> (start-up).</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Thread</dt><dd>A separate line of work inside a running program, so slow work doesn't make the user wait.</dd>
+    <dt>Scheduler / polling</dt><dd>Code that runs on a timer, e.g. "check the inbox every 5 minutes". Samagra has none.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Follow one purchase through the system, and what gets stored at each step</h4>
+  <div class="inshort"><b>In short</b>Enquiry → supplier replies → sourcing request → buyer check → comparison and market check → approval. Each step adds rows to the database and files to a folder, and every step writes an audit-trail line.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Step</th><th>Who</th><th>What is stored</th></tr>
+    <tr><td>Float an enquiry</td><td>Requester</td><td><code>rfq_rounds</code> (subject, deadline, InfoSec answers), <code>rfq_documents</code>, one <code>rfq_invitations</code> row per supplier with its token; the RFQ file in <code>rfq_rounds/RFQ-…/</code></td></tr>
+    <tr><td>Supplier replies</td><td>Supplier</td><td><code>rfq_response_files</code> with a submission number (v1, v2…); decision and history on the invitation; files in <code>rfq_rounds/RFQ-…/responses/</code>; the Offer agent's result on the round; a row in <code>agent_runs</code></td></tr>
+    <tr><td>Raise the sourcing request</td><td>Requester</td><td><code>cases</code> row (SF-ticket, values, InfoSec), <code>attachments</code> rows, cart items in <code>line_items</code>; files in <code>repository/&lt;SC&gt;-&lt;title&gt;/</code>; audit "Submitted"</td></tr>
+    <tr><td>Check the set</td><td>Buyer</td><td>docs-complete date, TAT band, expected PO date on the case</td></tr>
+    <tr><td>Analyze offers / market check</td><td>Buyer</td><td>The comparison and the market check stored on the case as JSON, with their date</td></tr>
+    <tr><td>Ask / reply / correct details</td><td>Both</td><td>Status changes and audit lines, old → new</td></tr>
+    <tr><td>Approve</td><td>Buyer</td><td>Status APPROVED and PO number (unique across all cases)</td></tr>
+  </table></div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Row / table</dt><dd>A table is a list of records of one kind; a row is one record.</dd>
+    <dt>JSON</dt><dd>A plain text format for structured data, e.g. <code>{"supplier": "Zentrix", "total": 481600}</code>.</dd>
+    <dt>Audit trail</dt><dd>A permanent record of every action: what, who, when.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="frontend">
+<h2><span class="num">5</span>Frontend</h2>
+
+<div class="q"><h4>What is the frontend made of?</h4>
+  <div class="inshort"><b>In short</b>HTML pages built on the server with Jinja2, styled with CSS, with plain JavaScript for interactions and Chart.js for the charts. No React, no build step.</div>
+  <ul>
+    <li><b>41 HTML templates</b> in <code>templates/</code>: an HTML file with gaps like <code>{{ case.topic_title }}</code>, which Python fills.</li>
+    <li><b>16 CSS files</b> in <code>static/css/</code>: colours, fonts, spacing, the teal look. <code>base.css</code> holds the shared parts.</li>
+    <li><b>19 JavaScript files</b> in <code>static/js/</code>, one job each: switching tabs, showing or hiding form fields, drag-and-drop uploads, the InfoSec popup, busy buttons, the dashboards.</li>
+    <li><b>Chart.js</b> (charts) and <b>SheetJS</b> (Excel in the browser) stored in <code>static/js/vendor/</code>, so they work without internet.</li>
+  </ul>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Frontend</dt><dd>Everything the browser shows and runs.</dd>
+    <dt>HTML / CSS / JavaScript</dt><dd>Page structure / page looks / programs the browser runs.</dd>
+    <dt>Template / Jinja2</dt><dd>An HTML file with placeholders; Jinja2 is the Python tool that fills them.</dd>
+    <dt>Build step</dt><dd>Compiling and bundling frontend code (npm, Webpack) before it can run. We have none.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>What does "server-rendered" mean, and how is the logic "all in Python"?</h4>
+  <div class="inshort"><b>In short</b>Python decides what to show and fills it into the HTML before sending. The browser receives a finished page. HTML and CSS only describe the look; JavaScript only adds clicks after the page arrives.</div>
+<pre>
+# routers/requester_routes.py — Python fetches the data
+cases = db.list_cases({"requestor_email": user["email"]})
+return templates.TemplateResponse(request, "requester/my_requests_list.html", {"cases": cases})
+
+&lt;!-- templates/requester/my_requests_list.html — Jinja2 fills the gaps --&gt;
+{% for c in cases %}
+  &lt;tr&gt;&lt;td&gt;{{ c.topic_title }}&lt;/td&gt;&lt;td&gt;{{ c | money }}&lt;/td&gt;&lt;/tr&gt;
+{% endfor %}
+</pre>
+  <p>If you open "View source" in the browser, you see real text, no <code>{{ }}</code>: it was filled on the server.</p>
+</div>
+
+<div class="q"><h4>Why not React, Angular or Vue?</h4>
+  <div class="inshort"><b>In short</b>Samagra is forms, tables and case pages. React would mean a second codebase in a second language, a build pipeline and an API between the two, for no gain. Server pages keep one language and load fast.</div>
+  <ul>
+    <li><b>React / Angular / Vue</b> build the page <i>inside the browser</i>: the server sends a JavaScript program and raw data, and the program draws the screen. That suits very interactive apps (design tools, chat, live boards).</li>
+    <li>For us that would mean: logic split across Python and JavaScript, a JSON API for every screen, npm and a build step, and slower first load.</li>
+    <li>Where we need live behaviour (Ask this case, the market check, the dashboards), a small JavaScript file calls the server in the background and updates part of the page.</li>
+  </ul>
+  <p>If VW later wanted a mobile app or a highly interactive screen, the same backend functions could be offered as a JSON API and React used for that part only.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>React / Angular / Vue</dt><dd>Popular JavaScript frameworks that build pages in the browser.</dd>
+    <dt>SPA (single-page application)</dt><dd>A site where one big JavaScript program draws every screen.</dd>
+    <dt>API</dt><dd>Addresses a program calls to get or send data, usually as JSON.</dd>
+    <dt>npm</dt><dd>JavaScript's package manager, used to install and build React projects.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Why not Streamlit? Didn't we start with it?</h4>
+  <div class="inshort"><b>In short</b>Yes. Samagra started on Streamlit, a quick tool for data apps. The challenge owner didn't like its look, and it can't do proper multi-user pages, roles or custom layouts. We rebuilt the pages on FastAPI and kept all the business logic.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Streamlit</dt><dd>A Python library for quick data dashboards; every page reruns the whole script on each click.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>How do the browser and the server talk?</h4>
+  <div class="inshort"><b>In short</b>Normal links and forms (GET and POST) return whole pages. A few live actions call the server in the background with <code>fetch()</code> and get JSON back. All of it is HTTP, and HTTPS through the tunnel.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>HTTP / HTTPS</dt><dd>The language browsers and servers speak; HTTPS is the encrypted version.</dd>
+    <dt>GET / POST</dt><dd>"Show me a page" / "here is data, act on it".</dd>
+    <dt>fetch()</dt><dd>The JavaScript command to call the server without reloading the page.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="backend">
+<h2><span class="num">6</span>Backend</h2>
+
+<div class="q"><h4>What is the backend?</h4>
+  <div class="inshort"><b>In short</b>Python with the FastAPI framework, run by the Uvicorn server. About 60 routes in 8 router files call the business rules, the AI gateway and the database.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Backend</dt><dd>The program on the server: data, rules, secrets.</dd>
+    <dt>Framework</dt><dd>A ready-made toolkit that handles web plumbing so you write only your own logic.</dd>
+    <dt>FastAPI</dt><dd>A modern Python web framework: maps addresses to functions, checks access, validates input, supports async.</dd>
+    <dt>Uvicorn</dt><dd>The server program that listens on the network and hands each request to FastAPI.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Why Python?</h4>
+  <div class="inshort"><b>In short</b>It has the strongest tools for the two hard parts of this problem: reading documents (PDF, Word, Excel) and working with AI models. Java or Node.js are weaker at both.</div>
+  <p>Libraries used: <b>pdfplumber</b> (PDF tables and text), <b>python-docx</b> (Word), <b>openpyxl</b> (Excel), <b>fpdf2</b> (creating PDFs), <b>httpx</b> (calling outside services), <b>msal</b> (Microsoft login), <b>numpy</b> (working-day counting), <b>truststore</b> (uses Windows certificates so HTTPS works on the VW VPN).</p>
+</div>
+
+<div class="q"><h4>Why FastAPI, and not Django or Flask?</h4>
+  <div class="inshort"><b>In short</b>Django is heavy and brings a database layer and admin panel we didn't need. Flask would work but needs add-ons for access checks, validation and async. FastAPI has all three built in and is modern and fast.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Option</th><th>What it is</th><th>Why not for Samagra</th></tr>
+    <tr><td>Django</td><td>"Batteries included": its own ORM, admin site, templates, auth</td><td>Heavy and opinionated; we wanted plain SQL in one file and our own small auth. Fine choice for a bigger team, more than this needs.</td></tr>
+    <tr><td>Flask</td><td>Minimal framework: routes and templates</td><td>Would work. Access checks, form validation and async calls need extra libraries; FastAPI has them built in.</td></tr>
+    <tr><td>Node.js / Express</td><td>JavaScript on the server</td><td>Weaker libraries for PDF/Word/Excel and AI work.</td></tr>
+    <tr><td>Java Spring / .NET</td><td>Enterprise frameworks</td><td>Much more code for the same result; slower to build in a hackathon window.</td></tr>
+    <tr><td><b>FastAPI</b></td><td>Modern Python framework</td><td><b>Chosen</b>: dependencies for access control (<code>require_buyer</code>), input validation, async for slow calls, automatic API documentation if we add an API.</td></tr>
+  </table></div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>ORM</dt><dd>Object-relational mapper: writes SQL for you from Python classes. We use plain SQL instead, all in <code>db.py</code>.</dd>
+    <dt>Dependency (FastAPI)</dt><dd>A function FastAPI runs before a route, e.g. "is this user a buyer?".</dd>
+    <dt>Async</dt><dd>Code that can wait on something slow without holding everything else up (only if the slow call itself is async; see Known gaps).</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Why Uvicorn?</h4>
+  <div class="inshort"><b>In short</b>FastAPI defines the answers but can't listen on the network itself; Uvicorn is its standard server. In production it runs several copies (workers) behind a gateway.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>ASGI server</dt><dd>The kind of server that runs async Python web apps. Uvicorn is one; Gunicorn can manage several Uvicorn workers.</dd>
+    <dt>Worker</dt><dd>One extra copy of the server process, so requests are served in parallel.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>How is the backend code organised?</h4>
+  <div class="inshort"><b>In short</b>Start-up in <code>main.py</code>; web layer in <code>routers/</code>, <code>deps.py</code>, <code>security.py</code>; rules in their own modules; AI in <code>llm.py</code> and <code>agents/</code>; all data access in <code>db.py</code>; all settings in <code>config.py</code>.</div>
+  <p>The full file-by-file map is in chapter 15.</p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="data">
+<h2><span class="num">7</span>Data: database and files</h2>
+
+<div class="q"><h4>Where is the data, and what is in it?</h4>
+  <div class="inshort"><b>In short</b>Facts are in one SQLite database file, <code>sourceflow.db</code>, with 16 tables. Documents are normal files in folders; the database stores only their path.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Group</th><th>Tables</th><th>Holds</th></tr>
+    <tr><td>Cases</td><td><code>cases</code>, <code>attachments</code>, <code>line_items</code>, <code>audit_trail</code>, <code>drafts</code></td><td>Each sourcing request, its documents, cart items, every action, unfinished forms</td></tr>
+    <tr><td>People</td><td><code>users</code>, <code>device_tokens</code>, <code>password_resets</code></td><td>Accounts (hashed passwords), remembered devices, reset links</td></tr>
+    <tr><td>Email intake</td><td><code>inbound_emails</code>, <code>inbound_attachments</code></td><td>Mails fetched from the GP inbox</td></tr>
+    <tr><td>Supplier enquiries</td><td><code>rfq_rounds</code>, <code>rfq_documents</code>, <code>rfq_invitations</code>, <code>rfq_response_files</code></td><td>Each enquiry, its RFQ, each supplier's token and answer history, every quote version</td></tr>
+    <tr><td>AI</td><td><code>agent_runs</code></td><td>Every agent run with its perceive / decide / act log</td></tr>
+    <tr><td>Settings</td><td><code>app_settings</code></td><td>The GP team as the head set it on the Team page: buyers, commodity owners, leave cover</td></tr>
+  </table></div>
+  <div class="files"><b>In the code</b><code>db.py</code> (all SQL, table creation, additive migrations), <code>repository/</code>, <code>rfq_rounds/</code>, <code>mailbox_staging/</code>, <code>drafts_staging/</code>.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Database</dt><dd>Organised storage in tables that a program can search and update.</dd>
+    <dt>SQL</dt><dd>The standard language for asking a database questions.</dd>
+    <dt>SQLite</dt><dd>A database that is a single file inside the application; no separate database server.</dd>
+    <dt>Migration</dt><dd>A controlled change to the database structure. Ours only add columns at start-up, never remove.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Why SQLite today?</h4>
+  <div class="inshort"><b>In short</b>Zero set-up, zero administration, backups are a file copy, and it easily handles GP India's volume: 41 cases use 660 KB. It runs in WAL mode so reads aren't blocked by writes.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>WAL (write-ahead logging)</dt><dd>A SQLite mode where changes go to a log first, so people can keep reading while someone writes.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Why PostgreSQL for production, and not MySQL, SQL Server, Oracle or MongoDB?</h4>
+  <div class="inshort"><b>In short</b>Postgres is a free, full database server that handles many users writing at once, and it supports two things we already rely on: storing JSON and partial unique indexes (our "one PO, one case" rule). If VW IT standardises on another relational database, the same move works.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Option</th><th>Verdict</th></tr>
+    <tr><td><b>PostgreSQL</b></td><td><b>First choice.</b> Open source, no licence; many simultaneous writers; strong JSON support (our comparisons and market checks are stored as JSON); partial unique indexes like ours; offered as a managed service on every major cloud.</td></tr>
+    <tr><td>MySQL / MariaDB</td><td>Would work. Weaker JSON querying and no partial indexes, so the PO rule would need rewriting.</td></tr>
+    <tr><td>SQL Server / Oracle</td><td>Fine if VW IT prefers them; licence costs. Because all SQL is standard and in one file, the move is the same effort.</td></tr>
+    <tr><td>MongoDB</td><td>Not a fit. Our data is relational (case → documents → line items → audit) and needs joins and transactions. A document database would push that work into our code.</td></tr>
+  </table></div>
+  <p><b>What the move involves:</b> change the connection in <code>db.py</code>, adjust a few SQLite-specific statements, copy the data across, and use Postgres's own backups.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>PostgreSQL (Postgres)</dt><dd>A free, full database server used widely in enterprises.</dd>
+    <dt>Relational</dt><dd>Data in related tables (a case has many documents) joined by IDs.</dd>
+    <dt>Partial unique index</dt><dd>A rule like "PO number must be unique, but only when it's filled in".</dd>
+    <dt>Transaction</dt><dd>A group of changes that all succeed or all fail together.</dd>
+    <dt>Managed database</dt><dd>A database run by the cloud provider or IT, who handle backups, updates and failover.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>What happens when the data grows?</h4>
+  <div class="inshort"><b>In short</b>Size isn't the risk: ten years of GP India is roughly 100 MB of database. Query speed is, and that is solved with indexes, summary tables and archiving. Documents grow faster and move to object storage.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Volume</th><th>Database</th><th>Documents (estimate, 1–10 MB per case)</th></tr>
+    <tr><td>GP India, 600 cases/year</td><td>~10 MB a year</td><td>~0.6–6 GB a year</td></tr>
+    <tr><td>Ten years</td><td>~100 MB</td><td>~6–60 GB</td></tr>
+  </table></div>
+  <ul>
+    <li><b>Indexes</b> on status, buyer and dates keep searches fast at millions of rows.</li>
+    <li><b>Summary tables</b> per month keep dashboards fast over years of data.</li>
+    <li><b>Archiving</b> moves closed cases older than the retention period to cheaper storage, still searchable.</li>
+  </ul>
+  <span class="trap"><b>Careful:</b> document sizes are an estimate; the pilot measures them.</span>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Index</dt><dd>A sorted lookup, like a book's index, so the database finds rows without reading everything.</dd>
+    <dt>Archiving</dt><dd>Moving old records out of the busy tables, without deleting them.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="ai">
+<h2><span class="num">8</span>AI and the agents</h2>
+
+<div class="q"><h4>Where is AI used, and where not?</h4>
+  <div class="inshort"><b>In short</b>Only for reading and drafting: quotations, odd carts, emailed requests, whether a quote covers the RFQ, whether a listing is the same product, the supplier note, and Ask this case. Every calculation, check and decision is ordinary code or a person.</div>
+  <p>Not AI: tax stripping, currency conversion, ranking, TAT, the next-action advisor, document completeness, duplicate checks, InfoSec rules.</p>
+</div>
+
+<div class="q"><h4>What are the three agents?</h4>
+  <div class="inshort"><b>In short</b>Code that starts on an event, follows perceive → decide → act, and logs every run. The Offer agent reads and ranks quotations; the Enquiry agent drafts the supplier note from the RFQ; the Advisor recommends the next step using rules only.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Agent</th><th>AI?</th><th>Starts when</th><th>Does</th></tr>
+    <tr><td>Offer (<code>agents/offer.py</code>)</td><td>Yes</td><td>A supplier uploads a quote (by itself), or "Compare now" / "Analyze offers"</td><td>AI reads each quote; code verifies, strips tax, converts, ranks</td></tr>
+    <tr><td>Enquiry (<code>agents/enquiry.py</code>)</td><td>Yes</td><td>The requester attaches an RFQ to a new enquiry</td><td>AI drafts the note; code reads subject and deadline and checks every quantity against the RFQ</td></tr>
+    <tr><td>Advisor (<code>agents/advisor.py</code>)</td><td>No</td><td>A buyer opens a case</td><td>One recommended next step, listing the facts it rests on</td></tr>
+  </table></div>
+  <p>Plus <b>Ask this case</b> (<code>ask_case.py</code>): an AI feature, not an agent, that answers questions from one case's documents only.</p>
+  <span class="trap"><b>Say honestly:</b> "two of the three agents use AI, one is pure rules, by design." Don't claim autonomous AI.</span>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Agent</dt><dd>Software that acts by itself in response to an event and records what it did.</dd>
+    <dt>Perceive / decide / act</dt><dd>Gather facts / apply rules (plus AI to read) / do or propose the work.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>How do you stop the AI from inventing numbers?</h4>
+  <div class="inshort"><b>In short</b>Every figure the model returns must appear in the document text, or it is discarded or marked "[to confirm]". The model answers in a fixed JSON format, at low temperature, and never makes a decision.</div>
+  <ol>
+    <li><b>Verification:</b> numbers checked against the document's own digits; quantities in a supplier note checked against the RFQ.</li>
+    <li><b>Grounding:</b> Ask this case only sees that case's documents and must say when something isn't there.</li>
+    <li><b>Structured output:</b> fixed JSON fields, read by code.</li>
+    <li><b>Temperature 0:</b> the same document always gives the same reading (changed from 0.2 on the technical jury's advice).</li>
+    <li><b>No decisions:</b> a person approves everything.</li>
+  </ol>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>LLM</dt><dd>Large language model: AI trained on huge amounts of text that can read and write, e.g. GPT-4o.</dd>
+    <dt>Hallucination</dt><dd>A model stating something confidently that isn't true or isn't in its source.</dd>
+    <dt>Temperature</dt><dd>How random the model's wording is; low = consistent.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Which model, and why two?</h4>
+  <div class="inshort"><b>In short</b>VW LLMaaS with GPT-4o is the approved, best-quality model. Ollama running Qwen 2.5 7B on the laptop is a free, offline fallback. One setting, <code>LLM_MODE</code>, switches; the code is the same.</div>
+  <p>Both accept the same OpenAI-style request, so <code>llm.py</code> sends the same thing to either. LLMaaS needs the VPN and the team's credentials (environment variables, never in code); usage is capped, so rehearsals use the local model.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>LLMaaS</dt><dd>"LLM as a service": VW's internal platform offering approved AI models.</dd>
+    <dt>Ollama / Qwen 2.5 7B</dt><dd>Ollama runs models locally; Qwen 2.5 7B is an open model with 7 billion parameters.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Why no LangChain, RAG, vector database or fine-tuning?</h4>
+  <div class="inshort"><b>In short</b>Not needed. Each question is about one case whose documents fit in the model's input, so we pass them whole. A thin gateway of our own (<code>llm.py</code>) gives full control over verification with fewer dependencies.</div>
+  <ul>
+    <li><b>LangChain</b>: a framework for chaining AI calls. Adds a large dependency for something we do in a few functions.</li>
+    <li><b>RAG / vector database</b>: for searching thousands of documents. Useful later for "what did we pay before?" across past cases.</li>
+    <li><b>Fine-tuning</b>: retraining a model on our data. Not needed for reading, and it would put VW data into a model.</li>
+  </ul>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>RAG</dt><dd>Retrieval-augmented generation: search first, then give the AI only the relevant passages.</dd>
+    <dt>Vector database / embeddings</dt><dd>Text turned into numbers so similar meanings can be searched.</dd>
+    <dt>Fine-tuning</dt><dd>Training an existing model further on your own data.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="graph">
+<h2><span class="num">9</span>Microsoft Graph and email</h2>
+
+<div class="q"><h4>What is Microsoft Graph?</h4>
+  <div class="inshort"><b>In short</b>Microsoft's official API for Outlook, Teams, OneDrive and the rest of Microsoft 365. Samagra uses it to send every email and to read the intake mailbox, over normal HTTPS.</div>
+  <p>Instead of talking to a mail server in the old way, Samagra calls web addresses such as <code>https://graph.microsoft.com/v1.0/me/sendMail</code>, with a permission token, and Microsoft sends the mail from that mailbox.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>API</dt><dd>Web addresses a program calls to do something, here: send a mail, list the inbox.</dd>
+    <dt>Microsoft 365</dt><dd>Microsoft's cloud office suite: Outlook, Teams, OneDrive, SharePoint.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Why Graph and not SMTP?</h4>
+  <div class="inshort"><b>In short</b>We started on SMTP, but the VW network blocks SMTP's ports. Graph works over normal HTTPS, which isn't blocked, and it's Microsoft's own recommended way. The SMTP code is still there, unused.</div>
+  <ul>
+    <li><b>SMTP</b> is the traditional mail-sending protocol, on ports 465/587 that corporate firewalls often block.</li>
+    <li><b>Graph</b> uses port 443 (HTTPS), the same as every website, and modern login (OAuth) instead of a stored mailbox password.</li>
+    <li>Alternatives like SendGrid or Mailgun are outside services: our mails would pass through a third party. VW already works in Microsoft Outlook and Teams, so Graph keeps mail within Microsoft.</li>
+  </ul>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>SMTP</dt><dd>Simple Mail Transfer Protocol, the classic way programs send email.</dd>
+    <dt>Firewall</dt><dd>A network filter that blocks certain traffic, e.g. some ports.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>How does Samagra log in to the mailbox?</h4>
+  <div class="inshort"><b>In short</b>Once, a person signs in with a code on Microsoft's page (device-code login). Samagra keeps the resulting refresh token in a local file and from then on gets fresh access silently. No password is stored.</div>
+  <ol>
+    <li>The app is registered in Microsoft Entra (Azure) with permissions <b>Mail.Read</b> and <b>Mail.Send</b>.</li>
+    <li><code>scripts/mailbox_login.py</code> shows a code; a person enters it at microsoft.com/devicelogin and signs in to <code>procurement.intake.demo@outlook.com</code>.</li>
+    <li>The <b>MSAL</b> library saves a refresh token in a cache file. Every later mail uses it to get a short-lived access token, with no browser.</li>
+  </ol>
+  <p>Production would use VW's own shared mailbox and an app registration in VW's tenant, approved by VW IT.</p>
+  <div class="files"><b>In the code</b><code>mailbox.py</code> (MSAL login, <code>send_via_graph</code>, <code>check_mailbox</code>), <code>notifications.py</code> (chooses SMTP if configured, otherwise Graph), <code>scripts/mailbox_login.py</code>.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>OAuth</dt><dd>A standard that lets an app act for an account with time-limited tokens instead of its password.</dd>
+    <dt>MSAL</dt><dd>Microsoft Authentication Library: the official code for getting those tokens.</dd>
+    <dt>Access / refresh token</dt><dd>A short-lived pass (about an hour) / a longer-lived pass used to get new access tokens.</dd>
+    <dt>Entra ID (Azure AD)</dt><dd>Microsoft's identity service where apps are registered and permissions granted.</dd>
+    <dt>Tenant</dt><dd>An organisation's own space in Microsoft's cloud, e.g. VW's.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>What exactly does Samagra do with Graph?</h4>
+  <div class="inshort"><b>In short</b>Two things: send mail (with attachments up to Graph's 3 MB limit, which Samagra checks first) and, when a buyer clicks, read new mails and their attachments from the inbox.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Action</th><th>Graph address</th><th>Used for</th></tr>
+    <tr><td>Send</td><td><code>POST /me/sendMail</code></td><td>Every case notification, supplier enquiries with the RFQ attached, deadline extensions</td></tr>
+    <tr><td>Read inbox</td><td><code>GET /me/mailFolders/inbox/messages</code></td><td>"Check mailbox now": requests arriving by email</td></tr>
+    <tr><td>Read attachments</td><td><code>GET /me/messages/{id}/attachments</code></td><td>Carts, SFOs, RFQs, offers inside those mails</td></tr>
+  </table></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="services">
+<h2><span class="num">10</span>Price search and the tunnel</h2>
+
+<div class="q"><h4>Why SerpAPI for prices?</h4>
+  <div class="inshort"><b>In short</b>SerpAPI runs a Google Shopping or Amazon search and returns the results as clean data. It's legal and stable; scraping websites breaks often and breaks their terms.</div>
+  <p>Per catalogue item: Google Shopping India twice, Amazon.in once. Free plan: 250 searches a month. Results are reused for 24 hours per case. Alternatives: Amazon's Product Advertising API requires an affiliate account with sales; scraping is fragile and not allowed.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Scraping</dt><dd>A program reading a website's pages directly and pulling data out of the HTML.</dd>
+    <dt>Quota</dt><dd>The number of calls a plan allows per month.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>What is the Cloudflare tunnel, and why not ngrok?</h4>
+  <div class="inshort"><b>In short</b>It gives the laptop a temporary public web address so suppliers anywhere can open their link. Cloudflare's quick tunnel needs no account; ngrok's free plan shows visitors a warning page first. Both disappear in production.</div>
+  <p><code>cloudflared</code> opens an <i>outgoing</i> connection from the laptop to Cloudflare; visitors reach Cloudflare's address and the traffic comes back through that connection. Nothing on the laptop is opened to the internet directly. The address changes every start and dies if the connection drops.</p>
+  <p><b>At VW scale</b> the tunnel goes away: Samagra runs on VW servers with a fixed address, staff use it on the intranet, and only the supplier pages (<code>/rfq/…</code>) are published through VW's internet gateway.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>DNS</dt><dd>The internet's address book that turns a name into a server's number. A dead tunnel's name no longer exists there.</dd>
+    <dt>Gateway / reverse proxy</dt><dd>A server at the network edge that lets only allowed outside requests in.</dd>
+    <dt>Intranet</dt><dd>The company-internal network.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="security">
+<h2><span class="num">11</span>Security</h2>
+
+<div class="q"><h4>How are logins and passwords protected?</h4>
+  <div class="inshort"><b>In short</b>Passwords are stored only as salted PBKDF2 hashes (200,000 rounds). A signed session cookie lasts 12 hours. Your role is re-checked on every request. Production replaces passwords with VW single sign-on.</div>
+  <div class="files"><b>In the code</b><code>security.py</code>, <code>deps.py</code>, <code>routers/auth_routes.py</code>, session settings in <code>main.py</code> and <code>config.py</code>.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Hash</dt><dd>A one-way scramble: a password can be checked against it but not recovered.</dd>
+    <dt>Salt</dt><dd>Random data added per user, so equal passwords give different hashes.</dd>
+    <dt>PBKDF2</dt><dd>A standard, deliberately slow hashing method that makes guessing expensive.</dd>
+    <dt>SSO</dt><dd>Single sign-on: logging in once with the company account for every app.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>How is the supplier link secure without a login?</h4>
+  <div class="inshort"><b>In short</b>Each supplier gets its own 32-byte random token per enquiry. It opens only that supplier's page, stops at the deadline, and reveals nothing if guessed wrong. Staff who open it see a preview and can't answer.</div>
+</div>
+
+<div class="q"><h4>Who sees what?</h4>
+  <div class="inshort"><b>In short</b>Requesters see only their own requests and enquiries; buyers see the queue but act only on cases assigned to them; suppliers see one page each. Every action is in the audit trail.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>RBAC</dt><dd>Role-based access control: permissions by role.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Where are keys and secrets kept?</h4>
+  <div class="inshort"><b>In short</b>In environment variables on the server, never in code or the browser. Production would use a secrets vault.</div>
+  <span class="trap"><b>Careful:</b> set <code>SOURCEFLOW_SESSION_SECRET</code> on the demo machine; without it the code falls back to a default written in the source.</span>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Environment variable</dt><dd>A named setting given to a program by the operating system, outside its code.</dd>
+    <dt>Secrets vault</dt><dd>A secure service to store and rotate keys, e.g. Azure Key Vault.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="scale">
+<h2><span class="num">12</span>Scaling: data, users, VW-wide</h2>
+
+<div class="q"><h4>How will Samagra scale?</h4>
+  <div class="inshort"><b>In short</b>The business rules stay; the infrastructure under them grows in stages: a VW server for the pilot, then Postgres, object storage, several app copies behind a load balancer and a job queue for AI work, then multiple entities and SAP.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Stage</th><th>Runs on</th><th>Changes</th></tr>
+    <tr><td>Today (demo)</td><td>Laptop</td><td>One process, SQLite, files on disk, Cloudflare tunnel, demo passwords</td></tr>
+    <tr><td>1. Pilot with GP</td><td>One VW virtual machine or container</td><td>Fixed address on the intranet; supplier pages through VW's gateway; VW SSO; VW shared mailbox on Graph; LLMaaS production key; SQLite still fine</td></tr>
+    <tr><td>2. GP India production</td><td>VW cloud</td><td>Managed PostgreSQL; documents in object storage; 2+ app copies behind a load balancer; job queue for AI and price checks; monitoring and backups</td></tr>
+    <tr><td>3. More entities / countries</td><td>VW cloud</td><td>An "entity" on every case and user; per-country configuration (departments, commodities, TAT, currency); SAP integration; an API for other systems</td></tr>
+  </table></div>
+  <p>Logins already work across several app copies, because the session lives in a signed cookie rather than in one server's memory (the app is <b>stateless</b>).</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Vertical / horizontal scaling</dt><dd>A bigger server / more copies of the server side by side.</dd>
+    <dt>Load balancer</dt><dd>A traffic controller that sends each request to a free server copy.</dd>
+    <dt>Stateless</dt><dd>The server keeps nothing about a user in memory between requests, so any copy can serve anyone.</dd>
+    <dt>Container (Docker)</dt><dd>The app packaged with everything it needs, so it runs the same anywhere.</dd>
+    <dt>Kubernetes</dt><dd>A platform that runs many containers, restarts failed ones and adds copies under load.</dd>
+    <dt>Virtual machine</dt><dd>A computer simulated in software on a shared physical server.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>If we scale, will FastAPI stay? What stays and what changes, and why?</h4>
+  <div class="inshort"><b>In short</b>Yes, FastAPI stays, and so do Python, Jinja2, the business rules, the agents and the AI gateway. What changes is what they run on: the database, file storage, login, the tunnel, how slow work is run, and how the app is hosted. The parts that change are exactly those built for a single laptop.</div>
+  <h3 style="margin-top:6px">Stays</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Part</th><th>Why it stays</th></tr>
+    <tr><td>Python</td><td>Still the best fit for documents and AI. Nothing about scale makes another language better here.</td></tr>
+    <tr><td>FastAPI</td><td>Built for production: it runs as many copies (workers, containers) as needed behind a load balancer. Large companies run FastAPI services at far higher load than procurement will ever create. Scaling FastAPI means running more copies, not replacing it.</td></tr>
+    <tr><td>Uvicorn</td><td>Stays as the server inside each copy, usually several workers managed by Gunicorn or by the container platform.</td></tr>
+    <tr><td>Jinja2 pages, CSS, JavaScript</td><td>Server pages scale with the backend; each copy builds its own pages. The interface doesn't care how many servers there are.</td></tr>
+    <tr><td>Business rules</td><td>TAT, tax stripping, ranking, InfoSec, PO uniqueness, versions: this is the value of Samagra and does not depend on infrastructure.</td></tr>
+    <tr><td>Agents and <code>llm.py</code></td><td>Same logic; only how they are started changes (queue instead of thread).</td></tr>
+    <tr><td>Microsoft Graph</td><td>Stays, moved to a VW shared mailbox and an app registered in VW's own tenant.</td></tr>
+    <tr><td>VW LLMaaS</td><td>Stays as the model, with a production key. Ollama fallback becomes optional.</td></tr>
+    <tr><td>SerpAPI</td><td>Stays on a paid plan, or is swapped for a VW-approved price source; it sits behind one module, <code>benchmark.py</code>.</td></tr>
+  </table></div>
+  <h3>Changes</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Today</th><th>At scale</th><th>Why it can't stay</th></tr>
+    <tr><td>SQLite file</td><td>PostgreSQL (managed)</td><td>SQLite allows one writer at a time and lives on one machine's disk; several app copies need a shared database server.</td></tr>
+    <tr><td>Files in <code>repository/</code></td><td>VW object storage</td><td>A folder on one server can't be seen by the other copies, and one disk can fail.</td></tr>
+    <tr><td>Laptop</td><td>VW cloud, containers</td><td>A laptop sleeps, changes network and has no backups or monitoring.</td></tr>
+    <tr><td>Cloudflare quick tunnel</td><td>VW internet gateway, fixed address</td><td>Its address changes every start and it isn't an approved route into VW.</td></tr>
+    <tr><td>Demo passwords</td><td>VW single sign-on</td><td>Company accounts, MFA and leavers must be handled by VW's identity system.</td></tr>
+    <tr><td>Background thread for the Offer agent; AI calls inside the request</td><td>Job queue with workers</td><td>A thread is lost if the server restarts; long AI calls inside a request hold up other users.</td></tr>
+    <tr><td>Secrets in environment variables</td><td>Secrets vault</td><td>Vaults rotate and audit keys.</td></tr>
+    <tr><td>Fixed exchange rate</td><td>VW's official monthly rates</td><td>The demo rate is a placeholder.</td></tr>
+    <tr><td>Personal Outlook demo mailbox</td><td>VW shared mailbox</td><td>Mail must come from a VW address.</td></tr>
+  </table></div>
+  <h3>Would we ever replace FastAPI?</h3>
+  <p>Only for a non-technical reason: if VW IT required every internal app to be built on one standard platform (for example Java Spring or .NET). Then the business rules, which are plain Python modules, would still be reusable as a service behind it. Scale alone is not a reason.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Gunicorn</dt><dd>A process manager that runs and supervises several Uvicorn workers.</dd>
+    <dt>MFA</dt><dd>Multi-factor authentication: a second proof such as a phone code.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>What breaks first as usage grows, and the fix?</h4>
+  <div class="inshort"><b>In short</b>Not data size. First: long AI calls holding up other users. Then SQLite's single writer, files on one disk, AI cost and the search quota. Each has a known fix in one place in the code.</div>
+  <div class="table-wrap"><table>
+    <tr><th>What grows</th><th>Breaks first</th><th>Fix</th></tr>
+    <tr><td>Users waiting on AI</td><td>Long AI calls run inside the request and hold up the one process</td><td>Thread pool or job queue; several workers</td></tr>
+    <tr><td>Users writing at once</td><td>SQLite: one writer at a time</td><td>PostgreSQL behind the same <code>db.py</code></td></tr>
+    <tr><td>App servers</td><td>Files on one machine's disk</td><td>Object storage</td></tr>
+    <tr><td>Quotes arriving</td><td>Background agent thread lost on restart</td><td>Job queue with retries (runs are already logged)</td></tr>
+    <tr><td>Years of data</td><td>Slower searches and dashboards</td><td>Indexes, summary tables, archiving</td></tr>
+    <tr><td>AI usage</td><td>LLMaaS cost and rate limits</td><td>Read each document once and store it (done); rate limiting and caching in <code>llm.py</code></td></tr>
+    <tr><td>Price checks</td><td>250 searches a month</td><td>Paid plan or VW-approved source; 24 h reuse (done)</td></tr>
+  </table></div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Job queue</dt><dd>A to-do list for slow work: the page adds a job, separate workers do it. E.g. Celery, RQ, a cloud queue.</dd>
+    <dt>Thread pool</dt><dd>A set of threads kept ready for slow tasks.</dd>
+    <dt>Rate limit</dt><dd>A cap on calls per minute.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>What is "VW object storage"?</h4>
+  <div class="inshort"><b>In short</b>A cloud service for storing files by key instead of in a folder on one server, like Amazon S3 or Azure Blob Storage. "VW object storage" means whichever such service VW IT provides.</div>
+  <p>Every app copy can reach the same files; the provider keeps several copies so nothing is lost; it grows without limit and has access control, encryption and versioning built in. Code impact is small: the database already stores only a path per file, so only saving and reading change.</p>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Object storage</dt><dd>File storage addressed by key over the network, e.g. S3, Azure Blob.</dd>
+    <dt>Encryption at rest</dt><dd>Files stored scrambled, so a stolen disk is unreadable.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>Can it serve other countries or VW entities?</h4>
+  <div class="inshort"><b>In short</b>Yes: departments, commodities, buyer map, TAT bands, InfoSec questions and document types are already configuration in <code>config.py</code>. Add an "entity" field so each organisation sees only its own data, and take exchange rates from VW's official rates.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Multi-tenant</dt><dd>One installation serving several organisations, each seeing only its own data.</dd>
+    <dt>Configuration</dt><dd>Settings kept apart from program logic, changeable without rewriting code.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="ops">
+<h2><span class="num">13</span>Running it in production</h2>
+
+<div class="q"><h4>How would it be deployed?</h4>
+  <div class="inshort"><b>In short</b>Packaged as a Docker container, run on VW's cloud platform behind a load balancer, with a managed database, object storage and a secrets vault; every code change tested and released by a CI/CD pipeline into separate dev, test and production environments.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>CI/CD</dt><dd>Continuous integration / delivery: automatic testing and release of every change.</dd>
+    <dt>Environment</dt><dd>A separate installation for one purpose: development, testing, live use.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>How would it be monitored and backed up?</h4>
+  <div class="inshort"><b>In short</b>Central logs, a health check (<code>/healthz</code> already exists), alerts on errors and response times, the <code>agent_runs</code> log for AI, and the database's automatic backups with point-in-time restore.</div>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>Health check</dt><dd>An address the platform calls regularly to confirm the app is alive.</dd>
+    <dt>Point-in-time restore</dt><dd>Restoring the database to exactly how it was at a chosen minute.</dd>
+  </dl></div>
+</div>
+
+<div class="q"><h4>What happens when something fails?</h4>
+  <div class="inshort"><b>In short</b>AI down: AI panels say so; everything rule-based keeps working. Mail fails: the page shows the text to send by hand. Crash mid-change: transactions mean nothing is half-written.</div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="quality">
+<h2><span class="num">14</span>Testing</h2>
+
+<div class="q"><h4>How was it tested?</h4>
+  <div class="inshort"><b>In short</b>Scripted end-to-end runs through the real application: 36 scenarios (missing documents, duplicate PO, tax traps, currencies, InfoSec, revisions, declines), then the five demo sets run as requester, suppliers and buyer. Plus a readiness check before every demo. No automated unit-test suite yet.</div>
+  <ul>
+    <li><code>tools/demo_check.py</code>: checks database, mail, AI and price search before every demo.</li>
+    <li><code>tools/make_cases.py</code> and <code>tools/make_demo_sets.py</code>: realistic document sets in VW formats.</li>
+  </ul>
+  <div class="terms"><b>Terms</b><dl>
+    <dt>End-to-end test</dt><dd>A test that walks a whole user journey through the real application.</dd>
+    <dt>Unit test</dt><dd>A small automatic test of one function. Next step: a pytest suite in CI.</dd>
+  </dl></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="codemap">
+<h2><span class="num">15</span>Code map: every file</h2>
+<p class="intro">Every file in <code>sourceflow/</code>, grouped by architecture block.</p>
+
+<h3>Start-up and web layer</h3>
+<div class="table-wrap"><table>
+  <tr><th>File</th><th>What it does</th></tr>
+  <tr><td><code>run.ps1</code></td><td>Starts everything: port, tunnel, Ollama, readiness check, server</td></tr>
+  <tr><td><code>main.py</code></td><td>Creates the FastAPI app, session cookie, static files, plugs in the routers, start-up tasks, home and dashboard routes</td></tr>
+  <tr><td><code>config.py</code></td><td>All settings: lists, TAT bands, buyer map, InfoSec questions, document types, limits, keys from environment variables</td></tr>
+  <tr><td><code>deps.py</code></td><td>Who is logged in, and role checks before each page</td></tr>
+  <tr><td><code>security.py</code></td><td>Password and token hashing</td></tr>
+  <tr><td><code>templating.py</code></td><td>Jinja2 set-up and display filters (money, dates, status)</td></tr>
+  <tr><td><code>formatting.py</code></td><td>Indian money format, labels, InfoSec summary</td></tr>
+  <tr><td><code>validators.py</code></td><td>What makes a new request complete</td></tr>
+  <tr><td><code>drafts.py</code></td><td>Holds a half-finished request between form and confirm page</td></tr>
+  <tr><td><code>routers/auth_routes.py</code></td><td>Login, logout, password reset</td></tr>
+  <tr><td><code>routers/requester_routes.py</code></td><td>New request, my requests, reply to buyer</td></tr>
+  <tr><td><code>routers/buyer_routes.py</code></td><td>Queue, case page, check, enquire, approve, compare, market check, ask, correct details</td></tr>
+  <tr><td><code>routers/supplier_routes.py</code></td><td>Enquiries (requester) and the supplier token page</td></tr>
+  <tr><td><code>routers/mailbox_routes.py</code></td><td>Review requests that arrived by email</td></tr>
+  <tr><td><code>routers/attachments_routes.py</code></td><td>Document download with ownership check</td></tr>
+  <tr><td><code>routers/agents_routes.py</code></td><td>Agent run log and "run now"</td></tr>
+  <tr><td><code>routers/team_routes.py</code>, <code>team.py</code></td><td>Team page: buyers, commodity owners, leave cover; saved in the database</td></tr>
+</table></div>
+
+<h3>Domain rules</h3>
+<div class="table-wrap"><table>
+  <tr><th>File</th><th>What it does</th></tr>
+  <tr><td><code>parser.py</code></td><td>Item tables and text from PDF, Word, Excel</td></tr>
+  <tr><td><code>extraction.py</code></td><td>Rebuilds a case from an email and its attachments</td></tr>
+  <tr><td><code>comparison.py</code></td><td>Reads quotations, strips tax, converts currency, ranks</td></tr>
+  <tr><td><code>quotation_check.py</code></td><td>Is the quote complete, does it answer the RFQ</td></tr>
+  <tr><td><code>rate_sheet.py</code>, <code>rate_sheet_analysis.py</code>, <code>rate_sheet_build.py</code></td><td>The Rate Comparison Excel workbook</td></tr>
+  <tr><td><code>benchmark.py</code></td><td>Market price check</td></tr>
+  <tr><td><code>tat.py</code></td><td>Working-day TAT</td></tr>
+  <tr><td><code>handover.py</code></td><td>"Ready to award?" summary</td></tr>
+  <tr><td><code>supplier_rfq.py</code></td><td>Enquiry rounds, links, versions, deadlines</td></tr>
+  <tr><td><code>notifications.py</code></td><td>Every outgoing email</td></tr>
+  <tr><td><code>dashboard.py</code>, <code>dashboard_export.py</code></td><td>Dashboard numbers and Excel export</td></tr>
+  <tr><td><code>mailbox.py</code>, <code>mailbox_intake.py</code>, <code>mailbox_staging.py</code></td><td>Microsoft Graph login, send and read; mail → case</td></tr>
+</table></div>
+
+<h3>AI and data</h3>
+<div class="table-wrap"><table>
+  <tr><th>File</th><th>What it does</th></tr>
+  <tr><td><code>llm.py</code></td><td>The one gateway to the AI model (LLMaaS or Ollama)</td></tr>
+  <tr><td><code>agents/base.py</code></td><td>What an agent is; run logging</td></tr>
+  <tr><td><code>agents/offer.py</code>, <code>agents/enquiry.py</code>, <code>agents/advisor.py</code></td><td>The three agents</td></tr>
+  <tr><td><code>ask_case.py</code></td><td>Ask this case</td></tr>
+  <tr><td><code>vision.py</code></td><td>Reading scans (switched off)</td></tr>
+  <tr><td><code>db.py</code></td><td>All database access, tables, migrations</td></tr>
+  <tr><td><code>challenge_docs.py</code></td><td>Writes documents from the challenge dataset's text</td></tr>
+</table></div>
+
+<h3>Pages, styles, scripts, folders</h3>
+<div class="table-wrap"><table>
+  <tr><th>Where</th><th>What</th></tr>
+  <tr><td><code>templates/base.html</code></td><td>The frame every page sits in: header, logo, navigation</td></tr>
+  <tr><td><code>templates/requester/</code></td><td>Home, new request (two steps), my requests, case page</td></tr>
+  <tr><td><code>templates/buyer/</code></td><td>Queue, case page and its tabs, enquiries, dashboards, mailbox</td></tr>
+  <tr><td><code>templates/supplier/</code></td><td>The supplier's page and the "not available" page</td></tr>
+  <tr><td><code>templates/auth/</code>, <code>errors/</code>, <code>_macros/</code></td><td>Login pages; 403/404; reusable pieces</td></tr>
+  <tr><td><code>static/css/</code></td><td>16 stylesheets; <code>base.css</code> shared</td></tr>
+  <tr><td><code>static/js/</code></td><td>19 scripts, one job each; <code>vendor/</code> holds Chart.js and SheetJS</td></tr>
+  <tr><td><code>tools/</code></td><td>Readiness check, document generators, maintenance scripts</td></tr>
+  <tr><td><code>repository/</code>, <code>rfq_rounds/</code></td><td>Case documents; enquiry documents and supplier replies</td></tr>
+  <tr><td><code>sourceflow.db</code>, <code>public_url.txt</code></td><td>The database; the tunnel's current address</td></tr>
+</table></div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="gaps">
+<h2><span class="num">16</span>Known gaps</h2>
+<div class="q"><h4>What isn't production-ready, and what would fix it?</h4>
+  <div class="inshort"><b>In short</b>All infrastructure and hardening, none of it business logic; each sits in one place in the code. That's why a pilot comes before scale-up.</div>
+  <div class="table-wrap"><table>
+    <tr><th>Gap today</th><th>Fix</th></tr>
+    <tr><td>Long AI calls hold up other users</td><td>Thread pool or job queue; several workers</td></tr>
+    <tr><td>SQLite: one writer at a time</td><td>PostgreSQL</td></tr>
+    <tr><td>Files on the laptop's disk</td><td>Object storage</td></tr>
+    <tr><td>Background agent in a thread</td><td>Job queue with retries</td></tr>
+    <tr><td>Few database indexes</td><td>Indexes on status, buyer, dates</td></tr>
+    <tr><td>Passwords, default session secret if unset</td><td>VW SSO; secret from a vault</td></tr>
+    <tr><td>Upload file names used as given; no virus scan</td><td>Clean names; VW scanner</td></tr>
+    <tr><td>Fixed exchange rate; no public holidays in TAT</td><td>VW official rates; holiday calendar</td></tr>
+    <tr><td>Long documents cut to a text budget; scans unreadable</td><td>Read in sections; vision/OCR</td></tr>
+    <tr><td>Temporary tunnel address</td><td>Fixed address via VW gateway</td></tr>
+    <tr><td>No unit-test suite; SAP not connected</td><td>pytest in CI; SAP integration</td></tr>
+  </table></div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="chapter" id="glossary">
+<h2><span class="num">17</span>Glossary A–Z</h2>
+<div class="terms"><dl>
+  <dt>Agent</dt><dd>Code that starts on an event, does perceive → decide → act, and logs it.</dd>
+  <dt>API</dt><dd>Addresses a program calls to get data or do something.</dd>
+  <dt>Async</dt><dd>Code that waits on slow work without stopping everything, if written fully async.</dd>
+  <dt>Audit trail</dt><dd>Permanent record of who did what, when.</dd>
+  <dt>Backend / frontend</dt><dd>Server-side program / what the browser shows and runs.</dd>
+  <dt>Cloudflare tunnel</dt><dd>Gives a non-public machine a temporary public address.</dd>
+  <dt>Container / Docker</dt><dd>An app packaged to run the same anywhere.</dd>
+  <dt>Cookie / session</dt><dd>Small data the browser sends back / how the server remembers you're logged in.</dd>
+  <dt>CSS / HTML / JavaScript</dt><dd>Page look / page structure / browser programs.</dd>
+  <dt>Database / SQL</dt><dd>Organised tables of data / the language to query them.</dd>
+  <dt>Dependency (FastAPI)</dt><dd>A check run before a route.</dd>
+  <dt>Django / Flask</dt><dd>Other Python frameworks: heavy / minimal.</dd>
+  <dt>DNS</dt><dd>Turns names into server addresses.</dd>
+  <dt>Entra ID</dt><dd>Microsoft's identity service for apps and users.</dd>
+  <dt>FastAPI</dt><dd>Python framework mapping addresses to functions.</dd>
+  <dt>Graph (Microsoft)</dt><dd>Microsoft 365's API: mail, calendar, files.</dd>
+  <dt>Hash / salt</dt><dd>One-way password scramble / random addition per user.</dd>
+  <dt>Horizontal scaling</dt><dd>More copies of the server.</dd>
+  <dt>HTTP / HTTPS</dt><dd>Browser–server language; encrypted version.</dd>
+  <dt>Index</dt><dd>Sorted lookup for fast search.</dd>
+  <dt>Jinja2</dt><dd>Fills HTML templates on the server.</dd>
+  <dt>Job queue</dt><dd>To-do list for slow work done by separate workers.</dd>
+  <dt>JSON</dt><dd>Plain text data format.</dd>
+  <dt>Kubernetes</dt><dd>Runs and manages many containers.</dd>
+  <dt>LLM / LLMaaS</dt><dd>Large language model / VW's internal AI service.</dd>
+  <dt>Load balancer</dt><dd>Spreads requests across server copies.</dd>
+  <dt>Monolith / microservices</dt><dd>One program / many small networked programs.</dd>
+  <dt>MSAL / OAuth</dt><dd>Microsoft's login library / the token-based access standard.</dd>
+  <dt>Object storage</dt><dd>Cloud file storage by key (S3, Azure Blob).</dd>
+  <dt>Ollama</dt><dd>Runs open AI models locally.</dd>
+  <dt>ORM</dt><dd>Library that writes SQL from code objects; we don't use one.</dd>
+  <dt>PBKDF2</dt><dd>Slow, salted password hashing.</dd>
+  <dt>Port</dt><dd>Numbered network door; Samagra 8000.</dd>
+  <dt>PostgreSQL</dt><dd>Full open-source database server.</dd>
+  <dt>RAG / vector DB</dt><dd>Search-then-answer AI / meaning-based search store.</dd>
+  <dt>React / SPA</dt><dd>Browser-side page framework / one-program website.</dd>
+  <dt>Route</dt><dd>Web address + function answering it.</dd>
+  <dt>SerpAPI</dt><dd>Search results as data.</dd>
+  <dt>SMTP</dt><dd>Traditional mail sending; blocked on the VW network.</dd>
+  <dt>SQLite</dt><dd>One-file database.</dd>
+  <dt>SSO</dt><dd>One company login for all apps.</dd>
+  <dt>Stateless</dt><dd>Server keeps no per-user memory between requests.</dd>
+  <dt>Thread</dt><dd>Separate line of work inside a program.</dd>
+  <dt>Token (link / LLM / OAuth)</dt><dd>Random key in a link / chunk of text a model reads / time-limited access pass.</dd>
+  <dt>Transaction</dt><dd>Changes that all succeed or all fail.</dd>
+  <dt>Uvicorn</dt><dd>Server that receives requests for FastAPI.</dd>
+  <dt>WAL</dt><dd>SQLite mode: reads continue during writes.</dd>
+  <dt>Worker</dt><dd>Extra server process, or a program running queued jobs.</dd>
+</dl></div>
+</section>
+
+<footer>Samagra · Team Dual Core · i.mobilothon 6.0. Checked against the code on 16.10.2026. Growth figures for documents are estimates; GP volumes from Himanshu Tiwari, VW GDS General Procurement.</footer>
+</div>

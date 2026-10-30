@@ -21,6 +21,16 @@ param([switch]$Tunnel)
 
 Set-Location $PSScriptRoot
 
+# 0. the AI settings as saved for this Windows user. A terminal - VS Code's
+#    especially - keeps the values it was opened with, so a key or LLM_MODE
+#    saved since then would otherwise be ignored and the run would quietly
+#    stay on the local model.
+foreach ($name in "LLM_MODE", "LLMAAS_BASE_URL", "LLMAAS_MODEL", "LLMAAS_API_KEY",
+                  "LLMAAS_CLIENT_ID", "LLMAAS_CLIENT_SECRET", "OLLAMA_MODEL") {
+    $saved = [Environment]::GetEnvironmentVariable($name, "User")
+    if ($saved) { Set-Item "env:$name" $saved.Trim() }
+}
+
 # 1. a clean port. A --reload server is two processes, so kill the tree; and
 #    a server started in another session (an admin window, VS Code) can't be
 #    killed from here at all - say so, rather than failing later with a

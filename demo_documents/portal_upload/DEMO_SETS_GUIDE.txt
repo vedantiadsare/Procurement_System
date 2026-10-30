@@ -24,7 +24,7 @@ CASE-31_Network_printers_branches
   Shows      Network printers for branch offices - InfoSec applies
   Buyer      Sayali Parikh  (Printer equipment, accessories)
   InfoSec    Yes - clearance attached as 06_
-  Finals     Printwell Rs 3,18,600 (3 versions); Inkpoint Rs 3,23,880 (3 versions)
+  Finals     Printwell Rs 2,73,600 (3 versions); Inkpoint Rs 2,77,680 (3 versions)
   Award      Printwell Systems Pvt Ltd
 
 CASE-32_UPS_workstations

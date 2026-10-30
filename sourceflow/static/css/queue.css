@@ -530,3 +530,18 @@
 .sf-details-edit__q span { display: flex; gap: 10px; flex-shrink: 0; }
 .sf-details-edit__q label { display: inline-flex; gap: 4px; margin: 0; font-weight: 500; color: inherit; font-size: 0.8rem; }
 .sf-details-edit .sf-btn { justify-self: start; }
+
+/* Team page (procurement head): buyers, leave cover, commodity owners. */
+.sf-team__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin: 16px 0; }
+.sf-team__grid .sf-card { margin: 0; }
+.sf-team__form { display: grid; gap: 10px; }
+.sf-team__form label { display: block; font-size: 0.74rem; font-weight: 600; color: var(--sf-text-muted); margin-bottom: 3px; }
+.sf-team__form input[type="text"], .sf-team__form input[type="email"], .sf-team__form select,
+.sf-team select, .sf-team__filter { width: 100%; font: inherit; font-size: 0.84rem; padding: 6px 8px; border: 1px solid var(--sf-border-strong); border-radius: var(--sf-radius); background: var(--sf-surface); }
+.sf-team__form .sf-team__check { display: flex; gap: 8px; align-items: center; font-size: 0.82rem; font-weight: 500; color: inherit; margin: 0; }
+.sf-team__form .sf-btn { justify-self: start; }
+.sf-team__table { overflow-x: auto; }
+.sf-team__table--tall { max-height: 480px; overflow-y: auto; border: 1px solid var(--sf-border); border-radius: var(--sf-radius); }
+.sf-team__filter { max-width: 320px; margin-bottom: 10px; }
+.sf-team__chip { display: inline-block; font-size: 0.74rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #E5F5EA; color: #15803D; }
+.sf-team__chip--leave { background: #FEF2E1; color: #B45309; }

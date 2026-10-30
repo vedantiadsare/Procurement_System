@@ -531,19 +531,47 @@ _BUYER_KEYWORDS = [
 ]
 
 
-def buyer_for_commodity(commodity):
-    """The buyer a commodity is allocated to, or None - "Other" and anything
-    unplaceable stay unclaimed for a person to pick up, rather than being
-    guessed onto someone's desk."""
+# Buyers on leave and who covers them: {"Sayali Parikh": "Nilesh Koram"}.
+# Set by the procurement head on the Team page; new cases for an absent
+# buyer's commodities go to the cover until the leave is ended.
+ON_LEAVE = {}
+
+
+def owner_of_commodity(commodity):
+    """The buyer a commodity is allocated to, ignoring leave, or None -
+    "Other" and anything unplaceable stay unclaimed for a person to pick up,
+    rather than being guessed onto someone's desk."""
     key = str(commodity or "").strip().lower()
     if not key or key == "other":
         return None
     if key in _COMMODITY_BUYER:
         return _COMMODITY_BUYER[key]
     for words, buyer in _BUYER_KEYWORDS:
-        if any(w in key for w in words):
+        if any(w in key for w in words) and buyer in BUYER_DIRECTORY:
             return buyer
     return None
+
+
+def buyer_for_commodity(commodity):
+    """Who a new case goes to: the commodity's owner, or their cover while
+    they are on leave."""
+    owner = owner_of_commodity(commodity)
+    cover = ON_LEAVE.get(owner) if owner else None
+    return cover if cover and cover not in ON_LEAVE else owner
+
+
+def apply_team(directory, commodities, on_leave):
+    """Replace the team in place. Everything that imported these objects -
+    security's BUYER_EMAILS, the routing map - sees the change at once."""
+    BUYER_DIRECTORY.clear()
+    BUYER_DIRECTORY.update(directory)
+    BUYER_COMMODITIES.clear()
+    BUYER_COMMODITIES.update(commodities)
+    _COMMODITY_BUYER.clear()
+    _COMMODITY_BUYER.update({c.lower(): b for b, cs in commodities.items() for c in cs})
+    BUYER_EMAILS[:] = [INTAKE_MAILBOX] + list(directory.values())
+    ON_LEAVE.clear()
+    ON_LEAVE.update({b: c for b, c in (on_leave or {}).items() if b in directory})
 
 
 def buyer_email(name):
@@ -556,7 +584,8 @@ def buyer_email(name):
 # the seam to swap for real VW SSO / AD group membership later. The intake
 # mailbox keeps buyer access so mail filed from it can be worked, but it owns
 # no commodities and is never auto-assigned a case.
-BUYER_EMAILS = ["procurement.intake.demo@outlook.com"] + list(BUYER_DIRECTORY.values())
+INTAKE_MAILBOX = "procurement.intake.demo@outlook.com"
+BUYER_EMAILS = [INTAKE_MAILBOX] + list(BUYER_DIRECTORY.values())
 
 # The procurement head. Everything a buyer can do, plus the organisation-wide
 # dashboard: totals and TAT health pivoted by department, buyer, commodity and

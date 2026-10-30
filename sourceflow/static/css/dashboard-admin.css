@@ -295,3 +295,18 @@
 .ad-mini .pill--warn { background: rgba(194, 109, 0, .14); color: #9A5B00; }
 .ad-mini .pill--bad { background: rgba(208, 59, 59, .12); color: #B42318; }
 .ad-mini .pill--muted { background: rgba(11, 43, 58, .07); color: var(--ink-2); }
+
+/* Rework card: cases sent back to the requester. */
+.ad-rework__kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.ad-rework__kpis > div { background: var(--bg, transparent); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.ad-rework__kpis b { display: block; font-size: 22px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.ad-rework__kpis span { font-size: 12.5px; color: var(--ink-2); }
+.ad-rework__table { overflow-x: auto; }
+.ad-rework__table table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ad-rework__table th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.ad-rework__table td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink); }
+.ad-rework__table tr:last-child td { border-bottom: 0; }
+.ad-rework__q { min-width: 240px; }
+.ad-rework__ok { color: #15803D; font-weight: 600; white-space: nowrap; }
+.ad-rework__wait { color: #B45309; font-weight: 600; white-space: nowrap; }
+.ad-rework__none { font-size: 13px; color: var(--ink-2); margin: 0; }

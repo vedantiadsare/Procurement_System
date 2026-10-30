@@ -204,6 +204,12 @@
     <div class="sf-doc-list" data-nr-doc-list>
         <p class="sf-doc-list__empty">No documents attached yet.</p>
     </div>
+    {# Autofill: the documents state most of the fields above. Only empty
+       fields are filled, each marked with its source document. #}
+    <div class="sf-prefill">
+        <button type="button" class="sf-btn sf-btn--secondary sf-btn--sm" data-prefill-btn>Fill the form from these documents</button>
+        <p class="sf-caption" data-prefill-note>Attach your documents and Samagra fills the empty fields above from the shopping cart (for a frame contract, from the SFO and RFQ). MRM, InfoSec and who the request is for stay yours to answer.</p>
+    </div>
     <p class="sf-caption" data-show-if="sourcing_basis=One-time sourcing">Required: Approved Shopping Cart, Deviation Note/SFO, RFQ, and at least one Supplier offer. Other supporting files are optional.</p>
     <p class="sf-caption" data-show-if="sourcing_basis=Frame contract">Required: Deviation Note/SFO, RFQ, and at least one Supplier offer. A frame contract has no approved Shopping Cart yet — carts are raised against each call-off later.</p>
 

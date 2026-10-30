@@ -421,6 +421,21 @@ def parse_sc_document(file_obj, ext: str) -> dict:
 SUPPORTED_TEXT_EXTENSIONS = {"pdf", "docx", "xlsx", "xlsm", "csv", "txt"}
 
 
+def _docx_text_fallback(raw: bytes) -> str:
+    """Text out of a .docx whose XML doesn't parse: every w:t run, a line
+    break per paragraph and per table cell. Never raises."""
+    import html as _html
+    import zipfile
+    try:
+        xml = zipfile.ZipFile(io.BytesIO(raw)).read("word/document.xml").decode("utf-8", "replace")
+    except Exception:
+        return ""
+    xml = re.sub(r"</w:p>|</w:tc>", "\n", xml)
+    words = re.findall(r"<w:t(?:\s[^>]*)?>([^<]*)</w:t>|(\n)", xml)
+    text = "".join(w or nl for w, nl in words)
+    return _html.unescape(re.sub(r"\n{3,}", "\n\n", text)).strip()
+
+
 def extract_text(file_obj, ext: str, max_chars: int = 12000) -> str:
     """Best-effort plain-text dump of a document, for feeding to an LLM
     prompt rather than a table parser - supplier offers vary too much in
@@ -435,7 +450,15 @@ def extract_text(file_obj, ext: str, max_chars: int = 12000) -> str:
             with pdfplumber.open(file_obj) as pdf:
                 text = "\n".join(page.extract_text() or "" for page in pdf.pages)
         elif ext == "docx":
-            doc = Document(file_obj)
+            raw = file_obj.read()
+            try:
+                doc = Document(io.BytesIO(raw))
+            except Exception:
+                # A damaged file (mismatched XML tags - Word repairs these
+                # on open) made python-docx give up, and the quote read as
+                # empty. The words are still in document.xml: take them out
+                # directly, one line per paragraph.
+                return _docx_text_fallback(raw)[:max_chars]
             lines = [p.text for p in doc.paragraphs]
             # python-docx keeps table cells completely separate from
             # paragraphs - a document whose item/price table lives in an

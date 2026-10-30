@@ -207,6 +207,56 @@ def buyer_dashboard() -> dict:
     }
 
 
+def rework_summary(recent_limit: int = 6) -> dict:
+    """How often cases go back to the requester, why, and how long the
+    answer takes - counted from the audit trail, where every "Ask requester"
+    (ENQUIRED) and every answer (REPLIED / RESUBMITTED) is already recorded.
+    GP's own figure for this is an estimate (10-15%); this is the count."""
+    conn = db.get_connection()
+    try:
+        total = conn.execute("SELECT COUNT(*) FROM cases").fetchone()[0]
+        rows = conn.execute(
+            "SELECT a.case_id, a.action, a.actor, a.detail, a.created_at, c.ticket_no, c.status "
+            "FROM audit_trail a JOIN cases c ON c.id = a.case_id "
+            "WHERE a.action IN ('ENQUIRED', 'REPLIED', 'RESUBMITTED') "
+            "ORDER BY a.case_id, a.created_at").fetchall()
+    finally:
+        conn.close()
+
+    queries = []
+    by_case = {}
+    for r in rows:
+        by_case.setdefault(r["case_id"], []).append(r)
+    for case_rows in by_case.values():
+        for i, r in enumerate(case_rows):
+            if r["action"] != "ENQUIRED":
+                continue
+            answer = next((x for x in case_rows[i + 1:] if x["action"] in ("REPLIED", "RESUBMITTED")), None)
+            days = None
+            if answer:
+                try:
+                    delta = datetime.fromisoformat(str(answer["created_at"])) - datetime.fromisoformat(str(r["created_at"]))
+                    days = max(0.0, delta.total_seconds() / 86400)
+                except (TypeError, ValueError):
+                    days = None
+            queries.append({"case_id": r["case_id"], "ticket": r["ticket_no"], "asked_by": r["actor"],
+                            "asked_on": _iso_date(r["created_at"]), "question": r["detail"] or "",
+                            "answered": answer is not None, "reply_days": days})
+
+    answered = [q["reply_days"] for q in queries if q["reply_days"] is not None]
+    sent_back = len({q["case_id"] for q in queries})
+    waiting = sum(1 for rows_ in by_case.values() if rows_[0]["status"] == "ENQUIRED")
+    return {
+        "total_cases": total,
+        "cases_sent_back": sent_back,
+        "share_pct": round(100 * sent_back / total) if total else 0,
+        "queries": len(queries),
+        "avg_reply_days": round(sum(answered) / len(answered), 1) if answered else None,
+        "waiting_now": waiting,
+        "recent": sorted(queries, key=lambda q: q["asked_on"] or "", reverse=True)[:recent_limit],
+    }
+
+
 # The four milestones a request actually passes through. Every one of them is
 # a fact already recorded against the case - not a workflow stage invented to
 # fill a progress bar. "Offers being compared" would be the obvious fifth, and

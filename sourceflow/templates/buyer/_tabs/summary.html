@@ -95,7 +95,11 @@
        recorded here instead of sending them back through the whole form.
        Value, currency, SC and commodity are not offered: they move the TAT
        band or the buyer, so they stay the requester's to change. #}
-    {% if may_act and case.source != "import" and case.status not in ("APPROVED", "REJECTED") %}
+    {# "is defined": templates reload by themselves but Python code needs a
+       restart - a server started before this panel existed doesn't send
+       these, and the case page must still open rather than crash. #}
+    {% if may_act and case.source != "import" and case.status not in ("APPROVED", "REJECTED")
+          and infosec_answers is defined and delivery_locations is defined %}
     <details class="sf-details-edit">
         <summary>Correct details from the requester</summary>
         <form method="post" action="/queue/{{ case.id }}/details">

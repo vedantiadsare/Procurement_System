@@ -105,6 +105,9 @@
         {% endif %}
     </div>
     {% endfor %}
+    {% if market_check.services %}
+    <p class="sf-caption">Not price-checked, as services have no online price: {{ market_check.services | join("; ") }}.</p>
+    {% endif %}
     {% if market_check.skipped %}
     <p class="sf-caption">{{ market_check.skipped }} further cart line{{ "s" if market_check.skipped != 1 }} not checked; the check covers the first six.</p>
     {% endif %}

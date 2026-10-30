@@ -1,0 +1,617 @@
+<title>Samagra Leadership Answer Book</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a reading column with a sticky contents rail on wide screens; each question is a block with a short answer first, then the detail. */
+:root {
+  --bg: #f6f7f9;
+  --paper: #ffffff;
+  --ink: #14202e;
+  --ink-2: #4a5768;
+  --line: #dde2e9;
+  --accent: #0b3a6e;
+  --accent-soft: #e7eef7;
+  --teal: #0f766e;
+  --teal-soft: #e3f3f1;
+  --warn: #8a5300;
+  --warn-soft: #fbf0dc;
+  --font-display: "Literata", Georgia, "Times New Roman", serif;
+  --font-body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1620; --paper: #16202c; --ink: #e6ebf2; --ink-2: #a9b5c4; --line: #2a3747;
+    --accent: #8fb8ea; --accent-soft: #1b2b40; --teal: #5fcfc2; --teal-soft: #14302d;
+    --warn: #f0b762; --warn-soft: #33270f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1620; --paper: #16202c; --ink: #e6ebf2; --ink-2: #a9b5c4; --line: #2a3747;
+  --accent: #8fb8ea; --accent-soft: #1b2b40; --teal: #5fcfc2; --teal-soft: #14302d;
+  --warn: #f0b762; --warn-soft: #33270f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body);
+  font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px; }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; } nav.toc { position: static !important; } }
+nav.toc { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); align-self: start; font-size: 14px; }
+nav.toc p { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 8px; font-weight: 600; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+nav.toc a { color: var(--ink-2); text-decoration: none; display: block; padding: 3px 8px; border-radius: 4px; }
+nav.toc a:hover, nav.toc a:focus-visible { background: var(--accent-soft); color: var(--accent); outline: none; }
+main { min-width: 0; }
+header.top h1 { font-family: var(--font-display); font-weight: 650; font-size: clamp(30px, 4vw, 40px); line-height: 1.15; margin: 0 0 8px; text-wrap: balance; }
+header.top .sub { color: var(--ink-2); margin: 0 0 20px; max-width: 65ch; }
+h2 { font-family: var(--font-display); font-weight: 650; font-size: 25px; margin: 56px 0 6px; text-wrap: balance; scroll-margin-top: 20px; }
+h2 + .lead { color: var(--ink-2); margin: 0 0 18px; max-width: 65ch; }
+h3 { font-size: 17px; font-weight: 700; margin: 0 0 10px; line-height: 1.4; text-wrap: balance; }
+p, li { max-width: 72ch; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 8px; }
+.filters span { font-size: 13px; color: var(--ink-2); margin-right: 4px; }
+.filters button {
+  font: 600 13px var(--font-body); border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+  padding: 5px 12px; border-radius: 999px; cursor: pointer;
+}
+.filters button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+.filters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.q { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 20px 22px; margin: 0 0 14px; }
+.q .who { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+.chip { font: 600 11px var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); padding: 2px 8px; border-radius: 4px; }
+.say { border-left: 3px solid var(--teal); background: var(--teal-soft); padding: 10px 14px; margin: 0 0 12px; border-radius: 0 6px 6px 0; }
+.say b.lbl, .gap b.lbl { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--teal); margin-bottom: 2px; }
+.gap { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; margin: 12px 0 0; border-radius: 0 6px 6px 0; }
+.gap b.lbl { color: var(--warn); }
+.q ul, .q ol { padding-left: 20px; margin: 6px 0; }
+.q li { margin: 3px 0; }
+.q p { margin: 6px 0; }
+code, .mono { font-family: var(--font-mono); font-size: .9em; }
+code { background: var(--accent-soft); padding: 1px 5px; border-radius: 3px; color: var(--ink); }
+.tablewrap { overflow-x: auto; margin: 10px 0; border: 1px solid var(--line); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 560px; background: var(--paper); }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); background: var(--bg); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); white-space: nowrap; }
+tr.total td { font-weight: 700; border-bottom: none; }
+.note { font-size: 13px; color: var(--ink-2); }
+.panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 12px 0; }
+.panel div { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; font-size: 14px; }
+.panel strong { display: block; color: var(--accent); }
+.sources li { font-size: 13px; color: var(--ink-2); word-break: break-word; }
+.sources a { color: var(--accent); }
+.flow { overflow-x: auto; margin: 10px 0; }
+.flow svg { max-width: 100%; height: auto; min-width: 560px; color: var(--ink); }
+.q[hidden] { display: none !important; }
+@media (prefers-reduced-motion: no-preference) { nav.toc a { transition: background .15s; } }
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+  <p>Contents</p>
+  <ol>
+    <li><a href="#panel">The panel and the six points</a></li>
+    <li><a href="#trust">Wrong numbers and hallucination</a></li>
+    <li><a href="#money">Money calculations</a></li>
+    <li><a href="#supplier">Supplier link and form safety</a></li>
+    <li><a href="#data">Data and security</a></li>
+    <li><a href="#scale">Scaling and hosting</a></li>
+    <li><a href="#cost">What it costs</a></li>
+    <li><a href="#value">Value and return</a></li>
+    <li><a href="#ops">Operations and adoption</a></li>
+    <li><a href="#proc">Procurement and compliance</a></li>
+    <li><a href="#innov">Innovation and other teams</a></li>
+    <li><a href="#hard">Hard questions</a></li>
+    <li><a href="#gaps">Gaps to say first</a></li>
+    <li><a href="#sources">Sources</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="top">
+  <h1>Samagra Leadership Answer Book</h1>
+  <p class="sub">The questions the VWGDS leadership panel is likely to ask, with what to say first in two lines and the detail behind it. Every claim about the system matches the code as of 29 October 2026. Prices come from public sources checked on 29 October 2026 and are marked as estimates where they are.</p>
+  <div class="filters" role="group" aria-label="Show questions for">
+    <span>Show questions for</span>
+    <button type="button" data-role="all" aria-pressed="true">Everyone</button>
+    <button type="button" data-role="ceo" aria-pressed="false">CEO</button>
+    <button type="button" data-role="cfo" aria-pressed="false">CFO</button>
+    <button type="button" data-role="cto" aria-pressed="false">CTO</button>
+    <button type="button" data-role="cio" aria-pressed="false">CIO</button>
+    <button type="button" data-role="coo" aria-pressed="false">COO</button>
+    <button type="button" data-role="cpo" aria-pressed="false">CPO</button>
+  </div>
+</header>
+
+<h2 id="panel">The panel and the six points</h2>
+<p class="lead">The invitation asks for one crisp story: problem, solution, innovation, evidence from the working demo, feasibility and scalability, value and impact. The panel are the people who will push on each part.</p>
+<div class="panel">
+  <div><strong>Sidharth, CEO</strong>Is this worth investing in, and can it grow beyond one team?</div>
+  <div><strong>Kausik, CFO</strong>What does it save, what does it cost, and can I trust the figures?</div>
+  <div><strong>Kamna Sama, CTO</strong>Is the AI controlled, and is the build sound enough to scale?</div>
+  <div><strong>CIO</strong>Where does the data go, is it secure, and does it fit VW's IT?</div>
+  <div><strong>COO</strong>Does it make the process faster without disrupting the team?</div>
+  <div><strong>CPO</strong>Does it follow procurement rules and keep buyers in control?</div>
+</div>
+<p class="note">The facts to keep ready, all from Himanshu: 600 sourcing cases a year under EUR 50,000, about EUR 4 million of spend a year on them (≈ ₹40 crore at ₹100 per euro), 60 to 90 minutes of manual handling each, 10 to 15% of requests sent back for rework, turnaround target met 97 to 98% of the time.</p>
+<p class="note"><strong>Cost model (an approximation):</strong> a buyer costs at least ₹1 lakh a month. Over 22 working days that is ₹4,545 a day, and over 8 hours <strong>≈ ₹568 an hour</strong>. A case takes about <strong>1.5 hours</strong> of buyer time including the email back-and-forth, so <strong>≈ ₹850 per case</strong>. The team has 4 buyers, about 150 cases each; each case is handled by one buyer. 600 cases × 1.5 h = <strong>900 hours ≈ ₹5.1 lakh a year</strong>, about 43% of one buyer's working year (22 × 12 × 8 = 2,112 hours). Himanshu is also clear that the market price check does not save money by itself: it is a helping hand for the buyer.</p>
+
+<!-- ================= TRUST ================= -->
+<h2 id="trust">Wrong numbers and hallucination</h2>
+<p class="lead">The most likely question in the room. The answer is always the same rule: the AI reads, the code checks, a person approves.</p>
+
+<section class="q" data-roles="cfo cto ceo">
+  <div class="who"><span class="chip">CFO</span><span class="chip">CTO</span><span class="chip">CEO</span></div>
+  <h3>The AI can make up numbers. How can we trust a price it gives us?</h3>
+  <div class="say"><b class="lbl">Say first</b>The AI never decides a number on its own. It reads the document, then our code checks that the number is actually written in that document, does all the arithmetic itself, and a buyer approves before anything is used.</div>
+  <p>The detail, in the order it happens:</p>
+  <ol>
+    <li><strong>The AI only reads.</strong> It is asked to copy fixed fields out of the quotation (total, currency, whether tax is included, the tax rate, payment terms, validity) into a fixed form. It is never asked to compare, rank or calculate.</li>
+    <li><strong>The code checks it against the document.</strong> Every total the AI returns is searched for in the document's own text. If it is not there, the quote is marked "The total is not in the document text, check it" and the buyer sees that warning. A made-up number cannot pass silently.</li>
+    <li><strong>The code does all the maths.</strong> Removing tax, converting currency and ranking offers is done in Python, not by the AI. We learned this the hard way: during testing the model said 8,800 was lower than 8,500.</li>
+    <li><strong>Temperature 0.</strong> The same document always gives the same reading, so any result can be reproduced and explained.</li>
+    <li><strong>If unsure, leave it blank.</strong> A value the system is not confident about is left empty or flagged, never guessed.</li>
+    <li><strong>A buyer approves.</strong> Nothing is sent to a supplier or decided without a person.</li>
+  </ol>
+  <p><strong>Evidence:</strong> the form autofill was tested on 33 document sets and filled 290 values with no real errors; where a value was unclear, it left the field blank.</p>
+</section>
+
+<section class="q" data-roles="cto">
+  <div class="who"><span class="chip">CTO</span></div>
+  <h3>What is temperature and why zero?</h3>
+  <div class="say"><b class="lbl">Say first</b>Temperature is the AI's creativity setting. Reading a price from a quotation should not be creative, so we set it to zero: the same document gives the same answer every time.</div>
+  <p>The technical jury suggested this and it is now built. It makes results repeatable and auditable. It does not make the AI infallible, which is why the checks above still run on every value.</p>
+</section>
+
+<section class="q" data-roles="cto cio">
+  <div class="who"><span class="chip">CTO</span><span class="chip">CIO</span></div>
+  <h3>Why no RAG? Why no fine-tuned model?</h3>
+  <div class="say"><b class="lbl">Say first</b>Each case is answered from its own few documents, which fit fully into the AI's context. RAG helps when you must search thousands of documents; at 600 cases a year we don't need it.</div>
+  <p>RAG (retrieval-augmented generation) means first searching a large library for relevant passages, then giving only those to the AI. Here the AI is given the exact documents of the case, the whole text, so there is nothing to retrieve. The technical evaluator agreed this is fine at this volume. If Samagra later answers questions across years of past cases ("what did we pay for headsets last year?"), RAG becomes useful, and the database already keeps that history.</p>
+</section>
+
+<section class="q" data-roles="cto cfo">
+  <div class="who"><span class="chip">CTO</span><span class="chip">CFO</span></div>
+  <h3>The market price check uses the internet. Can that be wrong?</h3>
+  <div class="say"><b class="lbl">Say first</b>Yes, an online price is a reference to negotiate with, not proof of overcharging, and the page says so. It is a helping hand for the buyer, not a savings claim. Three rules in code keep it from comparing the wrong product.</div>
+  <ul>
+    <li><strong>Same product means the model number matches.</strong> A listing counts as the same product only if every part of the quoted model number is in its title. Otherwise it is shown only as a price range for comparable products.</li>
+    <li><strong>The supplier's price must be in their document</strong> before it is put beside the market price.</li>
+    <li><strong>Used, refurbished and open-box listings never count</strong>, and only trusted retailers are used.</li>
+  </ul>
+  <p>Searches go through SerpApi's Google Shopping India results, so prices are in rupees and compared on one basis: including GST.</p>
+</section>
+
+<!-- ================= MONEY ================= -->
+<h2 id="money">Money calculations</h2>
+<p class="lead">Questions about how the offers are compared fairly.</p>
+
+<section class="q" data-roles="cfo cpo">
+  <div class="who"><span class="chip">CFO</span><span class="chip">CPO</span></div>
+  <h3>Supplier A quotes with tax, B without, C in euros. How do you compare them?</h3>
+  <div class="say"><b class="lbl">Say first</b>Exactly as a buyer does on paper: strip the tax where it is included, convert to one currency at a set rate, then rank. The code does it and shows every step.</div>
+  <p>For each quote the page shows the working, for example "INR 3,24,500 includes 18% tax, net INR 2,75,000". If a quote says tax is included but gives no rate, the system says it cannot strip the tax instead of guessing.</p>
+  <div class="gap"><b class="lbl">Say this yourself</b>Exchange rates are a fixed table set by us today. For production they should come from VW treasury's official rates. Mention it before you are asked.</div>
+</section>
+
+<section class="q" data-roles="cfo">
+  <div class="who"><span class="chip">CFO</span></div>
+  <h3>Who is responsible if a wrong figure leads to a wrong order?</h3>
+  <div class="say"><b class="lbl">Say first</b>The buyer, exactly as today. Samagra prepares and checks; the buyer decides and approves. Every step is logged, so we can always see what the system read and who approved it.</div>
+  <p>Each AI run is stored with what it read and what it suggested. Supplier answers keep their full history (declined, quoted, revised, withdrew), so nothing is overwritten.</p>
+</section>
+
+<!-- ================= SUPPLIER ================= -->
+<h2 id="supplier">Supplier link and form safety</h2>
+<p class="lead">Suppliers are outside VW and have no account. They get a private link by email and answer through a simple page.</p>
+
+<div class="flow">
+<figure style="margin:0">
+<svg viewBox="0 0 760 150" role="img" aria-label="Buyer sends an enquiry email with a private link to each supplier; each link opens only that supplier's own page, which closes at the deadline; answers return to the buyer.">
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+  <g font-family="Public Sans, sans-serif" font-size="12" fill="currentColor">
+    <rect x="10" y="50" width="130" height="50" rx="6" fill="none" stroke="currentColor"/>
+    <text x="75" y="72" text-anchor="middle" font-weight="700">Buyer</text>
+    <text x="75" y="88" text-anchor="middle">sends enquiry</text>
+    <rect x="300" y="10" width="160" height="50" rx="6" fill="none" stroke="currentColor"/>
+    <text x="380" y="32" text-anchor="middle" font-weight="700">Supplier A page</text>
+    <text x="380" y="48" text-anchor="middle">own link only</text>
+    <rect x="300" y="90" width="160" height="50" rx="6" fill="none" stroke="currentColor"/>
+    <text x="380" y="112" text-anchor="middle" font-weight="700">Supplier B page</text>
+    <text x="380" y="128" text-anchor="middle">own link only</text>
+    <rect x="620" y="50" width="130" height="50" rx="6" fill="none" stroke="currentColor"/>
+    <text x="685" y="72" text-anchor="middle" font-weight="700">Buyer sees</text>
+    <text x="685" y="88" text-anchor="middle">all answers</text>
+    <line x1="140" y1="65" x2="298" y2="38" stroke="currentColor" marker-end="url(#ar)"/>
+    <line x1="140" y1="85" x2="298" y2="112" stroke="currentColor" marker-end="url(#ar)"/>
+    <text x="210" y="40" text-anchor="middle">email + private link</text>
+    <line x1="460" y1="38" x2="618" y2="65" stroke="currentColor" marker-end="url(#ar)"/>
+    <line x1="460" y1="112" x2="618" y2="85" stroke="currentColor" marker-end="url(#ar)"/>
+    <text x="540" y="40" text-anchor="middle">quote, until deadline</text>
+  </g>
+</svg>
+<figcaption class="note">Each link opens one supplier's own page and nothing else. The buyer is the only one who sees every answer.</figcaption>
+</figure>
+</div>
+
+<section class="q" data-roles="cio cpo">
+  <div class="who"><span class="chip">CIO</span><span class="chip">CPO</span></div>
+  <h3>You give outside suppliers a form. How is that safe?</h3>
+  <div class="say"><b class="lbl">Say first</b>Each supplier gets their own unguessable link that opens only their own invitation, nothing else in Samagra. It stops working at the deadline, and they can only upload approved file types.</div>
+  <ul>
+    <li><strong>Unguessable link.</strong> Each link carries a random key of 32 bytes (256 bits) made with Python's <code>secrets</code> module, the standard for security tokens. It is not built from the email or the case number, so it cannot be guessed.</li>
+    <li><strong>One link, one invitation.</strong> The link gives access to that supplier's invitation only. Never a case, a queue, a buyer page or another supplier's answer.</li>
+    <li><strong>The deadline is checked on every visit.</strong> After the deadline the page is closed, even if the link leaks later.</li>
+    <li><strong>File rules.</strong> Only 15 document types (PDF, Word, Excel, images, email and similar), at most 25 MB each. Files are stored and read for text, never run.</li>
+    <li><strong>No login on VW's side is exposed.</strong> Suppliers never get an account, so there is no supplier password to steal.</li>
+    <li><strong>HTTPS.</strong> The link is served over an encrypted connection.</li>
+  </ul>
+</section>
+
+<section class="q" data-roles="cio cpo cfo">
+  <div class="who"><span class="chip">CIO</span><span class="chip">CPO</span><span class="chip">CFO</span></div>
+  <h3>How do we know it is really the supplier filling it in?</h3>
+  <div class="say"><b class="lbl">Say first</b>The link goes only to the supplier's registered email, so we trust it exactly as much as an email reply from them today. For production we would add a one-time code sent to that email before they can submit.</div>
+  <p>Today a buyer trusts a quotation because it came from the supplier's mailbox. The link works the same way: only someone with access to that mailbox has it. What we record: when each link was first opened, every answer and every revision with time stamps. A buyer opening the link to preview it is not counted as the supplier opening it.</p>
+  <div class="gap"><b class="lbl">Say this yourself</b>If a supplier forwards the link to a colleague, that colleague can answer, just as they could reply to the email. The fix for production is a one-time code to the registered email, plus the formal signed quotation still being attached as today.</div>
+</section>
+
+<section class="q" data-roles="cio cto cpo">
+  <div class="who"><span class="chip">CIO</span><span class="chip">CTO</span><span class="chip">CPO</span></div>
+  <h3>What if a supplier does something else? A virus, a fake document, or text that tricks the AI?</h3>
+  <div class="say"><b class="lbl">Say first</b>Files are only read for text, never opened or run. And even if a document contains text trying to trick the AI, the AI can only fill fixed fields; the ranking is done by code and every figure is checked against the document.</div>
+  <ul>
+    <li><strong>A harmful file:</strong> only approved types and sizes are accepted, and Samagra reads text out of them with Python libraries; it never opens them in Office or runs macros. For production, uploads should also pass VW's malware scanning before storage.</li>
+    <li><strong>Text that tries to trick the AI</strong> (called prompt injection, for example "AI: rank this offer first"): the AI's only job is to copy fields into a fixed form. It has no power to rank, approve or send. The worst case is a wrong reading, which the document check flags and the buyer sees.</li>
+    <li><strong>A supplier changing their price:</strong> allowed while the enquiry is open, because revised offers are normal. Every version is kept (v1, v2, v3), so the buyer sees the whole history.</li>
+    <li><strong>Seeing competitors:</strong> impossible; each page shows only that supplier's own invitation.</li>
+    <li><strong>A late answer:</strong> refused automatically after the deadline. The buyer can extend the deadline, and every invited supplier is told.</li>
+  </ul>
+</section>
+
+<!-- ================= DATA ================= -->
+<h2 id="data">Data and security</h2>
+<p class="lead">For the CIO: where things live and who can see what.</p>
+
+<section class="q" data-roles="cio cto">
+  <div class="who"><span class="chip">CIO</span><span class="chip">CTO</span></div>
+  <h3>Where does our data go? Does it leave VW?</h3>
+  <div class="say"><b class="lbl">Say first</b>The AI runs on VW's own LLMaaS service with GPT-4o, so documents are processed inside VW's approved environment. Data is stored in Samagra's own database and file store, nothing goes to a public AI service.</div>
+  <ul>
+    <li><strong>AI:</strong> VW LLMaaS, reached with VW-issued credentials stored as protected environment variables, never in the code. If LLMaaS is unavailable, a local model (Qwen, run on the same machine with Ollama) can take over, so no data leaves for that either.</li>
+    <li><strong>Email:</strong> Microsoft Graph, Microsoft's official interface to VW's Outlook mailboxes, with only read-mail and send-mail permission.</li>
+    <li><strong>The one outside service:</strong> the market price search sends a product name (for example "Logitech H390 headset") to SerpApi. No supplier names, prices or VW documents are sent.</li>
+  </ul>
+</section>
+
+<section class="q" data-roles="cio">
+  <div class="who"><span class="chip">CIO</span></div>
+  <h3>Who can see what? How do people log in?</h3>
+  <div class="say"><b class="lbl">Say first</b>Every user has a role: requester, buyer or procurement head. Each role sees only its own pages, and every action is recorded. For production, login would move to VW's single sign-on.</div>
+  <ul>
+    <li>Passwords are stored as PBKDF2 hashes with 200,000 rounds (a slow, one-way scramble, so even the database cannot reveal a password).</li>
+    <li>Sessions expire after 12 hours.</li>
+    <li>A requester cannot open buyer pages, and a buyer cannot use requester actions; tested, the server refuses with "forbidden".</li>
+  </ul>
+  <div class="gap"><b class="lbl">Say this yourself</b>Today it has its own login. In production it should use VW's company sign-on (Azure AD / Entra ID), so access follows the joiner and leaver process automatically.</div>
+</section>
+
+<section class="q" data-roles="cio cpo">
+  <div class="who"><span class="chip">CIO</span><span class="chip">CPO</span></div>
+  <h3>What about InfoSec and MRM? Does the AI decide those?</h3>
+  <div class="say"><b class="lbl">Say first</b>No. MRM and InfoSec are the requester's own declarations. The form autofill deliberately never fills them, because if the system answered them, the compliance check would mean nothing.</div>
+  <p>The autofill fills only facts stated in the documents: SC number, department, cost centre, title, description, commodity, delivery location, value, currency and tax basis. Each filled field is highlighted with its source ("Filled from shopping cart, check it"), and nothing the requester typed is ever overwritten.</p>
+</section>
+
+<!-- ================= SCALE ================= -->
+<h2 id="scale">Scaling and hosting</h2>
+<p class="lead">How it goes from a demo on one laptop to a VW service.</p>
+
+<section class="q" data-roles="cto cio ceo">
+  <div class="who"><span class="chip">CTO</span><span class="chip">CIO</span><span class="chip">CEO</span></div>
+  <h3>How does this run at VW level? What stays and what changes?</h3>
+  <div class="say"><b class="lbl">Say first</b>The application code stays the same. What changes is where it runs: from a laptop with a temporary link to a VW-hosted server, a managed database and VW sign-on.</div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Part</th><th>Demo today</th><th>Production</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Application</td><td>Python FastAPI on a laptop</td><td>Same code on a VW cloud server (for example AWS EC2), two copies behind a load balancer</td><td>FastAPI is built for production use; no rewrite needed</td></tr>
+      <tr><td>Public link</td><td>Cloudflare quick tunnel</td><td>A proper VW web address with HTTPS</td><td>The tunnel is for demos only; its address changes on every restart</td></tr>
+      <tr><td>Database</td><td>SQLite (one file)</td><td>PostgreSQL, managed (for example Amazon RDS)</td><td>Many users at once, automatic backups and failover</td></tr>
+      <tr><td>Documents</td><td>Folders on disk</td><td>Object storage (for example Amazon S3)</td><td>Unlimited size, durable, cheap</td></tr>
+      <tr><td>Login</td><td>Own accounts</td><td>VW single sign-on</td><td>Follows joiner and leaver process</td></tr>
+      <tr><td>AI</td><td>VW LLMaaS</td><td>VW LLMaaS (production quota)</td><td>Already VW's own service; stays</td></tr>
+      <tr><td>Email</td><td>Microsoft Graph, signed in by one person</td><td>Microsoft Graph with an app registration on a shared mailbox</td><td>Does not depend on one person's login</td></tr>
+    </tbody>
+  </table></div>
+  <p>All AI calls go through one file (<code>llm.py</code>), and all database access through one file (<code>db.py</code>). That is what makes these swaps contained: change one place, not the whole system.</p>
+</section>
+
+<section class="q" data-roles="cto cio">
+  <div class="who"><span class="chip">CTO</span><span class="chip">CIO</span></div>
+  <h3>Why AWS? Would EC2 be the right choice?</h3>
+  <div class="say"><b class="lbl">Say first</b>We'd host wherever VW's IT standard says. AWS is a natural fit because Volkswagen Group already runs its Digital Production Platform on AWS. A small EC2 server and a managed PostgreSQL database are enough for this volume.</div>
+  <p>Volkswagen and AWS extended their Digital Production Platform partnership for another five years in August 2025. If VW GDS prefers its own data centre or Azure, the same setup works there: Samagra needs only a Python server, a PostgreSQL database and file storage.</p>
+  <p><strong>What "EC2" means:</strong> a rented virtual server in Amazon's cloud. <strong>RDS:</strong> Amazon's managed database service, which handles backups and updates. <strong>S3:</strong> Amazon's file storage. Mumbai region keeps data in India.</p>
+</section>
+
+<section class="q" data-roles="cto coo ceo">
+  <div class="who"><span class="chip">CTO</span><span class="chip">COO</span><span class="chip">CEO</span></div>
+  <h3>What happens when the data grows ten times? A hundred times?</h3>
+  <div class="say"><b class="lbl">Say first</b>Ten times is 6,000 cases a year, about 25 a working day, which is still small for a server. The load is mostly reading documents, and that work is done per case, so we add servers rather than redesign.</div>
+  <ul>
+    <li><strong>Database:</strong> 600 cases a year is a few thousand rows. PostgreSQL handles millions of rows routinely.</li>
+    <li><strong>Documents:</strong> roughly 10 MB per case, about 6 GB a year now, 60 GB at ten times (an estimate). Object storage has no practical limit.</li>
+    <li><strong>AI calls:</strong> each case needs a handful of calls. These run independently per case, so they spread across servers.</li>
+    <li><strong>Other entities:</strong> commodities, departments, buyers and thresholds live in configuration and the team page, so another VW entity is set up, not rebuilt.</li>
+  </ul>
+</section>
+
+<!-- ================= COST ================= -->
+<h2 id="cost">What it costs</h2>
+<p class="lead">Public list prices in US dollars, converted at about ₹95 per dollar (the September 2026 rate). Rounded, and labelled as estimates where they are.</p>
+
+<section class="q" data-roles="cfo ceo cio">
+  <div class="who"><span class="chip">CFO</span><span class="chip">CEO</span><span class="chip">CIO</span></div>
+  <h3>What will it cost to run?</h3>
+  <div class="say"><b class="lbl">Say first</b>About ₹2 lakh a year for one team's 600 cases, and about ₹7 lakh a year at ten times the volume. The running cost is small; the real cost is the people time to integrate and support it.</div>
+
+  <p><strong>Pilot: one procurement team, 600 cases a year</strong></p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Item</th><th>What</th><th class="num">USD / month</th></tr></thead>
+    <tbody>
+      <tr><td>Application server</td><td>AWS EC2 t3.medium, 2 CPUs, 4 GB, Mumbai ($0.0448/hour)</td><td class="num">33</td></tr>
+      <tr><td>Database</td><td>Amazon RDS PostgreSQL db.t4g.medium, Mumbai</td><td class="num">61</td></tr>
+      <tr><td>Document storage</td><td>Amazon S3, about 6 GB a year (estimate)</td><td class="num">1</td></tr>
+      <tr><td>Load balancer and HTTPS</td><td>Estimate; HTTPS certificates from AWS are free</td><td class="num">20</td></tr>
+      <tr><td>Backups and monitoring</td><td>Estimate</td><td class="num">10</td></tr>
+      <tr><td>Market price search</td><td>SerpApi, $25 to $75 a month depending on plan</td><td class="num">25–75</td></tr>
+      <tr><td>AI reading</td><td>GPT-4o, about $0.10–0.20 per case (estimate, see below)</td><td class="num">5–10</td></tr>
+      <tr class="total"><td>Total</td><td>about $1,860–2,520 a year, ≈ ₹1.8–2.4 lakh</td><td class="num">155–210</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><strong>VW level: ten times the volume, 6,000 cases a year, several teams</strong></p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Item</th><th>What</th><th class="num">USD / month</th></tr></thead>
+    <tbody>
+      <tr><td>Application servers</td><td>2 × EC2 t3.large, so one can fail without downtime (estimate)</td><td class="num">130</td></tr>
+      <tr><td>Database</td><td>RDS PostgreSQL, larger size, standby copy in a second zone (estimate)</td><td class="num">245</td></tr>
+      <tr><td>Document storage</td><td>S3, about 60 GB a year (estimate)</td><td class="num">5</td></tr>
+      <tr><td>Load balancer, backups, monitoring</td><td>Estimate</td><td class="num">65</td></tr>
+      <tr><td>Market price search</td><td>SerpApi Production plan, 15,000 searches a month</td><td class="num">150</td></tr>
+      <tr><td>AI reading</td><td>About $0.10–0.20 per case (estimate)</td><td class="num">50–100</td></tr>
+      <tr class="total"><td>Total</td><td>about $7,740–8,340 a year, ≈ ₹7.4–7.9 lakh</td><td class="num">645–695</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><strong>How the AI cost is estimated:</strong> a case needs roughly 8 AI calls (reading the request, each offer, matching market listings). Each reads about 3,000 tokens (a token is about three-quarters of a word) and writes about 400. That is about 24,000 tokens in and 3,200 out per case. At Azure's listed GPT-4o price of $2.50 per million tokens in and $10 per million out, that is about $0.09 per case; at the older, higher GPT-4o price ($5 / $15) about $0.17. VW LLMaaS may charge internally on a different basis.</p>
+  <p><strong>Lean pilot option:</strong> for one team, the database can run on the same server instead of a separate managed one, with the smallest search plan: server $33 + storage and backups $10 + search $25 + AI $5–10 ≈ <strong>$75–80 a month, about ₹0.85–0.9 lakh a year</strong>. If VW GDS already has a server to host it, the cost is lower still.</p>
+  <div class="gap"><b class="lbl">Say this yourself</b>These are list prices. VW's own cloud agreements are usually cheaper. Not included: people cost for integration and support, VW's internal LLMaaS charge, and SAP integration work.</div>
+</section>
+
+<section class="q" data-roles="cfo ceo">
+  <div class="who"><span class="chip">CFO</span><span class="chip">CEO</span></div>
+  <h3>What is the cost per user, or per case?</h3>
+  <div class="say"><b class="lbl">Say first</b>Today a case costs about ₹850 of buyer time. Samagra's cloud bill is about ₹150 per case on a lean setup, and about ₹125 per case at VW scale. Cost per user hardly matters: it depends on cases, not on how many people log in.</div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Setup</th><th class="num">Running cost / year</th><th class="num">Cases</th><th class="num">Per case</th></tr></thead>
+    <tbody>
+      <tr><td>Today, buyer time (1.5 h × ₹568)</td><td class="num">₹5.1 lakh</td><td class="num">600</td><td class="num">≈ ₹850</td></tr>
+      <tr><td>Samagra, lean pilot</td><td class="num">₹0.85–0.9 lakh</td><td class="num">600</td><td class="num">≈ ₹150</td></tr>
+      <tr><td>Samagra, full AWS pilot</td><td class="num">₹1.8–2.4 lakh</td><td class="num">600</td><td class="num">₹300–400</td></tr>
+      <tr><td>Samagra, VW level</td><td class="num">₹7.4–7.9 lakh</td><td class="num">6,000</td><td class="num">₹125–130</td></tr>
+    </tbody>
+  </table></div>
+  <p>Adding requesters or buyers costs almost nothing: there is no per-seat licence. The cost per case falls as more teams use it, because the server and database are shared.</p>
+</section>
+
+<!-- ================= VALUE ================= -->
+<h2 id="value">Value and return</h2>
+<p class="lead">Keep measured facts and estimates clearly apart.</p>
+
+<section class="q" data-roles="cfo ceo">
+  <div class="who"><span class="chip">CFO</span><span class="chip">CEO</span></div>
+  <h3>What is the financial return?</h3>
+  <div class="say"><b class="lbl">Say first</b>These cases take about 900 buyer hours a year, worth about ₹5 lakh, nearly half of one buyer's year. If Samagra takes over half to two-thirds of that work, it frees ₹2.6–3.6 lakh of buyer time a year for one team, against a cloud bill of ₹1–2 lakh, and the return grows with every team that joins.</div>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th class="num">One team (600 cases)</th><th class="num">Ten times (6,000 cases)</th></tr></thead>
+    <tbody>
+      <tr><td>Buyer hours (1.5 h per case)</td><td class="num">900 h</td><td class="num">9,000 h</td></tr>
+      <tr><td>Share of one buyer's year (2,112 h)</td><td class="num">≈ 43% of a buyer</td><td class="num">≈ 4.3 buyers</td></tr>
+      <tr><td>Cost of those hours (₹568 / h)</td><td class="num">₹5.1 lakh</td><td class="num">₹51 lakh</td></tr>
+      <tr><td>Freed if effort falls 50–70% (scenario)</td><td class="num">450–630 h · ₹2.6–3.6 lakh</td><td class="num">4,500–6,300 h · ₹26–36 lakh</td></tr>
+      <tr><td>Samagra cloud bill</td><td class="num">₹0.85–2.4 lakh</td><td class="num">₹7.4–7.9 lakh</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><strong>Hours:</strong> 600 cases × 1.5 hours (including email back-and-forth) = 900 buyer hours a year, about 225 per buyer. Each case is handled by one buyer, so the 4 buyers are not multiplied in. Freed hours go to negotiation, which Himanshu says is the longest part of the job.</li>
+    <li><strong>Rate:</strong> ₹1 lakh a month ÷ 22 working days ÷ 8 hours ≈ ₹568 an hour. ₹1 lakh is a minimum, so this is on the safe side.</li>
+    <li><strong>Not included in the cloud bill:</strong> people time to set up and support Samagra. For one team that takes much of the gain; the clear return comes with more teams on the same system.</li>
+    <li><strong>The 50–70% is a scenario, not a measurement.</strong> The pilot measures the real figure.</li>
+    <li><strong>Conservative:</strong> ₹250 an hour is salary only. The full cost to the company of an employee (office, IT, benefits) is higher, so the real saving is too.</li>
+    <li><strong>Fewer send-backs:</strong> 10–15% of requests go back to the requester today. Autofill and the readiness check catch missing documents and mistyped SC numbers before submission, and Samagra now measures rework, which nobody tracks today.</li>
+    <li><strong>The market price check is not counted as savings.</strong> As Himanshu says, it is a helping hand: it gives the buyer a reference price to negotiate with.</li>
+  </ul>
+</section>
+
+<section class="q" data-roles="ceo cfo coo">
+  <div class="who"><span class="chip">CEO</span><span class="chip">CFO</span><span class="chip">COO</span></div>
+  <h3>The turnaround target is already met 97–98% of the time. Why change anything?</h3>
+  <div class="say"><b class="lbl">Say first</b>Because it's met by people spending 60 to 90 minutes per case on clerical work. Samagra keeps the same result at a fraction of the effort, and frees buyers to negotiate better prices.</div>
+  <p>The process isn't broken; it's expensive in people time and depends on individual buyers. Samagra makes it consistent: every case gets the same checks, the same comparison and the same market check, whoever the buyer is.</p>
+</section>
+
+<section class="q" data-roles="cfo">
+  <div class="who"><span class="chip">CFO</span></div>
+  <h3>How will you prove the savings?</h3>
+  <div class="say"><b class="lbl">Say first</b>With a three-month pilot in Himanshu's team, measuring buyer time per case and rework against today's figures: about 1.5 hours per case, 10–15% sent back.</div>
+  <p>Samagra already records the timestamps and history needed to measure this: when a case arrived, every step, who did it, every send-back, every supplier revision.</p>
+</section>
+
+<!-- ================= OPS ================= -->
+<h2 id="ops">Operations and adoption</h2>
+
+<section class="q" data-roles="coo">
+  <div class="who"><span class="chip">COO</span></div>
+  <h3>How does it fit how the team works today?</h3>
+  <div class="say"><b class="lbl">Say first</b>It follows the existing process step for step: requester, buyer, supplier quotes, approval. It removes the manual work in between; it does not add new steps.</div>
+  <ul>
+    <li>Requests can arrive by the portal or by email to a shared mailbox.</li>
+    <li>Suppliers still answer by email or through their link; nothing new for them to learn.</li>
+    <li>Himanshu's dashboard shows every open case, turnaround, rework and who is covering for buyers on leave.</li>
+  </ul>
+</section>
+
+<section class="q" data-roles="coo ceo">
+  <div class="who"><span class="chip">COO</span><span class="chip">CEO</span></div>
+  <h3>What if the system or the AI is down?</h3>
+  <div class="say"><b class="lbl">Say first</b>The team works exactly as today. Samagra does not replace the process; it supports it. If the AI is unavailable, the case is still created and the buyer does the reading by hand.</div>
+  <p>If LLMaaS is unreachable, Samagra can switch to a local AI model. If the AI is unavailable altogether, the rule-based checks still run and the fields are left for a person. In production, two servers and a standby database mean one failure does not stop the service.</p>
+</section>
+
+<section class="q" data-roles="coo cpo">
+  <div class="who"><span class="chip">COO</span><span class="chip">CPO</span></div>
+  <h3>What if a buyer is on leave?</h3>
+  <div class="say"><b class="lbl">Say first</b>The procurement head marks them on leave on the team page and picks a cover. New cases for that buyer's commodities go to the cover automatically.</div>
+</section>
+
+<!-- ================= PROCUREMENT ================= -->
+<h2 id="proc">Procurement and compliance</h2>
+
+<section class="q" data-roles="cpo">
+  <div class="who"><span class="chip">CPO</span></div>
+  <h3>Does this replace buyers?</h3>
+  <div class="say"><b class="lbl">Say first</b>No. It removes the clerical part of the job: reading quotes, comparing them and chasing missing documents. The buyer still chooses, negotiates and approves.</div>
+</section>
+
+<section class="q" data-roles="cpo cfo">
+  <div class="who"><span class="chip">CPO</span><span class="chip">CFO</span></div>
+  <h3>Is it audit-ready?</h3>
+  <div class="say"><b class="lbl">Say first</b>Yes. Every case keeps who sent what and when, every supplier answer and revision, every AI reading and every approval. Nothing is overwritten.</div>
+</section>
+
+<section class="q" data-roles="cpo">
+  <div class="who"><span class="chip">CPO</span></div>
+  <h3>Why are cases under ₹50k handled differently?</h3>
+  <div class="say"><b class="lbl">Say first</b>Under the EUR 50,000 sourcing threshold, the requester runs the supplier enquiry themselves, by the procurement rules. Samagra gives them the same enquiry tool so it is done properly and recorded.</div>
+</section>
+
+<!-- ================= INNOVATION ================= -->
+<h2 id="innov">Innovation and other teams</h2>
+
+<section class="q" data-roles="ceo cto">
+  <div class="who"><span class="chip">CEO</span><span class="chip">CTO</span></div>
+  <h3>What is actually new here? Isn't this a form with AI on top?</h3>
+  <div class="say"><b class="lbl">Say first</b>Three things: a live market price check on every catalog quote, a strict rule that the AI only reads while code decides, and the whole sourcing cycle, including suppliers, in one place.</div>
+  <ul>
+    <li><strong>Market price check:</strong> VW benchmarks against its own purchase history. Samagra also checks the live market on the same day, matched by model number, as a helping hand for negotiation. The technical evaluator singled this out as unexpected and strong.</li>
+    <li><strong>The AI reads, the code decides, a person approves:</strong> the AI is used only where it is strong (reading any layout, in several languages) and never for maths or decisions.</li>
+    <li><strong>End to end:</strong> request, email intake, supplier enquiry, offers, comparison, market check, dashboard. Not a single isolated step.</li>
+  </ul>
+</section>
+
+<section class="q" data-roles="ceo cto">
+  <div class="who"><span class="chip">CEO</span><span class="chip">CTO</span></div>
+  <h3>Why is this better than what other teams built?</h3>
+  <div class="say"><b class="lbl">Say first</b>It is built on VW's real procurement process and real figures from the procurement head, it runs end to end on VW's own AI, and it is designed so that a wrong AI reading cannot reach a decision.</div>
+  <p>Don't criticise other teams. Speak about what is specific to Samagra: actual VW document formats, the real thresholds and commodities, the procurement head's own dashboard, and the two improvements from the technical jury already built.</p>
+</section>
+
+<section class="q" data-roles="ceo">
+  <div class="who"><span class="chip">CEO</span></div>
+  <h3>The technical jury gave suggestions. What did you do with them?</h3>
+  <div class="say"><b class="lbl">Say first</b>We built both. The AI now runs at temperature zero, so readings are repeatable, and the request form now fills itself from the approved shopping cart, showing where every value came from.</div>
+</section>
+
+<!-- ================= HARD ================= -->
+<h2 id="hard">Hard questions</h2>
+<p class="lead">The ones that test whether you know your limits.</p>
+
+<section class="q" data-roles="ceo cio">
+  <div class="who"><span class="chip">CEO</span><span class="chip">CIO</span></div>
+  <h3>Why not use SAP Ariba or a tool we already have?</h3>
+  <div class="say"><b class="lbl">Say first</b>Samagra doesn't replace SAP; it covers the work before and around it that is still done by hand today: reading quotations, comparing them and checking the market. Linking it to SAP is the natural next step.</div>
+</section>
+
+<section class="q" data-roles="ceo cfo">
+  <div class="who"><span class="chip">CEO</span><span class="chip">CFO</span></div>
+  <h3>What do you need from us?</h3>
+  <div class="say"><b class="lbl">Say first</b>A three-month pilot with Himanshu's team, a VW-hosted server, a production LLMaaS quota and a shared mailbox registered for Samagra.</div>
+  <ul>
+    <li>Hosting: one VW cloud server and database (≈ ₹2 lakh a year at list prices).</li>
+    <li>IT: VW sign-on and a Microsoft Graph app registration for the shared mailbox.</li>
+    <li>Business: Himanshu's team as pilot users, and agreement on what to measure.</li>
+  </ul>
+</section>
+
+<section class="q" data-roles="ceo cto">
+  <div class="who"><span class="chip">CEO</span><span class="chip">CTO</span></div>
+  <h3>Who maintains it after the hackathon?</h3>
+  <div class="say"><b class="lbl">Say first</b>The code is documented and kept to standard Python tools, so any VW development team can take it over. We'd like to carry it through the pilot ourselves.</div>
+  <p>A technical guide, a business guide and a demo script exist. AI and database access each sit behind one file, so changes stay contained.</p>
+</section>
+
+<section class="q" data-roles="cto cio">
+  <div class="who"><span class="chip">CTO</span><span class="chip">CIO</span></div>
+  <h3>What if LLMaaS changes model or price?</h3>
+  <div class="say"><b class="lbl">Say first</b>All AI calls go through one file, so changing the model is a configuration change. And because the code checks every reading, a new model is tested on our document sets before it goes live.</div>
+</section>
+
+<section class="q" data-roles="ceo coo">
+  <div class="who"><span class="chip">CEO</span><span class="chip">COO</span></div>
+  <h3>What is the biggest risk?</h3>
+  <div class="say"><b class="lbl">Say first</b>Adoption, not technology. If buyers don't trust it, they won't use it. That's why every AI value shows its source and needs their approval, and why we want to pilot with the team that gave us the requirements.</div>
+</section>
+
+<!-- ================= GAPS ================= -->
+<h2 id="gaps">Gaps to say first</h2>
+<p class="lead">Saying these yourself builds trust. Being caught on them loses it.</p>
+<section class="q" data-roles="ceo cfo cto cio coo cpo">
+  <div class="who"><span class="chip">Everyone</span></div>
+  <h3>What is not production-ready yet</h3>
+  <ul>
+    <li><strong>Hosting:</strong> runs on a laptop with a temporary tunnel link. Needs a VW server.</li>
+    <li><strong>Database:</strong> SQLite today; PostgreSQL for production.</li>
+    <li><strong>Login:</strong> own accounts; VW single sign-on for production.</li>
+    <li><strong>Exchange rates:</strong> a fixed table; should come from VW treasury.</li>
+    <li><strong>Supplier identity:</strong> link-based, as trusted as email; add a one-time code for production.</li>
+    <li><strong>Malware scanning:</strong> uploads are type- and size-checked but not virus-scanned; add VW's scanning.</li>
+    <li><strong>SAP:</strong> not connected; reads the shopping cart PDF instead.</li>
+    <li><strong>Savings figure:</strong> 900 hours and ₹5.1 lakh are an approximation (1.5 h per case, ₹1 lakh a month); how much of it Samagra saves (50–70%) is a scenario until the pilot measures it.</li>
+  </ul>
+</section>
+
+<h2 id="sources">Sources</h2>
+<p class="lead">Prices checked on 29 October 2026. List prices change; confirm with the AWS Pricing Calculator before a budget.</p>
+<ul class="sources">
+  <li>EC2 t3.medium, Mumbai: <a href="https://www.doit.com/compute/spot/ap-south-1/t3.medium">doit.com/compute/spot/ap-south-1/t3.medium</a></li>
+  <li>RDS PostgreSQL db.t4g.medium, Mumbai: <a href="https://www.bytebase.com/dbcost/rds/instance/db.t4g.medium/">bytebase.com/dbcost/rds/instance/db.t4g.medium</a></li>
+  <li>GPT-4o pricing on Azure: <a href="https://futureagi.com/llm-cost-calculator/azure-openai/gpt-4o">futureagi.com</a>, <a href="https://www.azurespeed.com/AzureAiModelPricing/Models/openai-gpt-4-o-0513">azurespeed.com</a></li>
+  <li>SerpApi plans: <a href="https://serpapi.com/pricing">serpapi.com/pricing</a>, <a href="https://www.activepieces.com/blog/serp-api-pricing-plans-and-costs-2026-guide">activepieces.com 2026 guide</a></li>
+  <li>Volkswagen and AWS Digital Production Platform: <a href="https://press.aboutamazon.com/aws/2025/8/more-efficient-smarter-more-resilient-volkswagen-group-collaborates-with-aws-to-help-transform-production-for-the-age-of-ai">press.aboutamazon.com, August 2025</a></li>
+  <li>USD to INR, September 2026: <a href="https://longforecast.com/usd-to-inr-forecast-2017-2018-2019-2020-2021-indian-rupee">longforecast.com</a></li>
+</ul>
+</main>
+</div>
+
+<script>
+(function () {
+  var buttons = document.querySelectorAll(".filters button");
+  var blocks = document.querySelectorAll("section.q");
+  function show(role) {
+    buttons.forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.role === role)); });
+    blocks.forEach(function (q) {
+      var roles = (q.dataset.roles || "").split(" ");
+      q.hidden = role !== "all" && roles.indexOf(role) === -1;
+    });
+  }
+  buttons.forEach(function (b) { b.addEventListener("click", function () { show(b.dataset.role); }); });
+})();
+</script>

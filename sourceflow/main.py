@@ -19,6 +19,8 @@ from templating import templates
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db.init_db()
+    import team
+    team.load()          # the GP team as the head last saved it
     # db.seed_dummy_data() intentionally disabled - all seed/demo cases were
     # deliberately cleared; re-enable if illustrative demo data is wanted
     # again later.
@@ -115,6 +117,7 @@ async def dashboard(request: Request, user=Depends(require_login), period: str =
         return templates.TemplateResponse(request, "buyer/dashboard_admin.html", {
             "user": user, "nav_page": "dashboard", "data": dashboard_data.buyer_dashboard(),
             "scope": "head", "my_commodities": [],
+            "rework": dashboard_data.rework_summary(),
         })
 
     # now_hour drives the greeting. /home passes it too; the dashboard needs
@@ -152,7 +155,7 @@ async def dashboard_export(request: Request, user=Depends(require_login)):
 
 
 from routers import (auth_routes, requester_routes, buyer_routes, attachments_routes,  # noqa: E402
-                     mailbox_routes, supplier_routes, agents_routes)
+                     mailbox_routes, supplier_routes, agents_routes, team_routes)
 
 app.include_router(auth_routes.router)
 app.include_router(requester_routes.router)
@@ -161,3 +164,4 @@ app.include_router(attachments_routes.router)
 app.include_router(mailbox_routes.router)
 app.include_router(supplier_routes.router)
 app.include_router(agents_routes.router)
+app.include_router(team_routes.router)

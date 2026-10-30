@@ -197,45 +197,47 @@ SETS = [
             folder="CASE-31_Network_printers_branches",
             headline="Network printers for branch offices - InfoSec applies",
             proves="The supplier installs the printers on the VW network, so InfoSec screening "
-                   "says Yes and a clearance must be attached. Product plus an installation "
-                   "service line; the market check covers the products only.",
+                   "says Yes and a clearance must be attached. Printers and UPS units plus an "
+                   "installation service line; the market check covers the products only.",
             sc="1014909341", summary="Network laser printers for branch offices (6 sites)",
             dept="IT infra", commodity="Printer equipment, accessories", location="Gurugram",
             requester="Vedanti Adsare", requester_email="vedanti.adsare@vwgds.in",
-            currency="INR", tax_basis="Exclusive of GST", value=322800, sourcing_type="Product+Service",
+            currency="INR", tax_basis="Exclusive of GST", value=277200, sourcing_type="Product+Service",
             cart=[("HP LaserJet Pro MFP 4104dw mono laser printer", 6, 38500, 231000),
-                  ("HP 151A black original LaserJet toner cartridge W1510A", 12, 6900, 82800),
+                  ("APC Back-UPS BX1100C-IN 1100VA line-interactive UPS", 6, 6200, 37200),
                   ("Installation and network configuration per site", 6, 1500, 9000)],
             rfq_spec=[
                 ("HP LaserJet Pro MFP 4104dw",
                  "Mono laser multifunction (print, scan, copy), duplex, Wi-Fi and Ethernet, "
                  "1-year onsite warranty, Indian model with GST invoice", 6),
-                ("HP 151A toner cartridge (W1510A)", "Original HP black toner, sealed", 12),
+                ("APC Back-UPS BX1100C-IN (1100VA)",
+                 "1100VA line-interactive UPS with AVR, one per printer site, 2-year warranty "
+                 "including battery, Indian model with GST invoice", 6),
                 ("Installation and network set-up",
                  "Installation at each of 6 branch sites, connection to the VW office network "
                  "and print-server configuration with VW IT", 6),
             ]),
-        items=[(6, ""), (12, ""), (6, "")],
+        items=[(6, ""), (6, ""), (6, "")],
         suppliers=[
             dict(key="printwell", fmt="docx", currency="INR", validity=30,
-                 names=["HP LaserJet Pro MFP 4104dw", "HP 151A Black Toner W1510A",
+                 names=["HP LaserJet Pro MFP 4104dw", "APC Back-UPS BX1100C-IN 1100VA",
                         "Installation and network configuration (per site)"],
                  versions=[
-                     dict(ref="PWS/26/Q-2207", on="09.10.2026", prices=[39900, 7150, 1800], days=12,
+                     dict(ref="PWS/26/Q-2207", on="09.10.2026", prices=[39900, 6450, 1800], days=12,
                           note="We are pleased to submit our offer."),
-                     dict(ref="PWS/26/Q-2207/R1", on="12.10.2026", prices=[38700, 6950, 1500], days=10,
+                     dict(ref="PWS/26/Q-2207/R1", on="12.10.2026", prices=[38700, 6300, 1500], days=10,
                           note="Revised offer superseding PWS/26/Q-2207."),
-                     dict(ref="PWS/26/Q-2207/R2", on="14.10.2026", prices=[37900, 6850, 1500], days=10,
+                     dict(ref="PWS/26/Q-2207/R2", on="14.10.2026", prices=[37900, 6200, 1500], days=10,
                           note="Final revised offer superseding R1."),
                  ]),
             dict(key="inkpoint", fmt="xlsx", currency="INR", validity=30,
-                 names=["HP LJ Pro MFP 4104dw Printer", "HP 151A Toner (W1510A)", "Site installation & network setup"],
+                 names=["HP LJ Pro MFP 4104dw Printer", "APC BX1100C-IN UPS 1100VA", "Site installation & network setup"],
                  versions=[
-                     dict(ref="IPT-Q-26-0981", on="10.10.2026", prices=[39200, 7300, 2000], days=14,
+                     dict(ref="IPT-Q-26-0981", on="10.10.2026", prices=[39200, 6500, 2000], days=14,
                           note="Our quotation as requested."),
-                     dict(ref="IPT-Q-26-0981-A", on="12.10.2026", prices=[38600, 7050, 1800], days=12,
+                     dict(ref="IPT-Q-26-0981-A", on="12.10.2026", prices=[38600, 6350, 1800], days=12,
                           note="Amendment A, replacing our first quotation."),
-                     dict(ref="IPT-Q-26-0981-B", on="14.10.2026", prices=[38300, 6990, 1700], days=12,
+                     dict(ref="IPT-Q-26-0981-B", on="14.10.2026", prices=[38300, 6280, 1700], days=12,
                           note="Amendment B, our final offer."),
                  ]),
         ],
@@ -250,9 +252,9 @@ SETS = [
                      conditions=["Access limited to the printer set-up at the six named sites.",
                                  "Engineers are escorted by VW IT throughout.",
                                  "Default printer passwords changed before handover."]),
-        expect="Printwell final Rs 3,18,600 net against Inkpoint's Rs 3,23,880 - 1.6% apart; "
-               "Printwell is cheaper on every line: printer, toner and installation. "
-               "Rs 3.2 lakh, so 15 working days. InfoSec applies: answer Yes to 'access company "
+        expect="Printwell final Rs 2,73,600 net against Inkpoint's Rs 2,77,680 - 1.5% apart; "
+               "Printwell is cheaper on every line: printer, UPS and installation. "
+               "Rs 2.8 lakh, so 15 working days. InfoSec applies: answer Yes to 'access company "
                "systems' and attach 06_InfoSec_Clearance_Printwell.pdf.",
     ),
     dict(

@@ -62,8 +62,11 @@ async def login_page(request: Request, sf_remember: str | None = Cookie(default=
 @router.post("/login", response_class=HTMLResponse)
 async def login_submit(
     request: Request,
-    email: str = Form(...),
-    password: str = Form(...),
+    # Optional at the framework level on purpose: with Form(...) an empty
+    # field never reached this function - FastAPI answered with a raw JSON
+    # "Field required" page instead of the login page and a plain message.
+    email: str = Form(""),
+    password: str = Form(""),
     remember: bool = Form(False),
 ):
     # Sign-in only - accounts are admin-provisioned (db.create_user, run
@@ -72,7 +75,11 @@ async def login_submit(
     email_clean = email.strip().lower()
     errors = []
 
-    if not EMAIL_RE.match(email_clean):
+    if not email_clean and not password:
+        errors.append("Enter your email and password to sign in.")
+    elif not email_clean:
+        errors.append("Enter your email address to sign in.")
+    elif not EMAIL_RE.match(email_clean):
         errors.append("Please enter a valid email address.")
     if not password:
         errors.append("Please enter a password.")

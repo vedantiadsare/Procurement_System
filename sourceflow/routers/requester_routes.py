@@ -326,6 +326,32 @@ async def sniff_document_type(request: Request, user=Depends(require_requester))
     return JSONResponse({"tag": tag})
 
 
+@router.post("/requests/prefill")
+async def prefill_from_documents(request: Request, user=Depends(require_requester)):
+    """Reads the documents attached so far and returns the form values they
+    clearly state, each with its source. Advisory: the page fills only empty
+    fields and the requester checks everything before submitting. Anything
+    unreadable just contributes nothing."""
+    import prefill as prefill_module
+
+    form = await request.form()
+    uploads = []
+    for field, doc_type in (("sc_file", "SC"), ("sfo_file", "SFO"), ("rfq_file", "RFQ"), ("offer_files", "OFFER")):
+        for upload in form.getlist(field):
+            if not _provided(upload):
+                continue
+            content = await upload.read()
+            if len(content) > MAX_FILE_MB * 1024 * 1024:
+                continue
+            uploads.append((doc_type, upload.filename, content))
+    if not uploads:
+        return JSONResponse({"fields": {}, "read": [], "unreadable": []})
+    try:
+        return JSONResponse(prefill_module.prefill(uploads))
+    except Exception as exc:                                    # noqa: BLE001
+        return JSONResponse({"fields": {}, "read": [], "unreadable": [], "error": str(exc)[:200]})
+
+
 @router.post("/requests/new", response_class=HTMLResponse)
 async def new_request_submit(request: Request, user=Depends(require_requester)):
     form = await request.form()

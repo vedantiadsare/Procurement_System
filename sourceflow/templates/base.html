@@ -78,7 +78,8 @@
         {% elif user.is_admin %}
         {# The procurement head monitors; the dashboard is the whole job. No
            queue, no cases of their own, no mailbox to work. #}
-        <a class="sf-shell-subnav__link active" href="/dashboard">Dashboard</a>
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page != 'team' else '' }}" href="/dashboard">Dashboard</a>
+        <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'team' else '' }}" href="/team">Team</a>
         {% else %}
         <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'home' else '' }}" href="/home">Home</a>
         <a class="sf-shell-subnav__link {{ 'active' if nav_page == 'queue' else '' }}" href="/queue">Queue</a>

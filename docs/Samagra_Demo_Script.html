@@ -1,0 +1,204 @@
+<title>Samagra Demo Script</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a presenter's script. Each scene is a card with three lanes - Click, You'll see, Say - so it can be followed live or printed. */
+:root {
+  --bg: #F7FAFA; --surface: #FFFFFF; --ink: #13211F; --muted: #56646A; --line: #D9E2E1;
+  --teal: #00726B; --teal-deep: #00504A; --wash: #E8F3F2; --code: #EEF4F3;
+  --warn-bg: #FEF2E1; --warn: #8A4A08; --say-bg: #F3F0FA; --say: #4B3C8A;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1716; --surface: #142120; --ink: #E2ECEB; --muted: #9DAEAD; --line: #26383A;
+    --teal: #5EC4B9; --teal-deep: #8ED8CF; --wash: #173230; --code: #1A2B2A;
+    --warn-bg: #2E2414; --warn: #F0C27A; --say-bg: #1F1B2E; --say: #C2B5F2; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1716; --surface: #142120; --ink: #E2ECEB; --muted: #9DAEAD; --line: #26383A;
+  --teal: #5EC4B9; --teal-deep: #8ED8CF; --wash: #173230; --code: #1A2B2A;
+  --warn-bg: #2E2414; --warn: #F0C27A; --say-bg: #1F1B2E; --say: #C2B5F2; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+.page { max-width: 880px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 64px; }
+header.cover { border-bottom: 3px solid var(--teal); padding-bottom: 22px; margin-bottom: 26px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--teal); font-weight: 600; margin: 0 0 6px; }
+h1 { font-size: 2.1rem; line-height: 1.15; margin: 0 0 8px; text-wrap: balance; }
+.lede { color: var(--muted); margin: 0; max-width: 66ch; }
+h2 { font-size: 1.4rem; margin: 40px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); text-wrap: balance; }
+h2 .num { color: var(--teal); margin-right: 8px; font-variant-numeric: tabular-nums; }
+h3 { font-size: 1.02rem; margin: 18px 0 6px; color: var(--teal-deep); }
+p { margin: 8px 0; max-width: 72ch; }
+.intro { color: var(--muted); }
+code { font-family: var(--font-mono); font-size: .86em; background: var(--code); padding: 1px 5px; border-radius: 3px; }
+.table-wrap { overflow-x: auto; margin: 10px 0; }
+table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); font-size: 13.5px; }
+th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+th { background: var(--wash); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--teal-deep); }
+tr:last-child td { border-bottom: 0; }
+td.t { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 600; }
+.scene { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px; margin: 14px 0; }
+.scene h3 { margin-top: 0; }
+.lane { display: grid; grid-template-columns: 110px 1fr; gap: 6px 14px; margin: 8px 0; font-size: 14.5px; }
+.lane > b { font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.lane > div { min-width: 0; }
+.lane ul, .lane ol { margin: 0; padding-left: 18px; }
+.say { background: var(--say-bg); border-left: 3px solid var(--say); padding: 8px 12px; border-radius: 0 4px 4px 0; font-size: 14.5px; }
+.say p { margin: 4px 0; }
+.say p::before { content: "“"; color: var(--say); font-weight: 700; }
+.say p::after { content: "”"; color: var(--say); font-weight: 700; }
+.warn { background: var(--warn-bg); border-left: 3px solid var(--warn); padding: 6px 10px; border-radius: 0 4px 4px 0; font-size: 13.5px; margin-top: 8px; }
+.warn b { color: var(--warn); }
+.check { list-style: none; padding-left: 0; }
+.check li { padding-left: 26px; position: relative; margin: 4px 0; }
+.check li::before { content: ""; position: absolute; left: 0; top: 4px; width: 14px; height: 14px; border: 1.5px solid var(--teal); border-radius: 3px; }
+footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+@media (max-width: 640px) { .lane { grid-template-columns: 1fr; } h1 { font-size: 1.6rem; } }
+@page { size: A4; margin: 14mm 13mm; }
+@media print {
+  :root { --bg: #fff; --surface: #fff; --ink: #000; --muted: #444; --line: #bbb; --teal: #00504A; --teal-deep: #00504A; --wash: #EEF5F4; --code: #F1F4F4; --warn-bg: #FFF6E8; --warn: #6B3A06; --say-bg: #F4F1FB; --say: #3E2F7A; color-scheme: light; }
+  body { font-size: 10.5pt; } .page { max-width: none; padding: 0; }
+  .scene, tr, .say { break-inside: avoid; } h2, h3 { break-after: avoid; }
+}
+</style>
+
+<div class="page">
+<header class="cover">
+  <p class="eyebrow">i.mobilothon 6.0 · Team Dual Core · Demo day</p>
+  <h1>Samagra Demo Script</h1>
+  <p class="lede">What to click, what will be on screen, and what to say, scene by scene: the process flow, Analyze offers, the market price check and the dashboards. Lines in purple are meant to be said out loud, in your own words.</p>
+</header>
+
+<h2><span class="num">1</span>Before the session (30 minutes ahead)</h2>
+<ul class="check">
+  <li>VPN on. In VS Code's terminal, load the saved settings and start: <code>foreach ($n in "LLM_MODE","LLMAAS_BASE_URL","LLMAAS_MODEL","LLMAAS_API_KEY","LLMAAS_CLIENT_ID","LLMAAS_CLIENT_SECRET") { Set-Item "env:$n" ([Environment]::GetEnvironmentVariable($n,"User")) }</code> then <code>.\run.ps1 -Tunnel</code></li>
+  <li>The readiness list is all <b>OK</b>, and the AI line says <b>gpt-4o via VW LLMaaS</b>.</li>
+  <li>Laptop plugged in, sleep off, notifications off, browser zoom ~110%.</li>
+  <li><b>Prepare one set in advance</b>, for example <code>CASE-30_Headsets_contact_centre</code>: float its enquiry, upload every supplier version in the READ_ME order, raise the sourcing request, and as Vikas press <b>Check</b>. Live you then show this finished case instead of waiting for uploads.</li>
+  <li>Keep a second RFQ ready to float live (e.g. <code>QUICK_TEST_Tshirts/RFQ_Tshirts_town_hall.pdf</code>), so the AI drafting and a live supplier reply happen in front of the jury.</li>
+  <li>Tabs open and signed in: <b>Vedanti</b> (requester), <b>Vikas</b> (buyer for headsets), <b>Himanshu</b> (procurement head), each in its own browser profile or private window. Password for all: <code>TestPass123!</code></li>
+  <li>Phone ready with the Gmail you'll use as the supplier.</li>
+</ul>
+
+<h2><span class="num">2</span>The run sheet (8 minutes of demo)</h2>
+<div class="table-wrap"><table>
+  <tr><th>Time</th><th>Scene</th><th>Who</th></tr>
+  <tr><td class="t">0:00–1:30</td><td>A. Float an enquiry; the AI drafts it from the RFQ</td><td>Requester</td></tr>
+  <tr><td class="t">1:30–2:30</td><td>B. A supplier replies from a phone</td><td>Supplier</td></tr>
+  <tr><td class="t">2:30–3:15</td><td>C. Versions and the automatic comparison</td><td>Requester</td></tr>
+  <tr><td class="t">3:15–4:00</td><td>D. The sourcing request: completeness and InfoSec</td><td>Requester</td></tr>
+  <tr><td class="t">4:00–6:30</td><td>E. The buyer: next action, Analyze offers, market price check, PO</td><td>Buyer</td></tr>
+  <tr><td class="t">6:30–8:00</td><td>F. Dashboards</td><td>Buyer, then head</td></tr>
+</table></div>
+
+<h2><span class="num">3</span>How to explain the flow in one breath</h2>
+<div class="say"><p>Under fifty thousand euros the requester runs the supplier enquiry, collects the quotes, then hands Procurement a complete request. Samagra covers that whole path: the enquiry, the quotes, the request, the buyer's comparison and negotiation, and the PO. The AI only reads documents; the rules decide; a person approves every step.</p></div>
+
+<h2><span class="num">4</span>The scenes</h2>
+
+<div class="scene"><h3>A · Float an enquiry (requester)</h3>
+  <div class="lane"><b>Click</b><div>Vedanti → <b>Supplier Quotes</b> → <b>Float a new enquiry</b> → in step 2 attach the RFQ PDF.</div></div>
+  <div class="lane"><b>You'll see</b><div>"Reading RFQ_….pdf and drafting the note". A few seconds later Subject, the note and Respond by are filled in.</div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>The requester only attaches the RFQ. The Enquiry agent reads it and writes the supplier mail: subject, quantities, specs, what the quote must state. Every quantity it writes is checked against the RFQ; anything it can't find becomes "to confirm". She reads it, edits if needed, and she sends it, not the AI.</p></div></div>
+  <div class="lane"><b>Then</b><div>Add the supplier email (yours, or a juror's), press <b>Send enquiry</b>. The InfoSec popup appears: answer it.</div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>Before anything goes out, the requester answers InfoSec's five screening questions. If a supplier will touch VW data or systems, they are told up front that an NDA and TISAX may be needed.</p></div></div>
+</div>
+
+<div class="scene"><h3>B · The supplier replies (phone)</h3>
+  <div class="lane"><b>Click</b><div>On the phone, open the mail → the private link → <b>Yes</b> → attach a quotation → <b>Submit quotation</b>.</div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>The supplier has no account and no password: a private link, valid until the deadline, that shows only their own enquiry. They can quote, send a revision, or decline, from a phone.</p></div></div>
+  <div class="warn"><b>If a juror offers their email:</b> use it. It's the most convincing moment of the demo. If the network is slow, move on to the prepared set and come back.</div>
+</div>
+
+<div class="scene"><h3>C · Versions and the automatic comparison (requester)</h3>
+  <div class="lane"><b>Click</b><div>Open the prepared enquiry (e.g. headsets).</div></div>
+  <div class="lane"><b>You'll see</b><div>Each supplier with "Quotation · 4 versions", older ones greyed; Soundline "Declined"; the comparison at the top ranking each supplier's latest version.</div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>Nexgen revised four times; nothing is overwritten, every version is kept for negotiation. The moment a quote lands, the Offer agent reads it and ranks the latest version of each supplier, net of GST. Prism's second version was priced including GST. Whenever a quote includes tax, Samagra spots it and strips it before ranking, so the comparison stays like for like.</p></div></div>
+</div>
+
+<div class="scene"><h3>D · The sourcing request (requester)</h3>
+  <div class="lane"><b>Click</b><div>Open the submitted request's page; optionally show the new-request form and try to submit without one document.</div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>The form won't submit without the cart, SFO, RFQ, at least one offer, and InfoSec clearance when any screening answer is Yes. Incomplete requests never reach a buyer, and that's where today's 10 to 15 percent rework comes from.</p></div></div>
+</div>
+
+<div class="scene"><h3>E · The buyer</h3>
+  <div class="lane"><b>Click</b><div>Vikas → <b>Queue</b> → the headsets case.</div></div>
+  <div class="lane"><b>You'll see</b><div>The <b>Next action</b> box at the top with its reasons; the TAT clock on the right; tabs Summary, Documents, Activity, Ready to award?</div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>The case went straight to Vikas because he owns headsets. The box at the top is the Advisor: it reads the case's facts and says the one next thing to do, with the reasons. Pure rules, no AI, so it's the same every time. The TAT clock counts working days from the day the documents were complete.</p></div></div>
+</div>
+
+<h2><span class="num">5</span>Explaining Analyze offers</h2>
+<div class="scene">
+  <div class="lane"><b>Click</b><div>Summary tab → <b>AI offer analysis</b> → <b>Analyze offers with AI</b> (or <b>Re-analyze offers</b>).</div></div>
+  <div class="lane"><b>You'll see</b><div>A table per supplier: the total as quoted (<b>Native</b>), whether tax was included, the comparable value (<b>Normalised</b>), the <b>rank</b>, and a <b>confidence</b>; terms like payment, validity, delivery; anything missing from a quote; and <b>Export rate sheet</b>.</div></div>
+  <div class="lane"><b>What it does</b><div><ol>
+    <li>The AI <b>reads</b> each quotation, whatever its layout: total, currency, whether GST is included, terms.</li>
+    <li>Code <b>checks</b> every figure appears in the document. If it doesn't, it isn't used.</li>
+    <li>Code <b>strips GST</b>, <b>converts currency</b> into the case's currency, and <b>ranks</b>.</li>
+    <li>It flags gaps (for example "tax basis not stated") and fills the Rate Comparison workbook buyers already use.</li>
+  </ol></div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>This replaces rebuilding the comparison sheet by hand. The AI reads each quote; the code does the arithmetic. It strips GST, converts currency and ranks, so a gross quote is never compared against a net one. The model is never asked which supplier is cheapest. Here Nexgen is first at 2,72,500 against Prism's 2,75,300, one percent apart. The buyer can export this straight into the Rate Comparison sheet.</p></div></div>
+  <div class="warn"><b>If asked "what if the AI reads a number wrong?":</b> every figure is checked against the document before it's used, and the confidence and the source document are shown next to each row.</div>
+</div>
+
+<h2><span class="num">6</span>Explaining the market price check</h2>
+<div class="scene">
+  <div class="lane"><b>Click</b><div>Summary tab → <b>Market price check</b> → <b>Check online prices</b> (or <b>Check again</b>).</div></div>
+  <div class="lane"><b>You'll see</b><div>Per product, one of three verdicts:
+    <ul>
+      <li><b>"Same product on Amazon.in at ₹…"</b> (plus "cheapest major retailer"): the exact model was found;</li>
+      <li><b>"No exact match. Comparable products typically sell for ₹… – ₹…"</b>: an indicative band;</li>
+      <li><b>"…too few for a reliable price band, so no verdict is given"</b>: not enough evidence.</li>
+    </ul>
+    Under each, every supplier's price with its gap to the market, and the listings with links. Installation and other service lines are listed as not price-checked.</div></div>
+  <div class="lane"><b>What it does</b><div><ol>
+    <li>Searches Google Shopping India and Amazon.in for each catalogue product.</li>
+    <li>Keeps <b>trusted retailers only</b> (Amazon, Flipkart, Croma, Reliance Digital…), and drops used, refurbished, imported, accessories and spare parts.</li>
+    <li>The model number must match exactly and the stated specs (RAM, storage, VA) must be present. The AI judges "same product?", and code makes the final call.</li>
+    <li>Puts the supplier's price on the same footing as the shop price (GST included) and shows the gap.</li>
+  </ol></div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>Today a buyer benchmarks against VW's purchase history. That tells you what you paid. This tells you what the same model costs today at Amazon and Flipkart. It's a reference for negotiation, not a rule: a retail price has no enterprise warranty or delivery to site, but a buyer can now say "your price is so many percent above Flipkart, explain the gap." If prices improve one percent on GP's 35 to 45 crore, that's 35 to 45 lakh a year, and that's what a pilot would measure.</p></div></div>
+  <div class="warn"><b>If a product shows "no match":</b> say it plainly. "It only shows a price when it's sure it's the same model, from a trusted shop. Here it isn't, so it won't guess." That is a strength, not a failure.</div>
+</div>
+
+<div class="scene"><h3>Finish the case</h3>
+  <div class="lane"><b>Optional</b><div><b>Ask this case</b> (right side): "What delivery time did Nexgen offer?" It answers from the documents and names the source. Ask something not in them, and it says so.</div></div>
+  <div class="lane"><b>Click</b><div>Approve with a PO number; then try the same PO on another case and show the refusal.</div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>The PO number closes the case and the requester is emailed. One PO, one case: the database refuses a duplicate, and every step is in the activity trail, so "why did Nexgen win?" is answerable months later.</p></div></div>
+</div>
+
+<h2><span class="num">7</span>Explaining the dashboards</h2>
+<div class="scene"><h3>Buyer dashboard (Vikas → Dashboard)</h3>
+  <div class="lane"><b>You'll see</b><div><b>Overview</b> tiles · <b>TAT health</b> · <b>Incoming vs closed</b> · cases by department and by commodity · <b>Open and closed per buyer</b> · <b>TAT health per buyer</b> · <b>Month by month</b> · <b>Export to Excel</b>.</div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>This is the buyer's own picture: what's open, what's due, what closed within TAT. Click any tile or chart and it lists those cases. It's all live from the cases, with nothing assembled by hand.</p></div></div>
+</div>
+<div class="scene"><h3>Procurement head (Himanshu → Purchase Dashboard)</h3>
+  <div class="lane"><b>You'll see</b><div><b>Raised and closed</b> · <b>TAT health</b> · <b>Open value</b> · <b>Department workload</b> and <b>Open value by department</b> · <b>Open and closed per buyer</b> with <b>TAT health per buyer</b> · <b>Supplier map</b> and <b>Single sourcing / Who single-sources from whom</b> · <b>How long cases have been open</b> · <b>Month balance</b>.</div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>For the head of GP: workload per buyer, where each department stands, open value, and single sourcing by department and supplier. That's the control view. Today these numbers are put together by hand, if at all. Rework becomes measurable too, because every question to a requester is recorded on the case.</p></div></div>
+  <div class="warn"><b>Honest note:</b> the demo data is synthetic, so the numbers illustrate the view; the pilot would fill it with real cases.</div>
+</div>
+<div class="scene"><h3>Requester (Vedanti → Dashboard)</h3>
+  <div class="lane"><b>You'll see</b><div><b>Open requests · Waiting on you · With procurement · Completed</b>, and <b>Where my requests are</b>.</div></div>
+  <div class="lane"><b>Say</b><div class="say"><p>The requester sees status without calling anyone, and anything waiting on her is on top.</p></div></div>
+</div>
+
+<h2><span class="num">8</span>If something goes wrong</h2>
+<div class="table-wrap"><table>
+  <tr><th>Problem</th><th>Do this</th></tr>
+  <tr><td>An AI step is slow</td><td>Say what it is doing ("reading each quote"), switch to another tab, come back. Results stay on the case.</td></tr>
+  <tr><td>Supplier link doesn't open</td><td>The tunnel dropped. Continue with the prepared enquiry; don't restart mid-demo.</td></tr>
+  <tr><td>LLMaaS not answering</td><td>AI panels say so; show the already-stored analysis and market check on the prepared case.</td></tr>
+  <tr><td>Email slow to arrive</td><td>Copy the supplier link from the enquiry page and open it directly.</td></tr>
+  <tr><td>Internet down</td><td>Play the backup video.</td></tr>
+</table></div>
+
+<h2><span class="num">9</span>Closing line</h2>
+<div class="say"><p>Six hundred cases, up to nine hundred buyer hours, thirty-five to forty-five crore of spend. Samagra gives buyers the time and the reference price to negotiate, and Procurement the control and visibility. The next step is a pilot with your buyers: which ones would you want in it?</p></div>
+
+<footer>Samagra · Team Dual Core · i.mobilothon 6.0 · labels match the app as of 16.10.2026.</footer>
+</div>

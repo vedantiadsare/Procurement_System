@@ -131,6 +131,11 @@ def _ssl_context():
         return True
 
 
+_SERVICE_LINE = re.compile(
+    r"\b(install(ation|ing)?|configur(e|ation)|set-?up|commissioning|"
+    r"maintenance|amc|on-?site support|training|labou?r|per (site|room|visit|hour|day))\b", re.I)
+
+
 def is_benchmarkable(case) -> bool:
     return bool(case) and case.get("expense_commodity") in BENCHMARK_COMMODITIES
 
@@ -396,6 +401,11 @@ def _requirements(description) -> list:
     reqs = []
     for tok in _TOKEN_SPLIT.split(str(description or "")):
         tok = tok.strip(".-").lower()
+        # A vendor's catalogue part number ("960-001101" for a Logitech
+        # MeetUp) is on the quote but never in a shop's title; required, it
+        # threw out Amazon's own MeetUp listing.
+        if re.fullmatch(r"\d{3,}-\d{4,}", tok):
+            continue
         if len(tok) >= 2 and re.search(r"\d", tok) and not _DURATION.match(tok):
             reqs.append(tok)
     for word in _QUALIFIERS:
@@ -570,6 +580,11 @@ def benchmark_case(case_id: int, actor: str = None) -> dict:
         return {"error": reason}
 
     items = db.list_line_items(case_id)
+    # A service line in a product case ("Installation and network set-up per
+    # site") has no online price. Searched anyway, it matched whatever the
+    # words turned up - a printer case reported installation at "Rs 102.9".
+    services = [it["description"] for it in items if _SERVICE_LINE.search(it.get("description") or "")]
+    items = [it for it in items if not _SERVICE_LINE.search(it.get("description") or "")]
     skipped = max(0, len(items) - MAX_ITEMS)
     items = items[:MAX_ITEMS]
 
@@ -692,7 +707,7 @@ def benchmark_case(case_id: int, actor: str = None) -> dict:
         out_items.append(entry)
 
     result = {"checked_at": datetime.now().isoformat(timespec="seconds"),
-              "checked_by": actor, "items": out_items, "skipped": skipped,
+              "checked_by": actor, "items": out_items, "skipped": skipped, "services": services,
               "quote_errors": quote_errors}
     db.update_case(case_id, market_benchmark=json.dumps(result),
                    market_benchmark_at=result["checked_at"])

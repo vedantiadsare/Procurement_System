@@ -223,6 +223,15 @@ CREATE TABLE IF NOT EXISTS agent_runs (
     finished_at   TIMESTAMP
 );
 
+-- Settings the procurement head changes from the app rather than in code:
+-- today the GP team (buyers, their commodities, who is on leave).
+CREATE TABLE IF NOT EXISTS app_settings (
+    key         TEXT PRIMARY KEY,
+    value       TEXT NOT NULL,             -- JSON
+    updated_at  TIMESTAMP NOT NULL,
+    updated_by  TEXT
+);
+
 -- Whatever the supplier sends back - their quotation, a revised price list.
 CREATE TABLE IF NOT EXISTS rfq_response_files (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -655,6 +664,41 @@ def list_line_items(case_id) -> list:
 
 
 # --- audit trail -------------------------------------------------------------
+
+def get_setting(key):
+    """A stored setting, decoded from JSON, or None."""
+    conn = get_connection()
+    try:
+        row = conn.execute("SELECT value FROM app_settings WHERE key = ?", (key,)).fetchone()
+        return json.loads(row[0]) if row else None
+    finally:
+        conn.close()
+
+
+def set_setting(key, value, updated_by=None):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT INTO app_settings (key, value, updated_at, updated_by) VALUES (?, ?, ?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at, "
+            "updated_by = excluded.updated_by",
+            (key, json.dumps(value), datetime.now().isoformat(timespec="seconds"), updated_by))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def open_cases_of(buyer_name) -> list:
+    """Cases still being worked that sit with this buyer."""
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            "SELECT id, ticket_no, topic_title, status FROM cases WHERE assigned_buyer = ? "
+            "AND status NOT IN ('APPROVED', 'REJECTED')", (buyer_name,)).fetchall()
+        return [_row_to_dict(r) for r in rows]
+    finally:
+        conn.close()
+
 
 def insert_audit(case_id, actor, action, detail=None, created_at=None, visibility="internal"):
     created_at = created_at or datetime.now().isoformat(timespec="seconds")

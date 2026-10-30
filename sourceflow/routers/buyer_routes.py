@@ -789,7 +789,11 @@ def analyze_case_offers(case_id: int, actor: str, log=None) -> dict:
         # it compared a tax-inclusive figure against a net one, and on other
         # data claimed 8,800 was lower than 8,500.
         quotes = [comparison.read_quotation(o["text"], o["filename"]) for o in group_offers]
-        table = comparison.compare(quotes)
+        # A portal case is valued in its own currency, so mixed quotes are
+        # ranked in that one: an Indian buyer reads rupees, not a rupee offer
+        # restated as "EUR 5,460". Imported dataset cases keep their EUR basis.
+        own = case.get("currency") if case.get("source") != "import" else None
+        table = comparison.compare(quotes, target=own or None)
         _log("act", f"read {len(quotes)} quotation(s) with the model; normalised and ranked in code "
                     f"(target {table.get('target') or '-'})")
 
